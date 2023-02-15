@@ -72,7 +72,7 @@ const onSignup = handleSubmit(async (values) => {
     notyf.dismissAll()
     notyf.success('Welcome, ' + values.username)
 
-    router.push('/app')
+    router.push('/auth/login')
     isLoading.value = false
   }
 })
@@ -179,7 +179,7 @@ useHead({
                       <!-- Submit -->
 
                       <div class="login">
-                        <VButton type="submit" color="primary" bold fullwidth raised>
+                        <VButton :loading="isLoading" type="submit" color="primary" bold fullwidth raised>
                           {{ t('auth.action.signup') }}
                         </VButton>
                       </div>
