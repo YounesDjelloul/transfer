@@ -1,10 +1,10 @@
 import { useApi } from '/@src/composable/useApi'
 import { useUserSession } from '/@src/stores/userSession'
 
-export async function authenticateUser(credentials: object) {
+const userSession = useUserSession()
+const api         = useApi()
 
-	const userSession = useUserSession()
-	const api         = useApi()
+export async function authenticateUser(credentials: object) {
 	
 	const loginRoute: string  = "/auth/login"
 
@@ -15,4 +15,11 @@ export async function authenticateUser(credentials: object) {
 
 	const userDetails: object = api.get("/auth/user")
 	userSession.setUser(userDetails)
+}
+
+export async function registerUser(registrationObject: object) {
+
+	const registerRoute: string  = "/auth/registration"
+
+	const data = await api.post(registerRoute, registrationObject)
 }

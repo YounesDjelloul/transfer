@@ -6,11 +6,9 @@ import { z as zod } from 'zod'
 import { useI18n } from 'vue-i18n'
 
 import { authenticateUser } from '/@src/services/modules/auth/accounts'
-import { formatError } from '/@src/composable/useError'
 import { useDarkmode } from '/@src/stores/darkmode'
 import { useUserSession } from '/@src/stores/userSession'
 import { useNotyf } from '/@src/composable/useNotyf'
-import sleep from '/@src/utils/sleep'
 
 const { t } = useI18n()
 const isLoading = ref(false)
@@ -130,7 +128,7 @@ useHead({
                 <div class="auth-content">
                   <h2>Welcome Back.</h2>
                   <p>Please sign in to your account</p>
-                  <RouterLink to="/auth/signup-2">
+                  <RouterLink to="/auth/signup">
                     I do not have an account yet
                   </RouterLink>
                 </div>
@@ -144,7 +142,7 @@ useHead({
                           <VInput
                             type="text"
                             :placeholder="t('auth.placeholder.username')"
-                            autocomplete="username"
+                            autocomplete="name"
                           />
                           <p v-if="field?.errors?.value?.length" class="help is-danger">
                             {{ field.errors?.value?.join(', ') }}
