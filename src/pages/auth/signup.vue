@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+
+import { registerUser, logoutUser } from '/@src/services/modules/auth/accounts'
 
 import { useApi } from '/@src/composable/useApi'
+import { useI18n } from 'vue-i18n'
 
 import { useHead } from '@vueuse/head'
 import { toFormValidator } from '@vee-validate/zod'
@@ -10,7 +12,6 @@ import { z as zod } from 'zod'
 
 import { useDarkmode } from '/@src/stores/darkmode'
 import { useNotyf } from '/@src/composable/useNotyf'
-import sleep from '/@src/utils/sleep'
 
 const darkmode = useDarkmode()
 const router = useRouter()
@@ -34,18 +35,18 @@ const validationSchema = toFormValidator(
         required_error: t('auth.errors.email.required'),
       })
       .email(t('auth.errors.email.format')),
-    password: zod
+    password1: zod
       .string({
         required_error: t('auth.errors.password.required'),
       })
       .min(8, t('auth.errors.password.length')),
-    passwordCheck: zod.string({
+    password2: zod.string({
       required_error: t('auth.errors.passwordCheck.required'),
     }),
   })
-  .refine((data) => data.password === data.passwordCheck, {
+  .refine((data) => data.password1 === data.password2, {
     message: t('auth.errors.passwordCheck.match'),
-    path: ['passwordCheck'],
+    path: ['password2'],
   })
 )
 
@@ -54,26 +55,32 @@ const { handleSubmit } = useForm({
   initialValues: {
     username: '',
     email: '',
-    password: '',
-    passwordCheck: '',
+    password1: '',
+    password2: '',
   },
 })
 
 const onSignup = handleSubmit(async (values) => {
-  console.log('handleSignup values')
-  console.log(values)
-
-
   if (!isLoading.value) {
     isLoading.value = true
 
-    await sleep(800)
+    try {
 
-    notyf.dismissAll()
-    notyf.success('Welcome, ' + values.username)
+      await logoutUser()
+      await registerUser(values)
 
-    router.push('/app')
-    isLoading.value = false
+      notyf.dismissAll()
+      notyf.success('Welcome, ' + values.username)
+
+      router.push('/auth/login')
+    } catch (error: any) {
+      notyf.dismissAll()
+      notyf.error(error)
+
+    } finally {
+      isLoading.value = false
+    
+    }
   }
 })
 
@@ -113,12 +120,12 @@ useHead({
                 <div class="auth-content">
                   <h2>{{ t('auth.title') }}</h2>
                   <p>{{ t('auth.subtitle') }}</p>
-                  <RouterLink to="/auth/login-2">
+                  <RouterLink to="/auth/login">
                     {{ t('auth.action.login') }}
                   </RouterLink>
                 </div>
                 <div class="auth-form-wrapper">
-                  <!-- Login Form -->
+                  <!-- Signup Form -->
                   <form @submit="onSignup">
                     <div id="signin-form" class="login-form">
                       <!-- Input -->
@@ -127,7 +134,7 @@ useHead({
                           <VInput
                             type="text"
                             :placeholder="t('auth.placeholder.username')"
-                            autocomplete="username"
+                            autocomplete="name"
                           />
                           <p v-if="field?.errors?.value?.length" class="help is-danger">
                             {{ field.errors?.value?.join(', ') }}
@@ -150,7 +157,7 @@ useHead({
                       </VField>
 
                       <!-- Input -->
-                      <VField id="password" v-slot="{ field }">
+                      <VField id="password1" v-slot="{ field }">
                         <VControl icon="feather:lock">
                           <VInput
                             type="password"
@@ -164,7 +171,7 @@ useHead({
                       </VField>
 
                       <!-- Input -->
-                      <VField id="passwordCheck" v-slot="{ field }">
+                      <VField id="password2" v-slot="{ field }">
                         <VControl icon="feather:lock">
                           <VInput
                             type="password"
@@ -179,7 +186,7 @@ useHead({
                       <!-- Submit -->
 
                       <div class="login">
-                        <VButton type="submit" color="primary" bold fullwidth raised>
+                        <VButton :loading="isLoading" type="submit" color="primary" bold fullwidth raised>
                           {{ t('auth.action.signup') }}
                         </VButton>
                       </div>

@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { useHead } from '@vueuse/head'
+import { useForm } from 'vee-validate'
+import { toFormValidator } from '@vee-validate/zod'
+import { z as zod } from 'zod'
+import { useI18n } from 'vue-i18n'
 
+import { authenticateUser, getUserDetails, logoutUser } from '/@src/services/modules/auth/accounts'
 import { useDarkmode } from '/@src/stores/darkmode'
 import { useUserSession } from '/@src/stores/userSession'
 import { useNotyf } from '/@src/composable/useNotyf'
-import sleep from '/@src/utils/sleep'
 
+const { t } = useI18n()
 const isLoading = ref(false)
 const darkmode = useDarkmode()
 const router = useRouter()
@@ -14,28 +19,59 @@ const notyf = useNotyf()
 const userSession = useUserSession()
 const redirect = route.query.redirect as string
 
-const handleLogin = async () => {
+const validationSchema = toFormValidator(
+  zod.object({
+    username: zod
+      .string({
+        required_error: t('auth.errors.username.required'),
+      })
+      .min(1, t('auth.errors.username.length')),
+    password: zod
+      .string({
+        required_error: t('auth.errors.password.required'),
+      })
+      .min(8, t('auth.errors.password.length')),
+  })
+)
+
+const { handleSubmit } = useForm({
+  validationSchema,
+  initialValues: {
+    username: '',
+    password: ''
+  },
+})
+
+const onLogin = handleSubmit(async (values) => {
   if (!isLoading.value) {
     isLoading.value = true
 
-    await sleep(2000)
-    userSession.setToken('logged-in')
+    try {
 
-    notyf.dismissAll()
-    notyf.success('Welcome back, Erik Kovalsky')
+      await logoutUser()
+      await authenticateUser(values)
+      await getUserDetails()
 
-    if (redirect) {
-      router.push(redirect)
-    } else {
-      router.push('/app')
+      notyf.dismissAll()
+      notyf.success('Welcome back, ' + values.username)
+
+      if (redirect) {
+        router.push(redirect)
+      } else {
+        router.push('/app')
+      }
+
+    } catch (error: any) {
+      notyf.error(error)
+
+    } finally {
+      isLoading.value = false
     }
-
-    isLoading.value = false
   }
-}
+})
 
 useHead({
-  title: 'Auth Login - Vuero',
+  title: 'LexAlgeria - Login',
 })
 </script>
 
@@ -95,40 +131,39 @@ useHead({
                 <div class="auth-content">
                   <h2>Welcome Back.</h2>
                   <p>Please sign in to your account</p>
-                  <RouterLink to="/auth/signup-2">
+                  <RouterLink to="/auth/signup">
                     I do not have an account yet
                   </RouterLink>
                 </div>
                 <div class="auth-form-wrapper">
                   <!-- Login Form -->
-                  <form @submit.prevent="handleLogin">
+                  <form @submit.prevent="onLogin">
                     <div class="login-form">
                       <!-- Username -->
-                      <VField>
+                      <VField id="username" v-slot="{ field }">
                         <VControl icon="feather:user">
                           <VInput
                             type="text"
-                            placeholder="Username"
-                            autocomplete="username"
+                            :placeholder="t('auth.placeholder.username')"
+                            autocomplete="name"
                           />
+                          <p v-if="field?.errors?.value?.length" class="help is-danger">
+                            {{ field.errors?.value?.join(', ') }}
+                          </p>
                         </VControl>
                       </VField>
 
                       <!-- Password -->
-                      <VField>
+                      <VField id="password" v-slot="{ field }">
                         <VControl icon="feather:lock">
                           <VInput
                             type="password"
-                            placeholder="Password"
-                            autocomplete="current-password"
+                            :placeholder="t('auth.placeholder.password')"
+                            autocomplete="new-password"
                           />
-                        </VControl>
-                      </VField>
-
-                      <!-- Switch -->
-                      <VField>
-                        <VControl class="setting-item">
-                          <VCheckbox label="Remember me" paddingless />
+                          <p v-if="field?.errors?.value?.length" class="help is-danger">
+                            {{ field.errors?.value?.join(', ') }}
+                          </p>
                         </VControl>
                       </VField>
 

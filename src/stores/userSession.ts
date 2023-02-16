@@ -8,8 +8,8 @@ export type UserData = Record<string, any> | null
 export const useUserSession = defineStore('userSession', () => {
   // token will be synced with local storage
   // @see https://vueuse.org/core/usestorage/
-  const refreshToken = useCookies('refresh_token', '')
-  const accessToken  = useCookies('access_token', '')
+  const accessToken = useStorage('access_token', '')
+  const refreshToken = useStorage('refresh_token', '')
 
   const user = ref<Partial<UserData>>()
   const loading = ref(true)
@@ -20,12 +20,12 @@ export const useUserSession = defineStore('userSession', () => {
     user.value = newUser
   }
 
-  function setRefreshToken(newToken: string) {
-    refreshToken.value = newToken
-  }
-
   function setAccessToken(newToken: string) {
     accessToken.value = newToken
+  }
+
+  function setRefreshToken(newToken: string) {
+    refreshToken.value = newToken
   }
 
   function setLoading(newLoading: boolean) {
@@ -33,18 +33,21 @@ export const useUserSession = defineStore('userSession', () => {
   }
 
   async function logoutUser() {
-    token.value = undefined
+    accessToken.value = undefined
+    refreshToken.value = undefined
     user.value = undefined
   }
 
   return {
     user,
-    token,
+    accessToken,
+    refreshToken,
     isLoggedIn,
     loading,
     logoutUser,
     setUser,
-    setToken,
+    setAccessToken,
+    setRefreshToken,
     setLoading,
   } as const
 })

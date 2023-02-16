@@ -11,7 +11,7 @@
   "auth.placeholder.password": "Password",
   "auth.placeholder.passwordCheck": "Password Verification",
   "auth.errors.username.required": "The username is required",
-  "auth.errors.username.length": "Username can not be less then 8 characters",
+  "auth.errors.username.length": "The username should contains at leat 8 characters",
   "auth.errors.email.required": "Enter your email, it will be required to login",
   "auth.errors.email.format": "Please, enter a valid email",
   "auth.errors.password.required": "Enter your password with at least 8 characters, it will be required to login",
