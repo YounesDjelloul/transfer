@@ -18,7 +18,7 @@ export function createApi() {
     if (userSession.isLoggedIn) {
       config.headers = {
         ...((config.headers as RawAxiosRequestHeaders) ?? {}),
-        Authorization: `Bearer ${userSession.token}`,
+        Authorization: `Bearer ${userSession.accessToken}`,
       }
     }
 

@@ -8,26 +8,24 @@ export type UserData = Record<string, any> | null
 export const useUserSession = defineStore('userSession', () => {
   // token will be synced with local storage
   // @see https://vueuse.org/core/usestorage/
-  const cookies = useCookies(['refresh_token', 'access_token'])
-
-  const refreshToken = cookies.get("refresh_token")
-  const accessToken  = cookies.get("access_token")
+  const accessToken = useStorage('access_token', '')
+  const refreshToken = useStorage('refresh_token', '')
 
   const user = ref<Partial<UserData>>()
   const loading = ref(true)
 
-  const isLoggedIn = computed(() => accessToken !== undefined && accessToken !== '')
+  const isLoggedIn = computed(() => accessToken.value !== undefined && accessToken.value !== '')
 
   function setUser(newUser: Partial<UserData>) {
     user.value = newUser
   }
 
-  function setRefreshToken(newToken: string) {
-    cookies.set('refresh_token', newToken)
+  function setAccessToken(newToken: string) {
+    accessToken.value = newToken
   }
 
-  function setAccessToken(newToken: string) {
-    cookies.set('access_token', newToken)
+  function setRefreshToken(newToken: string) {
+    refreshToken.value = newToken
   }
 
   function setLoading(newLoading: boolean) {
@@ -35,21 +33,21 @@ export const useUserSession = defineStore('userSession', () => {
   }
 
   async function logoutUser() {
-    cookies.set('refresh_token', undefined)
-    cookies.set('access_token', undefined)
+    accessToken.value = undefined
+    refreshToken.value = undefined
     user.value = undefined
   }
 
   return {
     user,
-    refreshToken,
     accessToken,
+    refreshToken,
     isLoggedIn,
     loading,
     logoutUser,
     setUser,
-    setRefreshToken,
     setAccessToken,
+    setRefreshToken,
     setLoading,
   } as const
 })

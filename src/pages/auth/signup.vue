@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { registerUser } from '/@src/services/modules/auth/accounts'
+import { registerUser, logoutUser } from '/@src/services/modules/auth/accounts'
 
 import { useApi } from '/@src/composable/useApi'
 import { useI18n } from 'vue-i18n'
@@ -35,18 +35,18 @@ const validationSchema = toFormValidator(
         required_error: t('auth.errors.email.required'),
       })
       .email(t('auth.errors.email.format')),
-    password: zod
+    password1: zod
       .string({
         required_error: t('auth.errors.password.required'),
       })
       .min(8, t('auth.errors.password.length')),
-    passwordCheck: zod.string({
+    password2: zod.string({
       required_error: t('auth.errors.passwordCheck.required'),
     }),
   })
-  .refine((data) => data.password === data.passwordCheck, {
+  .refine((data) => data.password1 === data.password2, {
     message: t('auth.errors.passwordCheck.match'),
-    path: ['passwordCheck'],
+    path: ['password2'],
   })
 )
 
@@ -55,8 +55,8 @@ const { handleSubmit } = useForm({
   initialValues: {
     username: '',
     email: '',
-    password: '',
-    passwordCheck: '',
+    password1: '',
+    password2: '',
   },
 })
 
@@ -66,19 +66,20 @@ const onSignup = handleSubmit(async (values) => {
 
     try {
 
-      await registerUser(values)  
+      await logoutUser()
+      await registerUser(values)
 
       notyf.dismissAll()
       notyf.success('Welcome, ' + values.username)
 
       router.push('/auth/login')
-    } catch (error) {
+    } catch (error: any) {
       notyf.dismissAll()
       notyf.error(error)
 
     } finally {
-
       isLoading.value = false
+    
     }
   }
 })
@@ -156,7 +157,7 @@ useHead({
                       </VField>
 
                       <!-- Input -->
-                      <VField id="password" v-slot="{ field }">
+                      <VField id="password1" v-slot="{ field }">
                         <VControl icon="feather:lock">
                           <VInput
                             type="password"
@@ -170,7 +171,7 @@ useHead({
                       </VField>
 
                       <!-- Input -->
-                      <VField id="passwordCheck" v-slot="{ field }">
+                      <VField id="password2" v-slot="{ field }">
                         <VControl icon="feather:lock">
                           <VInput
                             type="password"

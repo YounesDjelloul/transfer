@@ -5,7 +5,7 @@ import { toFormValidator } from '@vee-validate/zod'
 import { z as zod } from 'zod'
 import { useI18n } from 'vue-i18n'
 
-import { authenticateUser } from '/@src/services/modules/auth/accounts'
+import { authenticateUser, getUserDetails, logoutUser } from '/@src/services/modules/auth/accounts'
 import { useDarkmode } from '/@src/stores/darkmode'
 import { useUserSession } from '/@src/stores/userSession'
 import { useNotyf } from '/@src/composable/useNotyf'
@@ -25,7 +25,7 @@ const validationSchema = toFormValidator(
       .string({
         required_error: t('auth.errors.username.required'),
       })
-      .min(8, t('auth.errors.username.length')),
+      .min(1, t('auth.errors.username.length')),
     password: zod
       .string({
         required_error: t('auth.errors.password.required'),
@@ -47,7 +47,10 @@ const onLogin = handleSubmit(async (values) => {
     isLoading.value = true
 
     try {
+
+      await logoutUser()
       await authenticateUser(values)
+      await getUserDetails()
 
       notyf.dismissAll()
       notyf.success('Welcome back, ' + values.username)
@@ -58,7 +61,7 @@ const onLogin = handleSubmit(async (values) => {
         router.push('/app')
       }
 
-    } catch (error) {
+    } catch (error: any) {
       notyf.error(error)
 
     } finally {
