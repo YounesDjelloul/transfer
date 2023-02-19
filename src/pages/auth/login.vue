@@ -58,7 +58,7 @@ const onLogin = handleSubmit(async (values) => {
       if (redirect) {
         router.push(redirect)
       } else {
-        router.push('/app')
+        router.push('/')
       }
 
     } catch (error: any) {

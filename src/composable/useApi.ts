@@ -14,11 +14,14 @@ export function createApi() {
   // include Bearer token to the request if user is logged in
   api.interceptors.request.use((config) => {
     const userSession = useUserSession()
+    const accessToken = userSession.cookies.get('access_token')
 
-    if (userSession.isLoggedIn) {
+    console.log(accessToken, userSession.cookies.get('isLoggedIn'))
+
+    if (userSession.cookies.get('isLoggedIn') !== 'undefined') {
       config.headers = {
         ...((config.headers as RawAxiosRequestHeaders) ?? {}),
-        Authorization: `Bearer ${userSession.accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       }
     }
 
@@ -34,3 +37,44 @@ export function useApi() {
   }
   return api
 }
+
+/*
+
+import { useNotyf } from '/@src/composable/useNotyf'
+
+const notyf = useNotyf()
+
+export function createApi() {
+  api = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL,
+    withCredentials: true,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+  })
+
+  api.interceptors.response.use(
+    (response) => {
+      return response
+    },
+    (err) => {
+      if (err.message == 'Network Error')
+        notyf.error({
+          message: 'Connection error! Please try again later',
+          duration: 5000,
+        })
+      return Promise.reject(err)
+    }
+  )
+
+  return api
+}
+
+export function useApi() {
+  if (!api) {
+    createApi()
+  }
+  return api
+}
+*/

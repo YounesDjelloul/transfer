@@ -1,5 +1,21 @@
 <script setup lang="ts">
 import { useHead } from '@vueuse/head'
+import { useUserSession } from '/@src/stores/userSession'
+import { getUserDetails } from '/@src/services/modules/auth/accounts'
+import { useApi } from '/@src/composable/useApi'
+
+const api = useApi()
+
+onMounted(async () => {
+
+  const userSession = useUserSession()
+  const getUserDetailsRoute = "/auth/user/"
+
+  console.log(userSession.cookies.get('access_token'))
+
+  const userDetails = await api.get(getUserDetailsRoute)
+  console.log(userDetails)
+})
 
 useHead({
   title: 'Vuero - A complete Vue 3 design system',

@@ -5,6 +5,8 @@ import {
   setupDataFetchingGuard,
 } from 'vue-router/auto'
 
+import { useUserSession } from '/@src/stores/userSession'
+
 /*
  * By default, this plugins checks the folder at src/pages for any .vue files
  * and generates the corresponding routing structure basing itself in the file name.
@@ -101,6 +103,21 @@ export function createRouter() {
    * @see https://github.com/posva/unplugin-vue-router/tree/main/src/data-fetching
    */
   setupDataFetchingGuard(router)
+
+  router.beforeEach((to, from, next) => {
+    const userSession = useUserSession()
+    const isLoggedIn  = userSession.cookies.get('isLoggedIn')
+
+    if (to.meta.requiresAuth && !isLoggedIn) {
+      
+      return {
+        path: '/login',
+        query: { redirect: to.fullPath },
+      }
+    } else {
+      next()
+    }
+  })
 
   return router
 }

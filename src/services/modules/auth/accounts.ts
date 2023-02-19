@@ -22,7 +22,7 @@ export async function authenticateUser(credentials: object) {
 	const { data: data } = await api.post(loginRoute, credentials)
 
 	userSession.setAccessToken(data.access_token)
-	userSession.setRefreshToken(data.refresh_token)
+	//userSession.setRefreshToken(data.refresh_token)
 }
 
 export async function registerUser(registrationObject: object) {
