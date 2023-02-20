@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { registerUser, logoutUser } from '/@src/services/modules/auth/accounts'
+import APP_URLs from '/@src/utils/app/urls'
 
 import { useApi } from '/@src/composable/useApi'
 import { useI18n } from 'vue-i18n'
@@ -72,14 +73,14 @@ const onSignup = handleSubmit(async (values) => {
       notyf.dismissAll()
       notyf.success('Welcome, ' + values.username)
 
-      router.push('/auth/login')
+      router.push(APP_URLs.LOGIN)
     } catch (error: any) {
       notyf.dismissAll()
       notyf.error(error)
 
     } finally {
       isLoading.value = false
-    
+  
     }
   }
 })
@@ -120,7 +121,7 @@ useHead({
                 <div class="auth-content">
                   <h2>{{ t('auth.title') }}</h2>
                   <p>{{ t('auth.subtitle') }}</p>
-                  <RouterLink to="/auth/login">
+                  <RouterLink :to="APP_URLs.LOGIN">
                     {{ t('auth.action.login') }}
                   </RouterLink>
                 </div>

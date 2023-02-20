@@ -1,6 +1,9 @@
 import { definePlugin } from '/@src/app'
 import { useUserSession } from '/@src/stores/userSession'
 
+import APP_URLs from '/@src/utils/app/urls'
+import API_URLs from '/@src/utils/api/urls'
+
 /**
  * Here we are setting up two router navigation guards
  * (note that we can have multiple guards in multiple plugins)
@@ -33,7 +36,7 @@ export default definePlugin(async ({ router, api, pinia }) => {
       // 2. If the page requires auth, check if user is logged in
       // if not, redirect to login page.
       return {
-        name: '/auth/login',
+        name: APP_URLs.LOGIN,
         // save the location we were at to come back later
         query: { redirect: to.fullPath },
       }
@@ -45,7 +48,7 @@ export default definePlugin(async ({ router, api, pinia }) => {
     try {
       // Do api request call to retreive user profile.
       // Note that the api is provided with json-server
-      const { data: data } = await api.get('/auth/user')
+      const { data: data } = await api.get(API_URLs.CURRENT_USER_PROFILE)
       userSession.setUser(data)
     } catch (err) {
       // delete stored token if it fails

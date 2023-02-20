@@ -5,6 +5,8 @@ import { toFormValidator } from '@vee-validate/zod'
 import { z as zod } from 'zod'
 import { useI18n } from 'vue-i18n'
 
+import APP_URLs from '/@src/utils/app/urls'
+
 import { authenticateUser, getUserDetails, logoutUser } from '/@src/services/modules/auth/accounts'
 import { useDarkmode } from '/@src/stores/darkmode'
 import { useUserSession } from '/@src/stores/userSession'
@@ -58,7 +60,7 @@ const onLogin = handleSubmit(async (values) => {
       if (redirect) {
         router.push(redirect)
       } else {
-        router.push('/')
+        router.push(APP_URLs.HOME)
       }
 
     } catch (error: any) {
@@ -131,7 +133,7 @@ useHead({
                 <div class="auth-content">
                   <h2>Welcome Back.</h2>
                   <p>Please sign in to your account</p>
-                  <RouterLink to="/auth/signup">
+                  <RouterLink :to="APP_URLs.REGISTRATION">
                     I do not have an account yet
                   </RouterLink>
                 </div>
