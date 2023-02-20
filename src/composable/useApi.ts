@@ -14,11 +14,12 @@ export function createApi() {
   // include Bearer token to the request if user is logged in
   api.interceptors.request.use((config) => {
     const userSession = useUserSession()
+    const accessToken = userSession.cookies.get('access_token')
 
-    if (userSession.isLoggedIn) {
+    if (userSession.cookies.get('isLoggedIn')) {
       config.headers = {
         ...((config.headers as RawAxiosRequestHeaders) ?? {}),
-        Authorization: `Bearer ${userSession.accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       }
     }
 

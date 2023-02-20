@@ -1,53 +1,47 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useStorage } from '@vueuse/core'
 import { useCookies } from '@vueuse/integrations/useCookies'
 
 export type UserData = Record<string, any> | null
 
 export const useUserSession = defineStore('userSession', () => {
-  // token will be synced with local storage
-  // @see https://vueuse.org/core/usestorage/
-  const accessToken = useStorage('access_token', '')
-  const refreshToken = useStorage('refresh_token', '')
+  const cookies = useCookies(['access_token', 'isLoggedIn'])
 
   const user = ref<Partial<UserData>>()
   const loading = ref(true)
-
-  const isLoggedIn = computed(() => accessToken.value !== undefined && accessToken.value !== '')
 
   function setUser(newUser: Partial<UserData>) {
     user.value = newUser
   }
 
   function setAccessToken(newToken: string) {
-    accessToken.value = newToken
+    cookies.set('access_token', newToken)
+    cookies.set('isLoggedIn', true)
   }
 
-  function setRefreshToken(newToken: string) {
-    refreshToken.value = newToken
-  }
+  /*function setRefreshToken(newToken: string) {
+    cookies.set('refresh_token', newToken)
+  }*/
 
   function setLoading(newLoading: boolean) {
     loading.value = newLoading
   }
 
-  async function logoutUser() {
-    accessToken.value = undefined
-    refreshToken.value = undefined
+  function logoutUser() {
+    cookies.set('access_token', undefined)
+    //cookies.set('refresh_token', undefined)
+    cookies.set('isLoggedIn', false)
     user.value = undefined
   }
 
   return {
+    cookies,
     user,
-    accessToken,
-    refreshToken,
-    isLoggedIn,
     loading,
     logoutUser,
     setUser,
     setAccessToken,
-    setRefreshToken,
+    //setRefreshToken,
     setLoading,
   } as const
 })

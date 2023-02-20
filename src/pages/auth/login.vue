@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+  guest: true
+</route>
+
 <script setup lang="ts">
 import { useHead } from '@vueuse/head'
 import { useForm } from 'vee-validate'
@@ -5,7 +10,9 @@ import { toFormValidator } from '@vee-validate/zod'
 import { z as zod } from 'zod'
 import { useI18n } from 'vue-i18n'
 
-import { authenticateUser, getUserDetails, logoutUser } from '/@src/services/modules/auth/accounts'
+import APP_URLs from '/@src/utils/app/urls'
+
+import { authenticateUser } from '/@src/services/modules/auth/accounts'
 import { useDarkmode } from '/@src/stores/darkmode'
 import { useUserSession } from '/@src/stores/userSession'
 import { useNotyf } from '/@src/composable/useNotyf'
@@ -48,9 +55,7 @@ const onLogin = handleSubmit(async (values) => {
 
     try {
 
-      await logoutUser()
       await authenticateUser(values)
-      await getUserDetails()
 
       notyf.dismissAll()
       notyf.success('Welcome back, ' + values.username)
@@ -58,7 +63,7 @@ const onLogin = handleSubmit(async (values) => {
       if (redirect) {
         router.push(redirect)
       } else {
-        router.push('/app')
+        router.push(APP_URLs.HOME)
       }
 
     } catch (error: any) {
@@ -131,7 +136,7 @@ useHead({
                 <div class="auth-content">
                   <h2>Welcome Back.</h2>
                   <p>Please sign in to your account</p>
-                  <RouterLink to="/auth/signup">
+                  <RouterLink :to="APP_URLs.REGISTRATION">
                     I do not have an account yet
                   </RouterLink>
                 </div>

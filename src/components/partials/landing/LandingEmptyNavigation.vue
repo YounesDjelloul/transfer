@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import VueScrollTo from 'vue-scrollto'
 
+import APP_URLs from "/@src/utils/app/urls"
+
 import { isLargeScreen } from '/@src/utils/responsive'
 import { useDarkmode } from '/@src/stores/darkmode'
 
@@ -88,10 +90,10 @@ watchEffect(() => {
           </label>
         </div>
         <div class="navbar-item">
-          <RouterLink to="/auth/login" class="nav-link"> Login </RouterLink>
+          <RouterLink :to="APP_URLs.LOGIN" class="nav-link"> Login </RouterLink>
         </div>
         <div class="navbar-item">
-          <VButton to="/auth/signup" color="primary" rounded raised>
+          <VButton :to="APP_URLs.REGISTRATION" color="primary" rounded raised>
             <strong>Sign up</strong>
           </VButton>
         </div>

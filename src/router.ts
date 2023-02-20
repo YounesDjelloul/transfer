@@ -5,6 +5,8 @@ import {
   setupDataFetchingGuard,
 } from 'vue-router/auto'
 
+import { useUserSession } from '/@src/stores/userSession'
+
 /*
  * By default, this plugins checks the folder at src/pages for any .vue files
  * and generates the corresponding routing structure basing itself in the file name.
