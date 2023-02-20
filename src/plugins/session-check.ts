@@ -4,8 +4,6 @@ import { useUserSession } from '/@src/stores/userSession'
 import APP_URLs from '/@src/utils/app/urls'
 import API_URLs from '/@src/utils/api/urls'
 
-import { getUserDetails, logoutUser } from '/@src/services/modules/auth/accounts'
-
 /**
  * Here we are setting up two router navigation guards
  * (note that we can have multiple guards in multiple plugins)
@@ -35,7 +33,7 @@ export default definePlugin(async ({ router, api, pinia }) => {
     const isLoggedIn = userSession.cookies.get('isLoggedIn')
 
     if (to.meta.requiresAuth && isLoggedIn !== true) {
-      // 2. If the page requires auth, check if user is logged in
+      // If the page requires auth, check if user is logged in
       // if not, redirect to login page.
       return {
         name: APP_URLs.LOGIN,
@@ -43,17 +41,28 @@ export default definePlugin(async ({ router, api, pinia }) => {
         query: { redirect: to.fullPath },
       }
     }
+
+    if (to.meta.guest && isLoggedIn === true) {
+      // If the page needs to be seen just by guests, check if use is logged in
+      // if yes, redirect to home page
+
+      return {
+        name: APP_URLs.HOME,
+      }
+    }
   })
 
-  // 1. Check token validity at app startup
+  // Check token validity at app startup
   if (userSession.cookies.get('isLoggedIn')) {
     try {
       // Do api request call to retreive user profile.
-      // Note that the api is provided with json-server
-      await getUserDetails()
-    } catch (err) {
+
+      const userDetails = await api.get(API_URLs.CURRENT_USER_PROFILE)
+      userSession.setUser(userDetails.data)
+
+    } catch (error) {
       // delete stored token if it fails
-      await logoutUser()
+      userSession.logoutUser()
     }
   }
 })

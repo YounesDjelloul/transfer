@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+  guest: true
+</route>
+
 <script setup lang="ts">
 
 import { registerUser } from '/@src/services/modules/auth/accounts'

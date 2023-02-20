@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+  guest: true
+</route>
+
 <script setup lang="ts">
 import { useHead } from '@vueuse/head'
 import { useForm } from 'vee-validate'
