@@ -16,9 +16,7 @@ export function createApi() {
     const userSession = useUserSession()
     const accessToken = userSession.cookies.get('access_token')
 
-    console.log(accessToken, userSession.cookies.get('isLoggedIn'))
-
-    if (userSession.cookies.get('isLoggedIn') !== 'undefined') {
+    if (userSession.cookies.get('isLoggedIn')) {
       config.headers = {
         ...((config.headers as RawAxiosRequestHeaders) ?? {}),
         Authorization: `Bearer ${accessToken}`,

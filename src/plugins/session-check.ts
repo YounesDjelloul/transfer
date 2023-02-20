@@ -25,21 +25,11 @@ import { useUserSession } from '/@src/stores/userSession'
 export default definePlugin(async ({ router, api, pinia }) => {
   const userSession = useUserSession(pinia)
 
-  // 1. Check token validity at app startup
-  if (userSession.isLoggedIn) {
-    try {
-      // Do api request call to retreive user profile.
-      // Note that the api is provided with json-server
-      const { data: user } = await api.get('/api/users/me')
-      userSession.setUser(user)
-    } catch (err) {
-      // delete stored token if it fails
-      userSession.logoutUser()
-    }
-  }
-
   router.beforeEach((to) => {
-    if (to.meta.requiresAuth && !userSession.isLoggedIn) {
+
+    const isLoggedIn = userSession.cookies.get('isLoggedIn')
+
+    if (to.meta.requiresAuth && isLoggedIn !== true) {
       // 2. If the page requires auth, check if user is logged in
       // if not, redirect to login page.
       return {
@@ -49,4 +39,17 @@ export default definePlugin(async ({ router, api, pinia }) => {
       }
     }
   })
+
+  // 1. Check token validity at app startup
+  if (userSession.cookies.get('isLoggedIn')) {
+    try {
+      // Do api request call to retreive user profile.
+      // Note that the api is provided with json-server
+      const { data: data } = await api.get('/auth/user')
+      userSession.setUser(data)
+    } catch (err) {
+      // delete stored token if it fails
+      userSession.logoutUser()
+    }
+  }
 })

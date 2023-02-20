@@ -104,20 +104,5 @@ export function createRouter() {
    */
   setupDataFetchingGuard(router)
 
-  router.beforeEach((to, from, next) => {
-    const userSession = useUserSession()
-    const isLoggedIn  = userSession.cookies.get('isLoggedIn')
-
-    if (to.meta.requiresAuth && !isLoggedIn) {
-      
-      return {
-        path: '/login',
-        query: { redirect: to.fullPath },
-      }
-    } else {
-      next()
-    }
-  })
-
   return router
 }

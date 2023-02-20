@@ -10,7 +10,7 @@ export const useUserSession = defineStore('userSession', () => {
   // @see https://vueuse.org/core/usestorage/
   const cookies = useCookies(['access_token', 'isLoggedIn'])
 
-  const user = ref<Partial<User>>()
+  const user = ref<Partial<UserData>>()
   const loading = ref(true)
 
   //const isLoggedIn = computed(() => cookies.get('access_token') !== 'undefined' && cookies.get('access_token') !== '')
@@ -34,7 +34,7 @@ export const useUserSession = defineStore('userSession', () => {
 
   function logoutUser() {
     cookies.set('access_token', undefined)
-    cookies.set('isLoggedIn', undefined)
+    cookies.set('isLoggedIn', false)
     //refreshToken.value = undefined
     user.value = undefined
   }
