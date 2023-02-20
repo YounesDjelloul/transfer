@@ -7,7 +7,7 @@ import { useI18n } from 'vue-i18n'
 
 import APP_URLs from '/@src/utils/app/urls'
 
-import { authenticateUser, getUserDetails, logoutUser } from '/@src/services/modules/auth/accounts'
+import { authenticateUser } from '/@src/services/modules/auth/accounts'
 import { useDarkmode } from '/@src/stores/darkmode'
 import { useUserSession } from '/@src/stores/userSession'
 import { useNotyf } from '/@src/composable/useNotyf'
@@ -50,9 +50,7 @@ const onLogin = handleSubmit(async (values) => {
 
     try {
 
-      await logoutUser()
       await authenticateUser(values)
-      await getUserDetails()
 
       notyf.dismissAll()
       notyf.success('Welcome back, ' + values.username)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { registerUser, logoutUser } from '/@src/services/modules/auth/accounts'
+import { registerUser } from '/@src/services/modules/auth/accounts'
 import APP_URLs from '/@src/utils/app/urls'
 
 import { useApi } from '/@src/composable/useApi'
@@ -67,7 +67,6 @@ const onSignup = handleSubmit(async (values) => {
 
     try {
 
-      await logoutUser()
       await registerUser(values)
 
       notyf.dismissAll()

@@ -4,6 +4,8 @@ import { useUserSession } from '/@src/stores/userSession'
 import APP_URLs from '/@src/utils/app/urls'
 import API_URLs from '/@src/utils/api/urls'
 
+import { getUserDetails, logoutUser } from '/@src/services/modules/auth/accounts'
+
 /**
  * Here we are setting up two router navigation guards
  * (note that we can have multiple guards in multiple plugins)
@@ -48,11 +50,10 @@ export default definePlugin(async ({ router, api, pinia }) => {
     try {
       // Do api request call to retreive user profile.
       // Note that the api is provided with json-server
-      const { data: data } = await api.get(API_URLs.CURRENT_USER_PROFILE)
-      userSession.setUser(data)
+      await getUserDetails()
     } catch (err) {
       // delete stored token if it fails
-      userSession.logoutUser()
+      await logoutUser()
     }
   }
 })
