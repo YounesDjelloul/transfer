@@ -163,7 +163,7 @@ declare module '@vue/runtime-core' {
     FlexStatWidget: typeof import('./src/components/partials/widgets/stat/FlexStatWidget.vue')['default']
     FlexTableDropdown: typeof import('./src/components/partials/dropdowns/FlexTableDropdown.vue')['default']
     FlightResultsDropdown: typeof import('./src/components/partials/dropdowns/FlightResultsDropdown.vue')['default']
-    FlightsDashboard: typeof import('./src/components/pages/dashboards/business/FlightsDashboard.vue')['default']
+    FlightsDashboard: typeof import('./src/components/pages/dashboards/personal/FlightsDashboard.vue')['default']
     FoodDeliveryApp: typeof import('./src/components/pages/apps/FoodDeliveryApp.vue')['default']
     FormLayout: typeof import('./src/components/pages/forms/form-layout/FormLayout.vue')['default']
     FormLayoutSeparate: typeof import('./src/components/pages/forms/form-layout/FormLayoutSeparate.vue')['default']

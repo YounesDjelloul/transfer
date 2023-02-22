@@ -13,6 +13,6 @@ useHead({
 
 <template>
   <div class="page-content-inner">
-    <FlightsDashboard />
+    <PersonalDashboardV2 />
   </div>
 </template>
