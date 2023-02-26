@@ -1,139 +1,38 @@
 <script setup lang="ts">
 
-  import { useForm } from 'vee-validate'
-  import { toFormValidator } from '@vee-validate/zod'
-  import { z as zod } from 'zod'
-  import { useI18n } from 'vue-i18n'
-  import { useNotyf } from '/@src/composable/useNotyf'
-  import { useUserSession } from '/@src/stores/userSession'
-
-  import { getAllClients, createNewClient, getClientDetail, deleteClientRequest } from '/@src/utils/api/clients'
-  
-  const notyf       = useNotyf()
-  const { t }       = useI18n()
-  const userSession = useUserSession()
+  import { getAllClients } from '/@src/utils/api/clients'
 
   const response = await getAllClients() // Requesting All clients from API
-  let clients    = response.results
+  var clients    = response.results
 
+  const showCreateClientPopup       = ref(false)
+  const showDeleteClientPopup       = ref(false)
+  const showViewClientDetailsPopup  = ref(false)
+  const showUpdateClientPopup       = ref(false)
 
-  /*export interface UserData extends VAvatarProps {
-    id: number
-    username: string
-    position: string
-    picture: string
-    badge: string
-    location: string
-    industry: string
-    status: string
-    contacts: VAvatarProps[]
-  }*/
+  const currentPage      = ref(1)
+  const filters          = ref('')
 
-  const showNewClientPopup         = ref(false)
-  const showViewClientDetailsPopup = ref(false)
-  const showDeleteClientPopup      = ref(false)
+  const clientToUpdateId = ref()
+  const clientToDeleteId = ref()
+  const clientToViewId   = ref()
 
-  const currentPage           = ref(1)
-  const filters               = ref('')
-  const isLoading             = ref(false)
-  const currentClient         = ref()
-  const clientDetailsLoading  = ref(false)
-  const clientDeletionLoading = ref(false)
-  const clientToDelete        = ref()
+  async function getUpdateClientDetailsPopup(clientId) {
 
-  const validationSchema = toFormValidator(
-    zod.object({
-      person_type: zod
-        .string({
-          required_error: t('auth.errors.username.required'),
-        }),
-      user: zod.object({
-        username: zod
-          .string({
-            required_error: t('auth.errors.username.required'),
-          })
-          .min(8, t('auth.errors.username.length')),
-        email: zod
-          .string({
-            required_error: t('auth.errors.email.required'),
-          })
-          .min(8, t('auth.errors.email.format')),
-        ip: zod
-          .string({
-            required_error: t('auth.errors.ip.required'),
-          })
-      })      
-    })
-  )
-
-  const { handleSubmit } = useForm({
-    validationSchema,
-    initialValues: {
-      person_type: '',
-      user: {
-        username: '',
-        email: '',
-        ip: ''
-      }
-    },
-  })
-
-  const createClient = handleSubmit(async (values) => {
-    if (!isLoading.value) {
-      isLoading.value = true
-
-      try {
-
-        const data = await createNewClient(values)
-
-        notyf.dismissAll()
-        notyf.success("Client Created Successfully!")
-
-        clients.push(data)
-        filteredData.value = clients
-        showNewClientPopup.value = false
-
-      } catch (err) {
-        notyf.error(err)
-
-      } finally {
-        isLoading.value = false
-      }
-    }
-  })
-
-  async function viewClientDetail(clientId) {
-
-    clientDetailsLoading.value = true
-    showViewClientDetailsPopup.value = true
-
-    const response      = await getClientDetail(clientId)
-    currentClient.value = response.user
-    
-    clientDetailsLoading.value = false
+    clientToUpdateId.value      = clientId
+    showUpdateClientPopup.value = true
   }
 
-  async function deleteClient(clientId?) {
+  async function getDeleteClientPopup(clientId) {
 
-    if (showDeleteClientPopup.value) {
-      clientDeletionLoading.value = true
+    clientToDeleteId.value      = clientId
+    showDeleteClientPopup.value = true
+  }
 
-      try {
-        const response = await deleteClientRequest(clientToDelete.value)
-        notyf.dismissAll()
-        notyf.success("Client Created Successfully!")
+  async function getViewClientDetailsPopup(clientId) {
 
-      } catch (error) {
-        notyf.error(error)
-
-      } finally {
-        clientDeletionLoading.value = false
-        showDeleteClientPopup.value = false
-      }
-    } else {
-      showDeleteClientPopup.value = true
-      clientToDelete.value  = clientId
-    }
+    clientToViewId.value             = clientId
+    showViewClientDetailsPopup.value = true
   }
 
   const columns = {
@@ -164,6 +63,7 @@
       })
     }
   })
+
 </script>
 
 <template>
@@ -179,118 +79,29 @@
       </VField>
 
       <VButtons>
-        <VButton @click="showNewClientPopup=true" color="primary" icon="feather:plus" elevated> Add User </VButton>
+        <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus" elevated> Add User </VButton>
       </VButtons>
     </div>
 
-    <VModal
-      :open="showDeleteClientPopup"
-      title="Deleting Details"
-      size="meduim"
-      actions="right"
-      noscroll
-      @close="showDeleteClientPopup = false"
-    >
-      <template #content>
-        <VPlaceload v-if="clientDeletionLoading" />
-        <div class="view-container" v-else>
-          <div class="view-section">
-            <div class="delete-header">
-              <h3 class="content">Are you sure you want to delete this client?</h3>
-            </div>
-          </div>
-        </div>
-      </template>
-      <template #action>
-        <VButton :loading="isLoading" type="submit" @click="deleteClient" color="danger" raised>Delete</VButton>
-      </template>
-    </VModal>
+    <CreateClientComponent
+      v-if="showCreateClientPopup"
+      @hideCreateClientPopup="showCreateClientPopup=false"
+    />
 
-    <VModal
-      :open="showViewClientDetailsPopup"
-      title="Client Details"
-      size="meduim"
-      actions="right"
-      noscroll
-      @close="showViewClientDetailsPopup = false"
-    >
-      <template #content>
-        <VPlaceload v-if="clientDetailsLoading" />
-        <div class="view-container" v-else>
-          <div class="view-section">
-            <div class="view-section-header">
-              <h3 class="content">User</h3>
-            </div>
-            <div class='view-section-info' v-for="(value, detail) in currentClient">
-              <span>{{ detail }}</span>
-              <span>{{ value }}</span>
-            </div>
-          </div>
-        </div>
-      </template>
-    </VModal>
+    <UpdateClientComponent
+      v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
+      @hideUpdateClientDetailsPopup="showUpdateClientPopup=false"
+    />
 
-    <VModal
-      :open="showNewClientPopup"
-      title="Create New Client"
-      size="meduim"
-      actions="right"
-      noscroll
-      @close="showNewClientPopup = false"
-    >
-      <template #content>
-        <form class="modal-form">
-          <VField id="user.username" v-slot="{ field }">
-            <VControl icon="feather:user">
-              <VInput
-                type="text"
-                :placeholder="t('auth.placeholder.username')"
-                autocomplete="name"
-              />
-              <p v-if="field?.errors?.value?.length" class="help is-danger">
-                {{ field.errors?.value?.join(', ') }}
-              </p>
-            </VControl>
-          </VField>
-          <VField id="person_type">
-            <VControl class="has-icons-left" icon="feather:globe">
-              <VSelect>
-                <VOption value="">Select a Type</VOption>
-                <VOption value="M">Moral Person</VOption>
-                <VOption value="P">Physical Person</VOption>
-              </VSelect>
-            </VControl>
-          </VField>
-          <VField id="user.email" v-slot="{ field }">
-            <VControl icon="feather:mail">
-              <VInput
-                type="email"
-                :placeholder="t('auth.placeholder.email')"
-                autocomplete="email"
-              />
-              <p v-if="field?.errors?.value?.length" class="help is-danger">
-                {{ field.errors?.value?.join(', ') }}
-              </p>
-            </VControl>
-          </VField>
-          <VField id="user.ip" v-slot="{ field }">
-            <VControl icon="feather:user">
-              <VInput
-                type="text"
-                :placeholder="t('auth.placeholder.ip')"
-                autocomplete="name"
-              />
-              <p v-if="field?.errors?.value?.length" class="help is-danger">
-                {{ field.errors?.value?.join(', ') }}
-              </p>
-            </VControl>
-          </VField>
-        </form>
-      </template>
-      <template #action>
-        <VButton :loading="isLoading" type="submit" @click="createClient" color="primary" raised>Publish</VButton>
-      </template>
-    </VModal>
+    <DeleteClientComponent
+      v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
+      @hideDeleteClientPopup="showDeleteClientPopup=false"
+    />
+
+    <ViewClientComponent
+      v-if="showViewClientDetailsPopup" :clientId="clientToViewId"
+      @hideViewClientPopup="showViewClientDetailsPopup=false"
+    />
 
     <div class="page-content-inner">
       <div class="flex-list-wrapper flex-list-v1">
@@ -349,8 +160,9 @@
                 </VFlexTableCell>
                 <VFlexTableCell :column="{ align: 'end' }">
                   <FlexTableDropdown
-                    @view-detail="viewClientDetail(client.user.id)"
-                    @delete-client="deleteClient(client.user.id)"
+                    @view-detail="getViewClientDetailsPopup(client.user.id)"
+                    @update-details="getUpdateClientDetailsPopup(client.user.id)"
+                    @delete-client="getDeleteClientPopup(client.user.id)"
                   />
                 </VFlexTableCell>
               </div>

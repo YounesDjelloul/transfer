@@ -15,7 +15,7 @@ export async function createNewClient(body: object) {
 	return data
 }
 
-export async function getClientDetail(clientId: number) {
+export async function getClientDetails(clientId: number) {
 
 	const { data: data } = await api.get(API_URLs.CLIENTS+clientId)
 	return data
@@ -24,4 +24,9 @@ export async function getClientDetail(clientId: number) {
 export async function deleteClientRequest(clientId: number) {
 
 	const response = await api.delete(API_URLs.CLIENTS+clientId)
+}
+
+export async function updateClientDetailsRequest(clientId: number, body: object) {
+
+	const response = await api.put(API_URLs.CLIENTS+clientId+'/', body)
 }

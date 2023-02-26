@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const emits = defineEmits<{
   (e: 'viewDetail'): void
-  (e: 'updateClient'): void
+  (e: 'updateDetails'): void
   (e: 'deleteClient'): void
 }>()
 </script>
@@ -35,7 +35,7 @@ const emits = defineEmits<{
         class="dropdown-item is-media"
         @click.prevent="
           () => {
-            emits('updateDetail')
+            emits('updateDetails')
             close()
           }
         "

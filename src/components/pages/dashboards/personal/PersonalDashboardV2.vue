@@ -1,4 +1,8 @@
 <script setup lang="ts">
+  import { useUserSession } from '/@src/stores/userSession'
+
+  const userSession = useUserSession()
+  const user        = userSession.user
 
 </script>
 
@@ -14,20 +18,8 @@
             size="xl"
           />
           <div class="user-meta is-dark-bordered-12">
-            <h3 class="title is-4 is-narrow is-bold">Welcome back, Erik K.</h3>
+            <h3 class="title is-4 is-narrow is-bold">Welcome back, {{ user.username }}.</h3>
             <p class="light-text">It's really nice to see you again</p>
-          </div>
-          <div class="user-action">
-            <h3 class="title is-2 is-narrow">3</h3>
-            <p class="light-text">Tasks are pending review</p>
-            <a class="action-link" tabindex="0">View Tasks</a>
-          </div>
-          <div class="cta h-hidden-tablet-p">
-            <div class="media-flex inverted-text">
-              <i aria-hidden="true" class="lnil lnil-crown-alt-1"></i>
-              <p class="white-text">Start using our team and project management tools</p>
-            </div>
-            <a class="link inverted-text">Learn More</a>
           </div>
         </div>
       </div>
