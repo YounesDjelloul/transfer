@@ -7,12 +7,12 @@ const viewWrapper = useViewWrapper()
 viewWrapper.setPageTitle('Main Dashboard')
 
 useHead({
-  title: 'Main Dashboard - My app',
+  title: 'Lex Algeria - Main Dashboard',
 })
 </script>
 
 <template>
   <div class="page-content-inner">
-    <FlightsDashboard />
+    <PersonalDashboardV2 />
   </div>
 </template>

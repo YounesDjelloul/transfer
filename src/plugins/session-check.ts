@@ -60,8 +60,9 @@ export default definePlugin(async ({ router, api, pinia }) => {
         await getUserProfile(userSession)
         
       } catch (error) {
-        // request another access token if it fails
-        await newAccessToken(userSession)
+        if (error.status==401) {
+          await newAccessToken(userSession) // request another access token if it fails
+        }
       }
     }
 
