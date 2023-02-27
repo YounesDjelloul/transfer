@@ -2,16 +2,19 @@
 
   import { getAllClients } from '/@src/utils/api/clients'
 
-  const response = await getAllClients() // Requesting All clients from API
-  var clients    = response.results
+  const route = useRoute()
+
+  const response = await getAllClients("?page="+1)
+  const clients  = ref(response.results)
 
   const showCreateClientPopup       = ref(false)
   const showDeleteClientPopup       = ref(false)
   const showViewClientDetailsPopup  = ref(false)
   const showUpdateClientPopup       = ref(false)
 
-  const currentPage      = ref(1)
-  const filters          = ref('')
+  const clientsCount = response.count
+  const maxLength    = 20
+  const filters      = ref('')
 
   const clientToUpdateId = ref()
   const clientToDeleteId = ref()
@@ -47,20 +50,15 @@
     },
   } as const
 
-  const filteredData = computed(() => {
-    if (!filters.value) {
-      return clients
-    } else {
-      const filterRe = new RegExp(filters.value, 'i')
-      return clients.filter((item) => {
-        return (
-          item.creator.match(filterRe) ||
-          item.username.match(filterRe) ||
-          item.email.match(filterRe) ||
-          item.person_type.match(filterRe) ||
-          item.ip.match(filterRe)
-        )
-      })
+  const currentPage = computed({
+    
+    get() {
+      return route.query.page ? parseInt(route.query.page) : 1
+    },
+
+    async set(value) {
+      const response = await getAllClients("?page="+value)
+      clients.value  = response.results
     }
   })
 
@@ -68,76 +66,54 @@
 
 <template>
   <div>
-    <div class="list-flex-toolbar flex-list-v1">
-      <VField>
-        <VControl icon="feather:search">
-          <input
-            class="input custom-text-filter"
-            placeholder="Search..."
-          />
-        </VControl>
-      </VField>
-
-      <VButtons>
-        <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus" elevated> Add User </VButton>
-      </VButtons>
-    </div>
-
-    <CreateClientComponent
-      v-if="showCreateClientPopup"
-      @hideCreateClientPopup="showCreateClientPopup=false"
-    />
-
-    <UpdateClientComponent
-      v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
-      @hideUpdateClientDetailsPopup="showUpdateClientPopup=false"
-    />
-
-    <DeleteClientComponent
-      v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
-      @hideDeleteClientPopup="showDeleteClientPopup=false"
-    />
-
-    <ViewClientComponent
-      v-if="showViewClientDetailsPopup" :clientId="clientToViewId"
-      @hideViewClientPopup="showViewClientDetailsPopup=false"
-    />
-
-    <div class="page-content-inner">
-      <div class="flex-list-wrapper flex-list-v1">
-        <!--List Empty Search Placeholder -->
-        <VPlaceholderPage
-          v-if="!filteredData.length"
-          title="We couldn't find any matching results."
-          subtitle="Too bad. Looks like we couldn't find any matching results for the
-          search terms you've entered. Please try different search terms or
-          criteria."
-          larger
-        >
-          <template #image>
-            <img
-              class="light-image"
-              src="/@src/assets/illustrations/placeholders/search-4.svg"
-              alt=""
-            />
-            <img
-              class="dark-image"
-              src="/@src/assets/illustrations/placeholders/search-4-dark.svg"
-              alt=""
-            />
+    <VFlexTableWrapper :columns="columns" :data="clients">
+      <template #default="wrapperState">
+        <VFlexTableToolbar>
+          <template #left>
+            <VField>
+              <VControl icon="feather:search">
+                <input
+                  v-model="wrapperState.searchInput"
+                  type="text"
+                  class="input is-rounded"
+                  placeholder="Filter..."
+                />
+              </VControl>
+            </VField>
           </template>
-        </VPlaceholderPage>
 
-        <VFlexTable
-          v-if="filteredData.length"
-          :data="filteredData"
-          :columns="columns"
-          compact
-        >
+          <template #right>
+            <VButtons>
+              <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus" elevated> Add User </VButton>
+            </VButtons>
+          </template>
+        </VFlexTableToolbar>
+
+        <CreateClientComponent
+          v-if="showCreateClientPopup"
+          @hideCreateClientPopup="showCreateClientPopup=false"
+        />
+
+        <UpdateClientComponent
+          v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
+          @hideUpdateClientDetailsPopup="showUpdateClientPopup=false"
+        />
+
+        <DeleteClientComponent
+          v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
+          @hideDeleteClientPopup="showDeleteClientPopup=false"
+        />
+
+        <ViewClientComponent
+          v-if="showViewClientDetailsPopup" :clientId="clientToViewId"
+          @hideViewClientPopup="showViewClientDetailsPopup=false"
+        />
+
+        <VFlexTable rounded>
           <template #body>
             <TransitionGroup name="list" tag="div" class="flex-list-inner">
               <!--Table item-->
-              <div v-for="client in filteredData" :key="client.user.id" class="flex-table-item">
+              <div v-for="client in clients" :key="client.user.id" class="flex-table-item">
                 <VFlexTableCell>
                   <span class="light-text">{{ client.created_by.username }}</span>
                 </VFlexTableCell>
@@ -170,17 +146,13 @@
           </template>
         </VFlexTable>
 
-        <!--Table Pagination-->
         <VFlexPagination
-          v-if="filteredData.length > 5"
           v-model:current-page="currentPage"
-          :item-per-page="10"
-          :total-items="873"
-          :max-links-displayed="7"
-          no-router
+          :item-per-page="maxLength"
+          :total-items="clientsCount"
         />
-      </div>
-    </div>
+      </template>
+    </VFlexTableWrapper>
   </div>
 </template>
 
