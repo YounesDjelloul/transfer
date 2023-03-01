@@ -2,19 +2,77 @@
 
   import { getAllClients } from '/@src/utils/api/clients'
 
-  const route = useRoute()
+  const router = useRouter()
+  const route  = useRoute()
 
-  const response = await getAllClients("?page="+1)
-  const clients  = ref(response.results)
+  const defaultLimit   = ref(20)
+  const totalClients   = ref()
+
+  const columns = {
+    created_by: {
+      label: 'Created By',
+      format: (value) => value.username,
+    },
+    /*user: {
+      label: 'Username',
+      format: (value) => value.username,
+    },*/
+    user: {
+      label: 'Email',
+      cellClass: 'Email',
+      format: (value) => value.email,
+    },
+    person_type: 'Person Type',
+    /*user: {
+      label: 'Ip',
+      cellClass: 'Ip',
+      format: (value) => value.ip,
+    },*/
+    actions: {
+      label: 'Actions',
+      align: 'end',
+    },
+  } as const
+
+  function useQueryParam() {
+
+    const defaultPage = 1
+
+    const page = computed({
+
+      get() {
+        return route.query.page ? parseInt(route.query.page) : defaultPage
+      },
+
+      set(value) {
+        router.push({
+          query: {
+            page: value === defaultPage ? undefined : value
+          },
+        })
+      },
+    })
+
+    return reactive({
+      page,
+    })
+  }
+
+  const queryParam = useQueryParam()
+
+  const fetchClients = async() => {
+
+    const currentPage = queryParam.page
+    const response = await getAllClients(`?page=${currentPage}`)
+
+    totalClients.value = response.count
+    return response.results
+  }
 
   const showCreateClientPopup       = ref(false)
   const showDeleteClientPopup       = ref(false)
   const showViewClientDetailsPopup  = ref(false)
   const showUpdateClientPopup       = ref(false)
-
-  const clientsCount = response.count
-  const maxLength    = 20
-  const filters      = ref('')
 
   const clientToUpdateId = ref()
   const clientToDeleteId = ref()
@@ -38,35 +96,17 @@
     showViewClientDetailsPopup.value = true
   }
 
-  const columns = {
-    creator: 'Creator',
-    username: 'Username',
-    email: 'Email',
-    person_type: 'Person Type',
-    ip: 'IP Address',
-    actions: {
-      label: 'Actions',
-      align: 'end',
-    },
-  } as const
-
-  const currentPage = computed({
-    
-    get() {
-      return route.query.page ? parseInt(route.query.page) : 1
-    },
-
-    async set(value) {
-      const response = await getAllClients("?page="+value)
-      clients.value  = response.results
-    }
-  })
-
 </script>
 
 <template>
   <div>
-    <VFlexTableWrapper :columns="columns" :data="clients">
+    <VFlexTableWrapper 
+      v-model:page="queryParam.page"
+      :limit="defaultLimit"
+      :columns="columns"
+      :data="fetchClients"
+      :total="totalClients"
+    >
       <template #default="wrapperState">
         <VFlexTableToolbar>
           <template #left>
@@ -109,47 +149,36 @@
           @hideViewClientPopup="showViewClientDetailsPopup=false"
         />
 
+
+
         <VFlexTable rounded>
           <template #body>
-            <TransitionGroup name="list" tag="div" class="flex-list-inner">
-              <!--Table item-->
-              <div v-for="client in clients" :key="client.user.id" class="flex-table-item">
+            <div v-if="wrapperState.loading" class="flex-list-inner">
+              <div v-for="key in wrapperState.limit" :key="key" class="flex-table-item">
                 <VFlexTableCell>
-                  <span class="light-text">{{ client.created_by.username }}</span>
-                </VFlexTableCell>
-                <VFlexTableCell>
-                  <span class="light-text">{{ client.user.username }}</span>
-                </VFlexTableCell>
-                <VFlexTableCell>
-                  <span class="light-text">{{ client.user.email }}</span>
-                </VFlexTableCell>
-                <VFlexTableCell>
-                  <span class="light-text" v-if="client.person_type === 'M'">
-                    Moral Person
-                  </span>
-                  <span class="light-text" v-if="client.person_type === 'P'">
-                    Physical Person
-                  </span>
-                </VFlexTableCell>
-                <VFlexTableCell>
-                  <span class="light-text">{{ client.user.ip }}</span>
-                </VFlexTableCell>
-                <VFlexTableCell :column="{ align: 'end' }">
-                  <FlexTableDropdown
-                    @view-detail="getViewClientDetailsPopup(client.user.id)"
-                    @update-details="getUpdateClientDetailsPopup(client.user.id)"
-                    @delete-client="getDeleteClientPopup(client.user.id)"
-                  />
+                  <VPlaceload/>
                 </VFlexTableCell>
               </div>
-            </TransitionGroup>
+            </div>
+          </template>
+
+          <template #body-cell="{ row, column }">
+            <template v-if="column.key == 'actions'">
+              <FlexTableDropdown
+                @view-detail="getViewClientDetailsPopup(row.user.id)"
+                @update-details="getUpdateClientDetailsPopup(row.user.id)"
+                @delete-client="getDeleteClientPopup(row.user.id)"
+              />
+            </template>
           </template>
         </VFlexTable>
 
         <VFlexPagination
-          v-model:current-page="currentPage"
-          :item-per-page="maxLength"
-          :total-items="clientsCount"
+          v-model:current-page="wrapperState.page"
+          :item-per-page="wrapperState.limit"
+          :total-items="wrapperState.total"
+          :max-links-displayed="5"
+          no-router
         />
       </template>
     </VFlexTableWrapper>
