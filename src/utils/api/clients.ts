@@ -3,9 +3,9 @@ import API_URLs from '/@src/utils/api/urls'
 
 const api = useApi()
 
-export async function getAllClients() {
+export async function getAllClients(pageQuery) {
 
-	const { data: data } = await api.get(API_URLs.CLIENTS)
+	const { data: data } = await api.get(API_URLs.CLIENTS + pageQuery)
 	return data
 }
 
