@@ -8,7 +8,7 @@
 
 <template>
   <div class="personal-dashboard personal-dashboard-v2">
-    <!--Personal Dashboard V2-->
+    Personal Dashboard V2
     <div class="columns is-multiline">
       <div class="column is-12">
         <div class="dashboard-header">

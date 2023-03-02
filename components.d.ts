@@ -48,6 +48,7 @@ declare module '@vue/runtime-core' {
     EditSettingItemDropdown: typeof import('./src/components/partials/dropdowns/EditSettingItemDropdown.vue')['default']
     FileCardDropdown: typeof import('./src/components/partials/dropdowns/FileCardDropdown.vue')['default']
     FileTileDropdown: typeof import('./src/components/partials/dropdowns/FileTileDropdown.vue')['default']
+    FilterClientsComponent: typeof import('./src/components/custom/clients/FilterClientsComponent.vue')['default']
     FlexListV1: typeof import('./src/components/pages/layouts/flex-list/FlexListV1.vue')['default']
     FlexStatWidget: typeof import('./src/components/partials/widgets/stat/FlexStatWidget.vue')['default']
     FlexTableDropdown: typeof import('./src/components/partials/dropdowns/FlexTableDropdown.vue')['default']

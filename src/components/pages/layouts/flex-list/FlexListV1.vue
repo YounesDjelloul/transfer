@@ -1,12 +1,12 @@
 <script setup lang="ts">
 
-  import { getAllClients } from '/@src/utils/api/clients'
+  import { getClients } from '/@src/utils/api/clients'
 
   const router = useRouter()
   const route  = useRoute()
 
-  const defaultLimit   = ref(20)
-  const totalClients   = ref()
+  const defaultLimit = ref(20)
+  const totalClients = ref()
 
   const columns = {
     created_by: {
@@ -34,9 +34,61 @@
     },
   } as const
 
+  function convertObjectToFilterString(obj) {
+
+    let result = '?'
+
+    for (const key in obj) {
+      result += `${key}=${obj[key]}&`
+    }
+
+    return result.slice(0, -1)
+  }
+
   function useQueryParam() {
 
-    const defaultPage = 1
+    const defaultPage    = 1
+    const defaultSearch  = ''
+    const defaultFilters = "?user__username=&user__firstname=&user__lastname=&person_type="
+    let loading          = false
+
+    const searchTerm = computed({
+
+      get() {
+        return route.query.search ? route.query.search : defaultSearch
+      },
+
+      set(value) {
+        router.push({
+          query: {
+            search: value === defaultSearch ? undefined : value,
+            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
+            page: page.value === defaultPage ? undefined : page.value,
+          },
+        })
+      },
+    })
+
+    const filtersTerm = computed({
+
+      get() {
+
+        return route.query.filter
+      },
+
+      set(value) {
+
+        const result = convertObjectToFilterString(value)
+
+        router.push({
+          query: {
+            filter: result === defaultFilters ? undefined : result,
+            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
+            page: page.value === defaultPage ? undefined : page.value,
+          },
+        })
+      },
+    })
 
     const page = computed({
 
@@ -47,7 +99,9 @@
       set(value) {
         router.push({
           query: {
-            page: value === defaultPage ? undefined : value
+            page: value === defaultPage ? undefined : value,
+            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
+            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
           },
         })
       },
@@ -55,6 +109,8 @@
 
     return reactive({
       page,
+      searchTerm,
+      filtersTerm,
     })
   }
 
@@ -62,8 +118,27 @@
 
   const fetchClients = async() => {
 
+    const filtersTerm = queryParam.filtersTerm
+    const searchTerm  = queryParam.searchTerm
     const currentPage = queryParam.page
-    const response = await getAllClients(`?page=${currentPage}`)
+
+    if (searchTerm) {
+      
+      const response = await getClients(`?search=${searchTerm}`)
+
+      totalClients.value = response.count
+      return response.results  
+    }
+
+    if (filtersTerm) {
+
+      const response    = await getClients(filtersTerm)
+
+      totalClients.value = response.count
+      return response.results
+    }
+
+    const response = await getClients(`?page=${currentPage}`)
 
     totalClients.value = response.count
     return response.results
@@ -73,6 +148,7 @@
   const showDeleteClientPopup       = ref(false)
   const showViewClientDetailsPopup  = ref(false)
   const showUpdateClientPopup       = ref(false)
+  const showFilterClientsPopup      = ref(false)
 
   const clientToUpdateId = ref()
   const clientToDeleteId = ref()
@@ -113,10 +189,10 @@
             <VField>
               <VControl icon="feather:search">
                 <input
-                  v-model="wrapperState.searchInput"
+                  v-model="queryParam.searchTerm"
                   type="text"
                   class="input is-rounded"
-                  placeholder="Filter..."
+                  placeholder="Search"
                 />
               </VControl>
             </VField>
@@ -124,32 +200,42 @@
 
           <template #right>
             <VButtons>
-              <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus" elevated> Add User </VButton>
+              <VButton @click="showFilterClientsPopup=true" color="primary" icon="feather:settings" outlined> Filters
+              </VButton>
+              <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus"> Add User
+              </VButton>
             </VButtons>
           </template>
         </VFlexTableToolbar>
 
         <CreateClientComponent
           v-if="showCreateClientPopup"
-          @hideCreateClientPopup="showCreateClientPopup=false"
+          @hide-create-client-popup="showCreateClientPopup=false"
+          @load-clients=""
         />
 
         <UpdateClientComponent
           v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
-          @hideUpdateClientDetailsPopup="showUpdateClientPopup=false"
+          @hide-update-client-details-popup="showUpdateClientPopup=false"
         />
 
         <DeleteClientComponent
           v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
-          @hideDeleteClientPopup="showDeleteClientPopup=false"
+          @hide-delete-client-popup="showDeleteClientPopup=false"
         />
 
         <ViewClientComponent
           v-if="showViewClientDetailsPopup" :clientId="clientToViewId"
-          @hideViewClientPopup="showViewClientDetailsPopup=false"
+          @hide-view-client-popup="showViewClientDetailsPopup=false"
         />
 
+        <FilterClientsComponent
+          v-if="showFilterClientsPopup"
+          @hide-filter-clients-popup="showFilterClientsPopup=false"
+          @filter-clients="(filters) => queryParam.filtersTerm = filters"
+        />
 
+        <div>{{ wrapperState.filterInput }}</div>
 
         <VFlexTable rounded>
           <template #body>
