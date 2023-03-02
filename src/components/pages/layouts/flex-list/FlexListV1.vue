@@ -50,7 +50,6 @@
     const defaultPage    = 1
     const defaultSearch  = ''
     const defaultFilters = "?user__username=&user__firstname=&user__lastname=&person_type="
-    let loading          = false
 
     const searchTerm = computed({
 
@@ -211,7 +210,6 @@
         <CreateClientComponent
           v-if="showCreateClientPopup"
           @hide-create-client-popup="showCreateClientPopup=false"
-          @load-clients=""
         />
 
         <UpdateClientComponent
@@ -245,6 +243,27 @@
                   <VPlaceload/>
                 </VFlexTableCell>
               </div>
+            </div>
+
+            <div v-else-if="totalClients === 0" class="flex-list-inner">
+              <VPlaceholderSection
+                title="No matches"
+                subtitle="There is no clients founds."
+                class="my-6"
+              >
+                <template #image>
+                  <img
+                    class="light-image"
+                    src="/@src/assets/illustrations/placeholders/search-4.svg"
+                    alt=""
+                  />
+                  <img
+                    class="dark-image"
+                    src="/@src/assets/illustrations/placeholders/search-4-dark.svg"
+                    alt=""
+                  />
+                </template>
+              </VPlaceholderSection>
             </div>
           </template>
 
