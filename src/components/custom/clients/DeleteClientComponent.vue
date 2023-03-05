@@ -2,6 +2,7 @@
 	
 	const emits = defineEmits<{
     (e: 'hideDeleteClientPopup'): void
+    (e: 'loadClients'): void
   }>()
 
 	import { useNotyf } from '/@src/composable/useNotyf'
@@ -27,6 +28,7 @@
     } finally {
       clientDeletionLoading.value = false
       emits('hideDeleteClientPopup')
+      emits('loadClients')
     }
   }
 

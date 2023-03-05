@@ -1,12 +1,13 @@
 <script setup lang="ts">
 
   import { getClients } from '/@src/utils/api/clients'
+  import { convertObjectToFilterString } from '/@src/utils/app/dashboard/filters'
 
   const router = useRouter()
   const route  = useRoute()
 
   const defaultLimit = ref(20)
-  const totalClients = ref()
+  const totalClients = ref(0)
 
   const columns = {
     created_by: {
@@ -33,17 +34,6 @@
       align: 'end',
     },
   } as const
-
-  function convertObjectToFilterString(obj) {
-
-    let result = '?'
-
-    for (const key in obj) {
-      result += `${key}=${obj[key]}&`
-    }
-
-    return result.slice(0, -1)
-  }
 
   function useQueryParam() {
 
@@ -117,16 +107,16 @@
 
   const fetchClients = async() => {
 
-    const filtersTerm = queryParam.filtersTerm
-    const searchTerm  = queryParam.searchTerm
-    const currentPage = queryParam.page
+    const filtersTerm  = queryParam.filtersTerm
+    const searchTerm   = queryParam.searchTerm
+    const currentPage  = queryParam.page
 
     if (searchTerm) {
       
       const response = await getClients(`?search=${searchTerm}`)
 
       totalClients.value = response.count
-      return response.results  
+      return response.results
     }
 
     if (filtersTerm) {
@@ -210,16 +200,19 @@
         <CreateClientComponent
           v-if="showCreateClientPopup"
           @hide-create-client-popup="showCreateClientPopup=false"
+          @load-clients=""
         />
 
         <UpdateClientComponent
           v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
           @hide-update-client-details-popup="showUpdateClientPopup=false"
+          @load-clients=""
         />
 
         <DeleteClientComponent
           v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
           @hide-delete-client-popup="showDeleteClientPopup=false"
+          @load-clients=""
         />
 
         <ViewClientComponent
@@ -233,8 +226,6 @@
           @filter-clients="(filters) => queryParam.filtersTerm = filters"
         />
 
-        <div>{{ wrapperState.filterInput }}</div>
-
         <VFlexTable rounded>
           <template #body>
             <div v-if="wrapperState.loading" class="flex-list-inner">
@@ -245,7 +236,7 @@
               </div>
             </div>
 
-            <div v-else-if="totalClients === 0" class="flex-list-inner">
+            <div v-else-if="wrapperState.total === 0" class="flex-list-inner">
               <VPlaceholderSection
                 title="No matches"
                 subtitle="There is no clients founds."
