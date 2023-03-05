@@ -1,6 +1,6 @@
 export function convertObjectToFilterString(obj: object) {
 
-	let result: string = '?'
+	let result: string = ''
 
 	for (const key in obj) {
 	  result += `${key}=${obj[key]}&`

@@ -32,7 +32,7 @@
 
     const defaultPage    = 1
     const defaultSearch  = ''
-    const defaultFilters = "?user__username=&user__firstname=&user__lastname=&person_type="
+    const defaultFilters = "user__username=&user__firstname=&user__lastname=&person_type="
     const defaultSort    = ''
 
     const searchTerm = computed({
@@ -123,42 +123,29 @@
 
   const fetchClients = async() => {
 
-    let endpointRoute  = "?"
+    const { page, searchTerm, filtersTerm, sort } = queryParam
 
-    const filtersTerm  = queryParam.filtersTerm
-    const searchTerm   = queryParam.searchTerm
-    const currentPage  = queryParam.page
-    const currentSort  = queryParam.sort
+    const pageQuery = `page=${page}`
+    let sortQuery   = ''
+    let searchFilterQuery = ''
 
     if (searchTerm) {
-      
-      endpointRoute += `search=${searchTerm}`
-      const response = await getClients(endpointRoute)
-
-      totalClients.value = response.count
-      return response.results
+      searchFilterQuery = `search=${searchTerm}&`
+    } else if (filtersTerm) {
+      searchFilterQuery = `${filtersTerm}&`
     }
 
-    if (filtersTerm) {
-
-      endpointRoute += filtersTerm
-      const response = await getClients(endpointRoute)
-
-      totalClients.value = response.count
-      return response.results
+    if (sort) {
+      const formattedSort = FormatingOrderingParam(sort)
+      sortQuery = `ordering=${formattedSort}&`
     }
 
-    if (currentSort) {
+    const endpointRoute  = `?${sortQuery}${searchFilterQuery}${pageQuery}`
 
-      const formattedValue = FormatingOrderingParam(currentSort)
-      endpointRoute       += `ordering=${formattedValue}&`
-    }
+    const { results, count } = await getClients(endpointRoute)
 
-    endpointRoute += `page=${currentPage}`
-    const response = await getClients(endpointRoute)
-
-    totalClients.value = response.count
-    return response.results
+    totalClients.value = count
+    return results
   }
 
   const showCreateClientPopup       = ref(false)
@@ -193,7 +180,7 @@
 
 <template>
   <div>
-    <VFlexTableWrapper 
+    <VFlexTableWrapper
       v-model:page="queryParam.page"
       v-model:sort="queryParam.sort"
       :limit="defaultLimit"
