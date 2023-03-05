@@ -2,6 +2,7 @@
 
   import { getClients } from '/@src/utils/api/clients'
   import { convertObjectToFilterString } from '/@src/utils/app/dashboard/filters'
+  import { FormatingOrderingParam } from '/@src/utils/app/dashboard/sorts'
 
   const router = useRouter()
   const route  = useRoute()
@@ -10,25 +11,17 @@
   const totalClients = ref(0)
 
   const columns = {
-    created_by: {
-      label: 'Created By',
-      format: (value) => value.username,
+    created_by_id: {
+      label: 'Created By Id',
+      sortable: true,
     },
-    /*user: {
-      label: 'Username',
-      format: (value) => value.username,
-    },*/
-    user: {
-      label: 'Email',
-      cellClass: 'Email',
-      format: (value) => value.email,
+    username: 'Username',
+    user_id: {
+      label: 'User Id',
+      sortable: true,
     },
     person_type: 'Person Type',
-    /*user: {
-      label: 'Ip',
-      cellClass: 'Ip',
-      format: (value) => value.ip,
-    },*/
+    user_ip: 'Ip',
     actions: {
       label: 'Actions',
       align: 'end',
@@ -40,6 +33,7 @@
     const defaultPage    = 1
     const defaultSearch  = ''
     const defaultFilters = "?user__username=&user__firstname=&user__lastname=&person_type="
+    const defaultSort    = ''
 
     const searchTerm = computed({
 
@@ -53,6 +47,7 @@
             search: value === defaultSearch ? undefined : value,
             filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
             page: page.value === defaultPage ? undefined : page.value,
+            sort: sort.value === defaultSort ? undefined : sort.value,
           },
         })
       },
@@ -74,9 +69,28 @@
             filter: result === defaultFilters ? undefined : result,
             search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
             page: page.value === defaultPage ? undefined : page.value,
+            sort: sort.value === defaultSort ? undefined : sort.value,
           },
         })
       },
+    })
+
+    const sort = computed({
+
+      get() {
+        return route.query.sort ? route.query.sort : defaultSort
+      },
+
+      set(value) {
+        router.push({
+          query: {
+            sort: value === defaultSort ? undefined : value,
+            page: page.value === defaultPage ? undefined : page.value,
+            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
+            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
+          },
+        })
+      }
     })
 
     const page = computed({
@@ -91,6 +105,7 @@
             page: value === defaultPage ? undefined : value,
             filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
             search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
+            sort: sort.value === defaultSort ? undefined : sort.value,
           },
         })
       },
@@ -100,6 +115,7 @@
       page,
       searchTerm,
       filtersTerm,
+      sort,
     })
   }
 
@@ -107,13 +123,17 @@
 
   const fetchClients = async() => {
 
+    let endpointRoute  = "?"
+
     const filtersTerm  = queryParam.filtersTerm
     const searchTerm   = queryParam.searchTerm
     const currentPage  = queryParam.page
+    const currentSort  = queryParam.sort
 
     if (searchTerm) {
       
-      const response = await getClients(`?search=${searchTerm}`)
+      endpointRoute += `search=${searchTerm}`
+      const response = await getClients(endpointRoute)
 
       totalClients.value = response.count
       return response.results
@@ -121,13 +141,21 @@
 
     if (filtersTerm) {
 
-      const response    = await getClients(filtersTerm)
+      endpointRoute += filtersTerm
+      const response = await getClients(endpointRoute)
 
       totalClients.value = response.count
       return response.results
     }
 
-    const response = await getClients(`?page=${currentPage}`)
+    if (currentSort) {
+
+      const formattedValue = FormatingOrderingParam(currentSort)
+      endpointRoute       += `ordering=${formattedValue}&`
+    }
+
+    endpointRoute += `page=${currentPage}`
+    const response = await getClients(endpointRoute)
 
     totalClients.value = response.count
     return response.results
@@ -167,6 +195,7 @@
   <div>
     <VFlexTableWrapper 
       v-model:page="queryParam.page"
+      v-model:sort="queryParam.sort"
       :limit="defaultLimit"
       :columns="columns"
       :data="fetchClients"
@@ -259,6 +288,31 @@
           </template>
 
           <template #body-cell="{ row, column }">
+            <template v-if="column.key == 'created_by_id'">
+              <VFlexTableCell>
+                <span>{{ row.created_by.id }}</span>
+              </VFlexTableCell>
+            </template>
+            <template v-if="column.key == 'username'">
+              <VFlexTableCell>
+                <span>{{ row.user.username }}</span>
+              </VFlexTableCell>
+            </template>
+            <template v-if="column.key == 'user_id'">
+              <VFlexTableCell>
+                <span>{{ row.user.id }}</span>
+              </VFlexTableCell>
+            </template>
+            <template v-if="column.key == 'person_type'">
+              <VFlexTableCell>
+                <span>{{ row.person_type }}</span>
+              </VFlexTableCell>
+            </template>
+            <template v-if="column.key == 'user_ip'">
+              <VFlexTableCell>
+                <span>{{ row.user.ip }}</span>
+              </VFlexTableCell>
+            </template>
             <template v-if="column.key == 'actions'">
               <FlexTableDropdown
                 @view-detail="getViewClientDetailsPopup(row.user.id)"
