@@ -9,6 +9,7 @@
 
   const defaultLimit = ref(20)
   const totalClients = ref(0)
+  const load         = ref(false)
 
   const columns = {
     created_by_id: {
@@ -111,11 +112,23 @@
       },
     })
 
+    const total = computed({
+      
+      get() {
+        return totalClients.value
+      },
+
+      set(value) {
+        totalClients.value = value
+      },
+    })
+
     return reactive({
       page,
       searchTerm,
       filtersTerm,
       sort,
+      total,
     })
   }
 
@@ -123,9 +136,10 @@
 
   const fetchClients = async() => {
 
-    const { page, searchTerm, filtersTerm, sort } = queryParam
+    const { page, searchTerm, filtersTerm, sort, total } = queryParam
 
     const pageQuery = `page=${page}`
+
     let sortQuery   = ''
     let searchFilterQuery = ''
 
@@ -144,7 +158,7 @@
 
     const { results, count } = await getClients(endpointRoute)
 
-    totalClients.value = count
+    queryParam.total = count
     return results
   }
 
@@ -176,6 +190,12 @@
     showViewClientDetailsPopup.value = true
   }
 
+  function handleOperationAffect(operation) {
+
+    const currentTotal = queryParam.total
+    queryParam.total = operation === "+" ? currentTotal + 1 : currentTotal - 1
+  }
+
 </script>
 
 <template>
@@ -186,7 +206,7 @@
       :limit="defaultLimit"
       :columns="columns"
       :data="fetchClients"
-      :total="totalClients"
+      :total="queryParam.total"
     >
       <template #default="wrapperState">
         <VFlexTableToolbar>
@@ -216,19 +236,19 @@
         <CreateClientComponent
           v-if="showCreateClientPopup"
           @hide-create-client-popup="showCreateClientPopup=false"
-          @load-clients=""
+          @load-clients="handleOperationAffect('+')"
         />
 
         <UpdateClientComponent
           v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
           @hide-update-client-details-popup="showUpdateClientPopup=false"
-          @load-clients=""
+          @load-clients="handleOperationAffect('+')"
         />
 
         <DeleteClientComponent
           v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
           @hide-delete-client-popup="showDeleteClientPopup=false"
-          @load-clients=""
+          @load-clients="handleOperationAffect('-')"
         />
 
         <ViewClientComponent
