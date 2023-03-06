@@ -1,17 +1,158 @@
 <script setup lang="ts">
 
-  import { getAllClients } from '/@src/utils/api/clients'
+  import { getClients } from '/@src/utils/api/clients'
+  import { convertObjectToFilterString } from '/@src/utils/app/dashboard/filters'
+  import { FormatingOrderingParam } from '/@src/utils/app/dashboard/sorts'
 
-  const response = await getAllClients() // Requesting All clients from API
-  var clients    = response.results
+  const router = useRouter()
+  const route  = useRoute()
+
+  const defaultLimit = ref(20)
+  const totalClients = ref(0)
+
+  const columns = {
+    created_by_id: {
+      label: 'Created By Id',
+      sortable: true,
+    },
+    username: 'Username',
+    user_id: {
+      label: 'User Id',
+      sortable: true,
+    },
+    person_type: 'Person Type',
+    user_ip: 'Ip',
+    actions: {
+      label: 'Actions',
+      align: 'end',
+    },
+  } as const
+
+  function useQueryParam() {
+
+    const defaultPage    = 1
+    const defaultSearch  = ''
+    const defaultFilters = "user__username=&user__firstname=&user__lastname=&person_type="
+    const defaultSort    = ''
+
+    const searchTerm = computed({
+
+      get() {
+        return route.query.search ? route.query.search : defaultSearch
+      },
+
+      set(value) {
+        router.push({
+          query: {
+            search: value === defaultSearch ? undefined : value,
+            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
+            page: page.value === defaultPage ? undefined : page.value,
+            sort: sort.value === defaultSort ? undefined : sort.value,
+          },
+        })
+      },
+    })
+
+    const filtersTerm = computed({
+
+      get() {
+
+        return route.query.filter
+      },
+
+      set(value) {
+
+        const result = convertObjectToFilterString(value)
+
+        router.push({
+          query: {
+            filter: result === defaultFilters ? undefined : result,
+            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
+            page: page.value === defaultPage ? undefined : page.value,
+            sort: sort.value === defaultSort ? undefined : sort.value,
+          },
+        })
+      },
+    })
+
+    const sort = computed({
+
+      get() {
+        return route.query.sort ? route.query.sort : defaultSort
+      },
+
+      set(value) {
+        router.push({
+          query: {
+            sort: value === defaultSort ? undefined : value,
+            page: page.value === defaultPage ? undefined : page.value,
+            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
+            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
+          },
+        })
+      }
+    })
+
+    const page = computed({
+
+      get() {
+        return route.query.page ? parseInt(route.query.page) : defaultPage
+      },
+
+      set(value) {
+        router.push({
+          query: {
+            page: value === defaultPage ? undefined : value,
+            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
+            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
+            sort: sort.value === defaultSort ? undefined : sort.value,
+          },
+        })
+      },
+    })
+
+    return reactive({
+      page,
+      searchTerm,
+      filtersTerm,
+      sort,
+    })
+  }
+
+  const queryParam = useQueryParam()
+
+  const fetchClients = async() => {
+
+    const { page, searchTerm, filtersTerm, sort } = queryParam
+
+    const pageQuery = `page=${page}`
+    let sortQuery   = ''
+    let searchFilterQuery = ''
+
+    if (searchTerm) {
+      searchFilterQuery = `search=${searchTerm}&`
+    } else if (filtersTerm) {
+      searchFilterQuery = `${filtersTerm}&`
+    }
+
+    if (sort) {
+      const formattedSort = FormatingOrderingParam(sort)
+      sortQuery = `ordering=${formattedSort}&`
+    }
+
+    const endpointRoute  = `?${sortQuery}${searchFilterQuery}${pageQuery}`
+
+    const { results, count } = await getClients(endpointRoute)
+
+    totalClients.value = count
+    return results
+  }
 
   const showCreateClientPopup       = ref(false)
   const showDeleteClientPopup       = ref(false)
   const showViewClientDetailsPopup  = ref(false)
   const showUpdateClientPopup       = ref(false)
-
-  const currentPage      = ref(1)
-  const filters          = ref('')
+  const showFilterClientsPopup      = ref(false)
 
   const clientToUpdateId = ref()
   const clientToDeleteId = ref()
@@ -35,152 +176,149 @@
     showViewClientDetailsPopup.value = true
   }
 
-  const columns = {
-    creator: 'Creator',
-    username: 'Username',
-    email: 'Email',
-    person_type: 'Person Type',
-    ip: 'IP Address',
-    actions: {
-      label: 'Actions',
-      align: 'end',
-    },
-  } as const
-
-  const filteredData = computed(() => {
-    if (!filters.value) {
-      return clients
-    } else {
-      const filterRe = new RegExp(filters.value, 'i')
-      return clients.filter((item) => {
-        return (
-          item.creator.match(filterRe) ||
-          item.username.match(filterRe) ||
-          item.email.match(filterRe) ||
-          item.person_type.match(filterRe) ||
-          item.ip.match(filterRe)
-        )
-      })
-    }
-  })
-
 </script>
 
 <template>
   <div>
-    <div class="list-flex-toolbar flex-list-v1">
-      <VField>
-        <VControl icon="feather:search">
-          <input
-            class="input custom-text-filter"
-            placeholder="Search..."
-          />
-        </VControl>
-      </VField>
-
-      <VButtons>
-        <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus" elevated> Add User </VButton>
-      </VButtons>
-    </div>
-
-    <CreateClientComponent
-      v-if="showCreateClientPopup"
-      @hideCreateClientPopup="showCreateClientPopup=false"
-    />
-
-    <UpdateClientComponent
-      v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
-      @hideUpdateClientDetailsPopup="showUpdateClientPopup=false"
-    />
-
-    <DeleteClientComponent
-      v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
-      @hideDeleteClientPopup="showDeleteClientPopup=false"
-    />
-
-    <ViewClientComponent
-      v-if="showViewClientDetailsPopup" :clientId="clientToViewId"
-      @hideViewClientPopup="showViewClientDetailsPopup=false"
-    />
-
-    <div class="page-content-inner">
-      <div class="flex-list-wrapper flex-list-v1">
-        <!--List Empty Search Placeholder -->
-        <VPlaceholderPage
-          v-if="!filteredData.length"
-          title="We couldn't find any matching results."
-          subtitle="Too bad. Looks like we couldn't find any matching results for the
-          search terms you've entered. Please try different search terms or
-          criteria."
-          larger
-        >
-          <template #image>
-            <img
-              class="light-image"
-              src="/@src/assets/illustrations/placeholders/search-4.svg"
-              alt=""
-            />
-            <img
-              class="dark-image"
-              src="/@src/assets/illustrations/placeholders/search-4-dark.svg"
-              alt=""
-            />
+    <VFlexTableWrapper
+      v-model:page="queryParam.page"
+      v-model:sort="queryParam.sort"
+      :limit="defaultLimit"
+      :columns="columns"
+      :data="fetchClients"
+      :total="totalClients"
+    >
+      <template #default="wrapperState">
+        <VFlexTableToolbar>
+          <template #left>
+            <VField>
+              <VControl icon="feather:search">
+                <input
+                  v-model="queryParam.searchTerm"
+                  type="text"
+                  class="input is-rounded"
+                  placeholder="Search"
+                />
+              </VControl>
+            </VField>
           </template>
-        </VPlaceholderPage>
+          
+          <template #right>
+            <VButtons>
+              <VButton @click="showFilterClientsPopup=true" color="primary" icon="feather:settings" outlined> Filters
+              </VButton>
+              <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus"> Add User
+              </VButton>
+            </VButtons>
+          </template>
+        </VFlexTableToolbar>
 
-        <VFlexTable
-          v-if="filteredData.length"
-          :data="filteredData"
-          :columns="columns"
-          compact
-        >
+        <CreateClientComponent
+          v-if="showCreateClientPopup"
+          @hide-create-client-popup="showCreateClientPopup=false"
+          @load-clients=""
+        />
+
+        <UpdateClientComponent
+          v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
+          @hide-update-client-details-popup="showUpdateClientPopup=false"
+          @load-clients=""
+        />
+
+        <DeleteClientComponent
+          v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
+          @hide-delete-client-popup="showDeleteClientPopup=false"
+          @load-clients=""
+        />
+
+        <ViewClientComponent
+          v-if="showViewClientDetailsPopup" :clientId="clientToViewId"
+          @hide-view-client-popup="showViewClientDetailsPopup=false"
+        />
+
+        <FilterClientsComponent
+          v-if="showFilterClientsPopup"
+          @hide-filter-clients-popup="showFilterClientsPopup=false"
+          @filter-clients="(filters) => queryParam.filtersTerm = filters"
+        />
+
+        <VFlexTable rounded>
           <template #body>
-            <TransitionGroup name="list" tag="div" class="flex-list-inner">
-              <!--Table item-->
-              <div v-for="client in filteredData" :key="client.user.id" class="flex-table-item">
+            <div v-if="wrapperState.loading" class="flex-list-inner">
+              <div v-for="key in wrapperState.limit" :key="key" class="flex-table-item">
                 <VFlexTableCell>
-                  <span class="light-text">{{ client.created_by.username }}</span>
-                </VFlexTableCell>
-                <VFlexTableCell>
-                  <span class="light-text">{{ client.user.username }}</span>
-                </VFlexTableCell>
-                <VFlexTableCell>
-                  <span class="light-text">{{ client.user.email }}</span>
-                </VFlexTableCell>
-                <VFlexTableCell>
-                  <span class="light-text" v-if="client.person_type === 'M'">
-                    Moral Person
-                  </span>
-                  <span class="light-text" v-if="client.person_type === 'P'">
-                    Physical Person
-                  </span>
-                </VFlexTableCell>
-                <VFlexTableCell>
-                  <span class="light-text">{{ client.user.ip }}</span>
-                </VFlexTableCell>
-                <VFlexTableCell :column="{ align: 'end' }">
-                  <FlexTableDropdown
-                    @view-detail="getViewClientDetailsPopup(client.user.id)"
-                    @update-details="getUpdateClientDetailsPopup(client.user.id)"
-                    @delete-client="getDeleteClientPopup(client.user.id)"
-                  />
+                  <VPlaceload/>
                 </VFlexTableCell>
               </div>
-            </TransitionGroup>
+            </div>
+
+            <div v-else-if="wrapperState.total === 0" class="flex-list-inner">
+              <VPlaceholderSection
+                title="No matches"
+                subtitle="There is no clients founds."
+                class="my-6"
+              >
+                <template #image>
+                  <img
+                    class="light-image"
+                    src="/@src/assets/illustrations/placeholders/search-4.svg"
+                    alt=""
+                  />
+                  <img
+                    class="dark-image"
+                    src="/@src/assets/illustrations/placeholders/search-4-dark.svg"
+                    alt=""
+                  />
+                </template>
+              </VPlaceholderSection>
+            </div>
+          </template>
+
+          <template #body-cell="{ row, column }">
+            <template v-if="column.key == 'created_by_id'">
+              <VFlexTableCell>
+                <span>{{ row.created_by.id }}</span>
+              </VFlexTableCell>
+            </template>
+            <template v-if="column.key == 'username'">
+              <VFlexTableCell>
+                <span>{{ row.user.username }}</span>
+              </VFlexTableCell>
+            </template>
+            <template v-if="column.key == 'user_id'">
+              <VFlexTableCell>
+                <span>{{ row.user.id }}</span>
+              </VFlexTableCell>
+            </template>
+            <template v-if="column.key == 'person_type'">
+              <VFlexTableCell>
+                <span>{{ row.person_type }}</span>
+              </VFlexTableCell>
+            </template>
+            <template v-if="column.key == 'user_ip'">
+              <VFlexTableCell>
+                <span>{{ row.user.ip }}</span>
+              </VFlexTableCell>
+            </template>
+            <template v-if="column.key == 'actions'">
+              <FlexTableDropdown
+                @view-detail="getViewClientDetailsPopup(row.user.id)"
+                @update-details="getUpdateClientDetailsPopup(row.user.id)"
+                @delete-client="getDeleteClientPopup(row.user.id)"
+              />
+            </template>
           </template>
         </VFlexTable>
 
-        <!--Table Pagination-->
         <VFlexPagination
-          v-if="filteredData.length > 5"
-          v-model:current-page="currentPage"
-          :item-per-page="10"
-          :total-items="873"
-          :max-links-displayed="7"
+          v-model:current-page="wrapperState.page"
+          :item-per-page="wrapperState.limit"
+          :total-items="wrapperState.total"
+          :max-links-displayed="5"
           no-router
         />
-      </div>
-    </div>
+      </template>
+    </VFlexTableWrapper>
   </div>
 </template>
 
