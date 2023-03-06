@@ -37,7 +37,7 @@ const props = withDefaults(defineProps<VFlexTableCellProps>(), {
   flex: 1 1 0;
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 5px;
   font-family: var(--font);
   word-break: keep-all;
   white-space: nowrap;

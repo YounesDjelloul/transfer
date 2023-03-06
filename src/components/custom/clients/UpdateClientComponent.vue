@@ -2,6 +2,7 @@
 
   const emits = defineEmits<{
     (e: 'hideUpdateClientDetailsPopup'): void
+    (e: 'loadClients'): void
   }>()
 
   const props = defineProps(['clientId'])
@@ -78,6 +79,7 @@
 
     } finally {
       emits('hideUpdateClientDetailsPopup')
+      emits('loadClients')
       clientDetailsUpdatingLoading.value = false
     }
   })
@@ -96,7 +98,7 @@
     <template #content>
       <VPlaceload v-if="clientDetailsUpdatingLoading" />
       
-      <form class="form-layout is-stacked" v-if="clientToUpdate && !clientDetailsUpdatingLoading">
+      <form class="form-layout is-stacked" v-if="!clientDetailsUpdatingLoading">
         <div class="form-outer">
           <div class="form-body">
             <div class="form-section is-grey">

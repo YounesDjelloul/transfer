@@ -2,6 +2,7 @@
   
   const emits = defineEmits<{
     (e: 'hideCreateClientPopup'): void
+    (e: 'loadClients'): void
   }>()
 
   import { useForm } from 'vee-validate'
@@ -66,6 +67,7 @@
       notyf.success("Client Created Successfully!")
 
       emits('hideCreateClientPopup')
+      emits('loadClients')
     } catch (err) {
       notyf.error(err)
     } finally {
