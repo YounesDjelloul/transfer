@@ -190,6 +190,12 @@
     showViewClientDetailsPopup.value = true
   }
 
+  function handleOperationAffect(operation) {
+
+    const currentTotal = queryParam.total
+    queryParam.total = operation === "+" ? currentTotal + 1 : currentTotal - 1
+  }
+
 </script>
 
 <template>
@@ -230,19 +236,19 @@
         <CreateClientComponent
           v-if="showCreateClientPopup"
           @hide-create-client-popup="showCreateClientPopup=false"
-          @load-clients="queryParam.total += 1"
+          @load-clients="handleOperationAffect('+')"
         />
 
         <UpdateClientComponent
           v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
           @hide-update-client-details-popup="showUpdateClientPopup=false"
-          @load-clients="queryParam.total += 1"
+          @load-clients="handleOperationAffect('+')"
         />
 
         <DeleteClientComponent
           v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
           @hide-delete-client-popup="showDeleteClientPopup=false"
-          @load-clients="queryParam.total -= 1"
+          @load-clients="handleOperationAffect('-')"
         />
 
         <ViewClientComponent
