@@ -1,22 +1,19 @@
 <script setup lang="ts">
 
-  import { getClients } from '/@src/utils/api/clients'
   import { convertObjectToFilterString } from '/@src/utils/app/dashboard/filters'
   import { FormatingOrderingParam } from '/@src/utils/app/dashboard/sorts'
 
+  import { createNewClient } from '/@src/utils/api/clients'
+  import { getClients } from '/@src/utils/api/clients'
+
+  import { z as zod } from 'zod'
+  import { useI18n } from 'vue-i18n'
+  import { useNotyf } from '/@src/composable/useNotyf'
+
+  const notyf  = useNotyf()
+  const { t }  = useI18n()
   const router = useRouter()
   const route  = useRoute()
-
-  const defaultLimit = ref(20)
-  const totalClients = ref(0)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  const load         = ref(false)
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-  const load         = ref(false)
->>>>>>> refs/remotes/origin/main
 
   const columns = {
     created_by_id: {
@@ -36,6 +33,45 @@
     },
   } as const
 
+
+  const createClientValidationSchema = zod.object({
+
+    person_type: zod
+      .string({
+        required_error: t('auth.errors.username.required'),
+      }),
+    user: zod.object({
+      username: zod
+        .string({
+          required_error: t('auth.errors.username.required'),
+        })
+        .min(8, t('auth.errors.username.length')),
+      email: zod
+        .string({
+          required_error: t('auth.errors.email.required'),
+        })
+        .min(8, t('auth.errors.email.format')),
+      ip: zod
+        .string({
+          required_error: t('auth.errors.ip.required'),
+        })
+    })      
+  })
+
+  const createClientInitialValues = {
+
+    person_type: '',
+    user: {
+      username: '',
+      email: '',
+      ip: ''
+    },
+  }
+
+
+  const defaultLimit = ref(20)
+  const totalClients = ref(0)
+
   function useQueryParam() {
 
     const defaultPage    = 1
@@ -44,11 +80,9 @@
     const defaultSort    = ''
 
     const searchTerm = computed({
-
       get() {
         return route.query.search ? route.query.search : defaultSearch
       },
-
       set(value) {
         router.push({
           query: {
@@ -62,16 +96,11 @@
     })
 
     const filtersTerm = computed({
-
       get() {
-
         return route.query.filter
       },
-
       set(value) {
-
         const result = convertObjectToFilterString(value)
-
         router.push({
           query: {
             filter: result === defaultFilters ? undefined : result,
@@ -84,11 +113,9 @@
     })
 
     const sort = computed({
-
       get() {
         return route.query.sort ? route.query.sort : defaultSort
       },
-
       set(value) {
         router.push({
           query: {
@@ -102,11 +129,9 @@
     })
 
     const page = computed({
-
       get() {
         return route.query.page ? parseInt(route.query.page) : defaultPage
       },
-
       set(value) {
         router.push({
           query: {
@@ -119,39 +144,22 @@
       },
     })
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> refs/remotes/origin/main
     const total = computed({
       
       get() {
         return totalClients.value
       },
-
       set(value) {
         totalClients.value = value
       },
     })
 
-<<<<<<< HEAD
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
->>>>>>> refs/remotes/origin/main
     return reactive({
       page,
       searchTerm,
       filtersTerm,
       sort,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
       total,
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-      total,
->>>>>>> refs/remotes/origin/main
     })
   }
 
@@ -159,22 +167,9 @@
 
   const fetchClients = async() => {
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    const { page, searchTerm, filtersTerm, sort } = queryParam
-
-    const pageQuery = `page=${page}`
-=======
-=======
->>>>>>> refs/remotes/origin/main
     const { page, searchTerm, filtersTerm, sort, total } = queryParam
 
     const pageQuery = `page=${page}`
-
-<<<<<<< HEAD
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
->>>>>>> refs/remotes/origin/main
     let sortQuery   = ''
     let searchFilterQuery = ''
 
@@ -190,18 +185,9 @@
     }
 
     const endpointRoute  = `?${sortQuery}${searchFilterQuery}${pageQuery}`
-
     const { results, count } = await getClients(endpointRoute)
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-    totalClients.value = count
-=======
+    
     queryParam.total = count
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-    queryParam.total = count
->>>>>>> refs/remotes/origin/main
     return results
   }
 
@@ -216,35 +202,34 @@
   const clientToViewId   = ref()
 
   async function getUpdateClientDetailsPopup(clientId) {
-
     clientToUpdateId.value      = clientId
     showUpdateClientPopup.value = true
   }
 
   async function getDeleteClientPopup(clientId) {
-
     clientToDeleteId.value      = clientId
     showDeleteClientPopup.value = true
   }
 
   async function getViewClientDetailsPopup(clientId) {
-
     clientToViewId.value             = clientId
     showViewClientDetailsPopup.value = true
   }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> refs/remotes/origin/main
   function handleOperationAffect(operation) {
-
     const currentTotal = queryParam.total
     queryParam.total = operation === "+" ? currentTotal + 1 : currentTotal - 1
   }
 
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
+  function handleClientCreationAffect() {
+
+    notyf.dismissAll()
+    notyf.success("Client Created Successfully!")
+
+    showCreateClientPopup.value = false
+    handleOperationAffect('+')
+  }
+
 </script>
 
 <template>
@@ -255,15 +240,7 @@
       :limit="defaultLimit"
       :columns="columns"
       :data="fetchClients"
-<<<<<<< HEAD
-<<<<<<< HEAD
-      :total="totalClients"
-=======
       :total="queryParam.total"
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-      :total="queryParam.total"
->>>>>>> refs/remotes/origin/main
     >
       <template #default="wrapperState">
         <VFlexTableToolbar>
@@ -278,24 +255,6 @@
                 />
               </VControl>
             </VField>
-<<<<<<< HEAD
-<<<<<<< HEAD
-          </template>
-          
-=======
-          </template>
-
->>>>>>> refs/remotes/origin/main
-          <template #right>
-            <VButtons>
-              <VButton @click="showFilterClientsPopup=true" color="primary" icon="feather:settings" outlined> Filters
-              </VButton>
-              <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus"> Add User
-              </VButton>
-            </VButtons>
-          </template>
-<<<<<<< HEAD
-=======
           </template>
 
           <template #right>
@@ -306,51 +265,28 @@
               </VButton>
             </VButtons>
           </template>
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
->>>>>>> refs/remotes/origin/main
         </VFlexTableToolbar>
 
-        <CreateClientComponent
+        <CreateObjectComponent 
           v-if="showCreateClientPopup"
-          @hide-create-client-popup="showCreateClientPopup=false"
-<<<<<<< HEAD
-<<<<<<< HEAD
-          @load-clients=""
-=======
-          @load-clients="handleOperationAffect('+')"
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-          @load-clients="handleOperationAffect('+')"
->>>>>>> refs/remotes/origin/main
+          :validation-schema="createClientValidationSchema"
+          :initial-values="createClientInitialValues"
+          :request-function="createNewClient"
+          modal-title="Create New Client"
+          @hide-popup="showCreateClientPopup=false"
+          @handle-create-instance-affect="handleClientCreationAffect"
         />
 
         <UpdateClientComponent
           v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
           @hide-update-client-details-popup="showUpdateClientPopup=false"
-<<<<<<< HEAD
-<<<<<<< HEAD
-          @load-clients=""
-=======
           @load-clients="handleOperationAffect('+')"
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-          @load-clients="handleOperationAffect('+')"
->>>>>>> refs/remotes/origin/main
         />
 
         <DeleteClientComponent
           v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
           @hide-delete-client-popup="showDeleteClientPopup=false"
-<<<<<<< HEAD
-<<<<<<< HEAD
-          @load-clients=""
-=======
           @load-clients="handleOperationAffect('-')"
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-          @load-clients="handleOperationAffect('-')"
->>>>>>> refs/remotes/origin/main
         />
 
         <ViewClientComponent
@@ -445,31 +381,22 @@
 </template>
 
 <style lang="scss">
-
   @import '/@src/scss/abstracts/all';
   @import '/@src/scss/components/forms-outer';
-
   .view-container {
-
     margin: 20px;
-
     .view-section {
-
       .delete-header {
-
         display: flex;
         align-items: center;
         justify-content: space-between;
-
         .content {
           font-family: var(--font-alt);
           font-weight: 600;
           color: var(--dark-text);
         }
       }
-
       .view-section-header {
-
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -477,34 +404,27 @@
         padding-bottom: 20px;
         margin-bottom: 30px;
         border-color: var(--dark-sidebar-light-12);
-
         .content {
           font-family: var(--font-alt);
           font-weight: 600;
           color: var(--dark-text);
         }
       }
-
       .view-section-info {
-
         font-family: var(--font);
         font-size: .9rem;
         color: var(--light-text)!important;
         font-weight: 400;
         margin-bottom: 15px;
-
         span:last-child {
           float: right;
         }
       }
-
       .view-section-info:last-child {
-
         margin-bottom: 0px;
       }
     }
   }
-
   .has-top-nav {
     .flex-list-wrapper,
     .list-flex-toolbar {
