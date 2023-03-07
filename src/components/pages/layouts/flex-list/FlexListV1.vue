@@ -10,9 +10,13 @@
   const defaultLimit = ref(20)
   const totalClients = ref(0)
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   const load         = ref(false)
 >>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
+=======
+  const load         = ref(false)
+>>>>>>> refs/remotes/origin/main
 
   const columns = {
     created_by_id: {
@@ -116,7 +120,10 @@
     })
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> refs/remotes/origin/main
     const total = computed({
       
       get() {
@@ -128,16 +135,23 @@
       },
     })
 
+<<<<<<< HEAD
 >>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
+=======
+>>>>>>> refs/remotes/origin/main
     return reactive({
       page,
       searchTerm,
       filtersTerm,
       sort,
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       total,
 >>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
+=======
+      total,
+>>>>>>> refs/remotes/origin/main
     })
   }
 
@@ -146,15 +160,21 @@
   const fetchClients = async() => {
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     const { page, searchTerm, filtersTerm, sort } = queryParam
 
     const pageQuery = `page=${page}`
 =======
+=======
+>>>>>>> refs/remotes/origin/main
     const { page, searchTerm, filtersTerm, sort, total } = queryParam
 
     const pageQuery = `page=${page}`
 
+<<<<<<< HEAD
 >>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
+=======
+>>>>>>> refs/remotes/origin/main
     let sortQuery   = ''
     let searchFilterQuery = ''
 
@@ -174,10 +194,14 @@
     const { results, count } = await getClients(endpointRoute)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     totalClients.value = count
 =======
     queryParam.total = count
 >>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
+=======
+    queryParam.total = count
+>>>>>>> refs/remotes/origin/main
     return results
   }
 
@@ -210,7 +234,10 @@
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> refs/remotes/origin/main
   function handleOperationAffect(operation) {
 
     const currentTotal = queryParam.total
@@ -229,10 +256,14 @@
       :columns="columns"
       :data="fetchClients"
 <<<<<<< HEAD
+<<<<<<< HEAD
       :total="totalClients"
 =======
       :total="queryParam.total"
 >>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
+=======
+      :total="queryParam.total"
+>>>>>>> refs/remotes/origin/main
     >
       <template #default="wrapperState">
         <VFlexTableToolbar>
@@ -248,8 +279,13 @@
               </VControl>
             </VField>
 <<<<<<< HEAD
+<<<<<<< HEAD
           </template>
           
+=======
+          </template>
+
+>>>>>>> refs/remotes/origin/main
           <template #right>
             <VButtons>
               <VButton @click="showFilterClientsPopup=true" color="primary" icon="feather:settings" outlined> Filters
@@ -258,6 +294,7 @@
               </VButton>
             </VButtons>
           </template>
+<<<<<<< HEAD
 =======
           </template>
 
@@ -270,36 +307,50 @@
             </VButtons>
           </template>
 >>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
+=======
+>>>>>>> refs/remotes/origin/main
         </VFlexTableToolbar>
 
         <CreateClientComponent
           v-if="showCreateClientPopup"
           @hide-create-client-popup="showCreateClientPopup=false"
 <<<<<<< HEAD
+<<<<<<< HEAD
           @load-clients=""
 =======
           @load-clients="handleOperationAffect('+')"
 >>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
+=======
+          @load-clients="handleOperationAffect('+')"
+>>>>>>> refs/remotes/origin/main
         />
 
         <UpdateClientComponent
           v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
           @hide-update-client-details-popup="showUpdateClientPopup=false"
 <<<<<<< HEAD
+<<<<<<< HEAD
           @load-clients=""
 =======
           @load-clients="handleOperationAffect('+')"
 >>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
+=======
+          @load-clients="handleOperationAffect('+')"
+>>>>>>> refs/remotes/origin/main
         />
 
         <DeleteClientComponent
           v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
           @hide-delete-client-popup="showDeleteClientPopup=false"
 <<<<<<< HEAD
+<<<<<<< HEAD
           @load-clients=""
 =======
           @load-clients="handleOperationAffect('-')"
 >>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
+=======
+          @load-clients="handleOperationAffect('-')"
+>>>>>>> refs/remotes/origin/main
         />
 
         <ViewClientComponent
