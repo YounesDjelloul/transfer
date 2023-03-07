@@ -9,6 +9,10 @@
 
   const defaultLimit = ref(20)
   const totalClients = ref(0)
+<<<<<<< HEAD
+=======
+  const load         = ref(false)
+>>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
 
   const columns = {
     created_by_id: {
@@ -111,11 +115,29 @@
       },
     })
 
+<<<<<<< HEAD
+=======
+    const total = computed({
+      
+      get() {
+        return totalClients.value
+      },
+
+      set(value) {
+        totalClients.value = value
+      },
+    })
+
+>>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
     return reactive({
       page,
       searchTerm,
       filtersTerm,
       sort,
+<<<<<<< HEAD
+=======
+      total,
+>>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
     })
   }
 
@@ -123,9 +145,16 @@
 
   const fetchClients = async() => {
 
+<<<<<<< HEAD
     const { page, searchTerm, filtersTerm, sort } = queryParam
 
     const pageQuery = `page=${page}`
+=======
+    const { page, searchTerm, filtersTerm, sort, total } = queryParam
+
+    const pageQuery = `page=${page}`
+
+>>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
     let sortQuery   = ''
     let searchFilterQuery = ''
 
@@ -144,7 +173,11 @@
 
     const { results, count } = await getClients(endpointRoute)
 
+<<<<<<< HEAD
     totalClients.value = count
+=======
+    queryParam.total = count
+>>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
     return results
   }
 
@@ -176,6 +209,15 @@
     showViewClientDetailsPopup.value = true
   }
 
+<<<<<<< HEAD
+=======
+  function handleOperationAffect(operation) {
+
+    const currentTotal = queryParam.total
+    queryParam.total = operation === "+" ? currentTotal + 1 : currentTotal - 1
+  }
+
+>>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
 </script>
 
 <template>
@@ -186,7 +228,11 @@
       :limit="defaultLimit"
       :columns="columns"
       :data="fetchClients"
+<<<<<<< HEAD
       :total="totalClients"
+=======
+      :total="queryParam.total"
+>>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
     >
       <template #default="wrapperState">
         <VFlexTableToolbar>
@@ -201,6 +247,7 @@
                 />
               </VControl>
             </VField>
+<<<<<<< HEAD
           </template>
           
           <template #right>
@@ -211,24 +258,48 @@
               </VButton>
             </VButtons>
           </template>
+=======
+          </template>
+
+          <template #right>
+            <VButtons>
+              <VButton @click="showFilterClientsPopup=true" color="primary" icon="feather:settings" outlined> Filters
+              </VButton>
+              <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus"> Add User
+              </VButton>
+            </VButtons>
+          </template>
+>>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
         </VFlexTableToolbar>
 
         <CreateClientComponent
           v-if="showCreateClientPopup"
           @hide-create-client-popup="showCreateClientPopup=false"
+<<<<<<< HEAD
           @load-clients=""
+=======
+          @load-clients="handleOperationAffect('+')"
+>>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
         />
 
         <UpdateClientComponent
           v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
           @hide-update-client-details-popup="showUpdateClientPopup=false"
+<<<<<<< HEAD
           @load-clients=""
+=======
+          @load-clients="handleOperationAffect('+')"
+>>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
         />
 
         <DeleteClientComponent
           v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
           @hide-delete-client-popup="showDeleteClientPopup=false"
+<<<<<<< HEAD
           @load-clients=""
+=======
+          @load-clients="handleOperationAffect('-')"
+>>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
         />
 
         <ViewClientComponent

@@ -11,6 +11,8 @@
   "auth.placeholder.email": "Email Address",
   "auth.placeholder.password": "Password",
   "auth.placeholder.passwordCheck": "Password Verification",
+  "auth.placeholder.firstname": "firstname",
+  "auth.placeholder.lastname": "lastname",
   "auth.errors.username.required": "The username is required",
   "auth.errors.ip.required": "The IP Address is required",
   "auth.errors.username.length": "The username should contains at leat 8 characters",
