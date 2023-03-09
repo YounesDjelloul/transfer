@@ -15,6 +15,7 @@
   "auth.placeholder.lastname": "lastname",
   "auth.errors.username.required": "The username is required",
   "auth.errors.ip.required": "The IP Address is required",
+  "auth.errors.person_type.required": "The type of the person is required",
   "auth.errors.username.length": "The username should contains at leat 8 characters",
   "auth.errors.fullname.length": "The fullname should contains at leat 8 characters",
   "auth.errors.email.required": "Enter your email, it will be required to login",

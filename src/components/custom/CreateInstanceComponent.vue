@@ -1,7 +1,12 @@
 <script setup lang="ts">
-  
+
   import { useForm } from 'vee-validate'
   import { toFormValidator } from '@vee-validate/zod'
+  import { useI18n } from 'vue-i18n'
+  import { useNotyf } from '/@src/composable/useNotyf'
+
+  const { t }  = useI18n()
+  const notyf  = useNotyf()
 
   const emits = defineEmits<{
     (e: 'handleCreateInstanceAffect'): void
@@ -13,6 +18,7 @@
     initialValues: object,
     requestFunction: void,
     modalTitle: string,
+    formSchema: object,
   }>()
 
   const validationSchema = toFormValidator(props.validationSchema)
@@ -55,47 +61,19 @@
     @close="$emit('hidePopup')"
   >
     <template #content>
-      <VPlaceload v-if="isLoading" />
+      <VPlaceload v-if="isLoading"/>
       <form class="modal-form" v-else>
-        <VField id="user.username" v-slot="{ field }">
-          <VControl icon="feather:user">
-            <VInput
-              type="text"
-              :placeholder="t('auth.placeholder.username')"
-              autocomplete="name"
-            />
-            <p v-if="field?.errors?.value?.length" class="help is-danger">
-              {{ field.errors?.value?.join(', ') }}
-            </p>
-          </VControl>
-        </VField>
-        <VField id="person_type">
-          <VControl class="has-icons-left" icon="feather:globe">
-            <VSelect>
+        <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
+          <VControl class="has-icons-left" icon="feather:user">
+            <VSelect v-if="schemaField.as === 'select'">
               <VOption value="">Select a Type</VOption>
-              <VOption value="M">Moral Person</VOption>
-              <VOption value="P">Physical Person</VOption>
+              <VOption v-for="(option, index) in schemaField.options" :value="index">{{ option }}</VOption>
             </VSelect>
-          </VControl>
-        </VField>
-        <VField id="user.email" v-slot="{ field }">
-          <VControl icon="feather:mail">
             <VInput
-              type="email"
-              :placeholder="t('auth.placeholder.email')"
-              autocomplete="email"
-            />
-            <p v-if="field?.errors?.value?.length" class="help is-danger">
-              {{ field.errors?.value?.join(', ') }}
-            </p>
-          </VControl>
-        </VField>
-        <VField id="user.ip" v-slot="{ field }">
-          <VControl icon="feather:user">
-            <VInput
-              type="text"
-              :placeholder="t('auth.placeholder.ip')"
-              autocomplete="name"
+              v-else
+              :type="schemaField.type"
+              :placeholder="t(`auth.placeholder.${schemaField.placeholder}`)"
+              :autocomplete="schemaField.name"
             />
             <p v-if="field?.errors?.value?.length" class="help is-danger">
               {{ field.errors?.value?.join(', ') }}

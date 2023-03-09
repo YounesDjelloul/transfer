@@ -3,8 +3,7 @@
   import { convertObjectToFilterString } from '/@src/utils/app/dashboard/filters'
   import { FormatingOrderingParam } from '/@src/utils/app/dashboard/sorts'
 
-  import { createNewClient } from '/@src/utils/api/clients'
-  import { getClients } from '/@src/utils/api/clients'
+  import { createNewClient, getClients, getClientDetails } from '/@src/utils/api/clients'
 
   import { z as zod } from 'zod'
   import { useI18n } from 'vue-i18n'
@@ -33,41 +32,70 @@
     },
   } as const
 
-
   const createClientValidationSchema = zod.object({
-
     person_type: zod
-      .string({
-        required_error: t('auth.errors.username.required'),
-      }),
+      .string()
+      .min(1, t('auth.errors.person_type.required')),
     user: zod.object({
       username: zod
-        .string({
-          required_error: t('auth.errors.username.required'),
-        })
-        .min(8, t('auth.errors.username.length')),
+      .string({
+        required_error: t('auth.errors.username.required'),
+      })
+      .min(8, t('auth.errors.username.length')),
       email: zod
         .string({
           required_error: t('auth.errors.email.required'),
         })
-        .min(8, t('auth.errors.email.format')),
+        .min(8, t('auth.errors.email.format')),   
       ip: zod
-        .string({
-          required_error: t('auth.errors.ip.required'),
-        })
-    })      
+        .string()
+        .min(1, t('auth.errors.ip.required')),
+    })
   })
 
   const createClientInitialValues = {
-
     person_type: '',
     user: {
       username: '',
       email: '',
-      ip: ''
+      ip: '',
     },
   }
 
+  const creationFormSchema = [
+    {
+      name: 'name',
+      id: 'user.username',
+      placeholder: 'username',
+      as: 'input',
+      type: 'text',
+    },
+    {
+      name: 'person_type',
+      id: 'person_type',
+      placeholder: 'person_type',
+      as: 'select',
+
+      options: {
+        M: 'Moral Person',
+        P: 'Physical Person',
+      },
+    },
+    {
+      name: 'email',
+      id: 'user.email',
+      placeholder: 'email',
+      as: 'input',
+      type: 'email',
+    },
+    {
+      name: 'ip',
+      id: 'user.ip',
+      placeholder: 'ip',
+      as: 'input',
+      type: 'text',
+    },
+  ]
 
   const defaultLimit = ref(20)
   const totalClients = ref(0)
@@ -267,14 +295,23 @@
           </template>
         </VFlexTableToolbar>
 
-        <CreateObjectComponent 
+        <CreateInstanceComponent
           v-if="showCreateClientPopup"
           :validation-schema="createClientValidationSchema"
           :initial-values="createClientInitialValues"
           :request-function="createNewClient"
+          :formSchema="creationFormSchema"
           modal-title="Create New Client"
           @hide-popup="showCreateClientPopup=false"
           @handle-create-instance-affect="handleClientCreationAffect"
+        />
+
+        <ViewInstanceComponent
+          v-if="showViewClientDetailsPopup"
+          :clientId="clientToViewId"
+          :request-function="getClientDetails"
+          modal-title="Client Details"
+          @hide-popup="showViewClientDetailsPopup=false"
         />
 
         <UpdateClientComponent
@@ -287,11 +324,6 @@
           v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
           @hide-delete-client-popup="showDeleteClientPopup=false"
           @load-clients="handleOperationAffect('-')"
-        />
-
-        <ViewClientComponent
-          v-if="showViewClientDetailsPopup" :clientId="clientToViewId"
-          @hide-view-client-popup="showViewClientDetailsPopup=false"
         />
 
         <FilterClientsComponent
