@@ -37,6 +37,7 @@ declare module '@vue/runtime-core' {
     DashboardsMobileSubsidebar: typeof import('./src/layouts/mobile-subsidebars/DashboardsMobileSubsidebar.vue')['default']
     DashboardsSubsidebar: typeof import('./src/layouts/sidebar-subsidebar/DashboardsSubsidebar.vue')['default']
     DeleteClientComponent: typeof import('./src/components/custom/clients/DeleteClientComponent.vue')['default']
+    DeleteInstanceComponent: typeof import('./src/components/custom/DeleteInstanceComponent.vue')['default']
     DocumentationColor: typeof import('./src/components/partials/documentation/DocumentationColor.vue')['default']
     DocumentationDemoCard: typeof import('./src/components/partials/documentation/DocumentationDemoCard.vue')['default']
     DocumentationDemoFormValidation: typeof import('./src/components/partials/documentation/DocumentationDemoFormValidation.vue')['default']

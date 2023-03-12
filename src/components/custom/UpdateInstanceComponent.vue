@@ -26,7 +26,7 @@
   }>()
 
   const validationSchema = toFormValidator(props.validationSchema)
-  const initialValues    = await generateInitialValues(props.instanceDetails, props.formSchema)
+  const initialValues    = generateInitialValues(props.instanceDetails, props.formSchema)
 
   const { handleSubmit } = useForm({
     validationSchema,
@@ -84,7 +84,7 @@
                     <VInput
                       v-else
                       :type="schemaField.type"
-                      :placeholder="t(`auth.placeholder.username`)"
+                      :placeholder="t(`auth.placeholder.${schemaField.placeholder}`)"
                       :autocomplete="schemaField.name"
                     />
                     <p v-if="field?.errors?.value?.length" class="help is-danger">

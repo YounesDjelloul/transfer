@@ -1,39 +1,39 @@
 <script setup lang='ts'>
-
+	
   import { useNotyf } from '/@src/composable/useNotyf'
-  import { formatView } from '/@src/utils/app/CRUD/helpers'
+
+  const notyf = useNotyf()
 
 	const emits = defineEmits<{
+    (e: 'handleDeleteInstanceAffect'): void
     (e: 'hidePopup'): void
   }>()
-
+	
   const props = defineProps<{
     requestFunction: void,
     modalTitle: string,
     instanceId: number,
   }>()
 
-	const notyf = useNotyf()
+	const isLoading = ref(false)
 
-	const isLoading = ref(true)
-  const instance  = ref()
+	async function onDelete() {
 
-  onMounted(async () => {
+  	isLoading.value = true
 
     try {
-      
-      const toRequest = props.requestFunction
-      const response = await toRequest(props.instanceId)
-      instance.value = await formatView(response)
+
+      const toDelete = props.requestFunction
+      const response = await toDelete(props.instanceId)
+      emits('handleDeleteInstanceAffect')
 
     } catch (error) {
       notyf.error(error)
-      emits('hidePopup')
 
     } finally {
       isLoading.value = false
     }
-  })
+  }
 
 </script>
 
@@ -50,15 +50,14 @@
       <VPlaceload v-if="isLoading" />
       <div class="view-container" v-else>
         <div class="view-section">
-          <div class="view-section-header">
-            <h3 class="content">User</h3>
-          </div>
-          <div class='view-section-info' v-for="(value, detail) in instance">
-            <span>{{ detail }}</span>
-            <span>{{ value }}</span>
+          <div class="delete-header">
+            <h3 class="content">Are you sure you want to delete this client?</h3>
           </div>
         </div>
       </div>
+    </template>
+    <template #action>
+      <VButton type="submit" @click="onDelete" color="danger" raised>Delete</VButton>
     </template>
   </VModal>
 </template>

@@ -14,3 +14,27 @@ export function generateInitialValues(instance: object, schema: []) {
 
   return result
 }
+
+export function formatView(instance: object) {
+
+  let result = {}
+
+  function recurse(currentValue: object) {
+
+    for (const fieldName in currentValue) {
+
+      const fieldValue = currentValue[fieldName]
+
+      if (typeof fieldValue === 'object' && fieldValue !== null) { // Checking if it's nested
+        recurse(fieldValue)
+        continue
+      }
+      
+      result[fieldName] = fieldValue
+    }
+  }
+
+  recurse(instance)
+
+  return result
+}

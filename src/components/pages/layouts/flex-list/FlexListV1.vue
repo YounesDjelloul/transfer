@@ -3,7 +3,7 @@
   import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
   import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
 
-  import { createNewClient, getClients, updateClientDetailsRequest, getClientDetails } from '/@src/utils/api/clients'
+  import { createNewClient, getClients, updateClientDetailsRequest, getClientDetails, deleteClientRequest } from '/@src/utils/api/clients'
 
   import { z as zod } from 'zod'
   import { useI18n } from 'vue-i18n'
@@ -344,6 +344,15 @@
     reload('+')
   }
 
+  function handleClientDeleteAffect() {
+
+    notyf.dismissAll()
+    notyf.success("Client Deleted Successfully!")
+
+    showDeleteClientPopup.value = false
+    reload('-')
+  }
+
 </script>
 
 <template>
@@ -394,7 +403,7 @@
 
         <ViewInstanceComponent
           v-if="showViewClientDetailsPopup"
-          :clientId="clientToViewId"
+          :instance-id="clientToViewId"
           :request-function="getClientDetails"
           modal-title="Client Details"
           @hide-popup="showViewClientDetailsPopup=false"
@@ -412,10 +421,13 @@
           @handle-update-instance-affect="handleClientUpdateAffect"
         />
 
-        <DeleteClientComponent
-          v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
-          @hide-delete-client-popup="showDeleteClientPopup=false"
-          @load-clients="handleOperationAffect('-')"
+        <DeleteInstanceComponent
+          v-if="showDeleteClientPopup"
+          :request-function="deleteClientRequest"
+          :instance-id="clientToDeleteId"
+          modal-title="Delete Client"
+          @hide-popup="showDeleteClientPopup=false"
+          @handle-delete-instance-affect="handleClientDeleteAffect"
         />
 
         <FilterClientsComponent
