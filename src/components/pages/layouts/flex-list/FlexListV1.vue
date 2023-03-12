@@ -1,9 +1,9 @@
 <script setup lang="ts">
 
-  import { convertObjectToFilterString } from '/@src/utils/app/dashboard/filters'
-  import { FormatingOrderingParam } from '/@src/utils/app/dashboard/sorts'
+  import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
+  import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
 
-  import { createNewClient, getClients, getClientDetails } from '/@src/utils/api/clients'
+  import { createNewClient, getClients, updateClientDetailsRequest, getClientDetails } from '/@src/utils/api/clients'
 
   import { z as zod } from 'zod'
   import { useI18n } from 'vue-i18n'
@@ -31,6 +31,7 @@
       align: 'end',
     },
   } as const
+
 
   const createClientValidationSchema = zod.object({
     person_type: zod
@@ -96,6 +97,79 @@
       type: 'text',
     },
   ]
+
+
+
+  const updateClientValidationSchema = zod.object({
+    legal_name: zod
+      .string({
+        required_error: t('auth.errors.username.required'),
+      })
+      .nullable(),
+    legal_form: zod
+      .string({
+        required_error: t('auth.errors.username.required'),
+      })
+      .nullable(),
+    person_type: zod
+      .string({
+        required_error: t('auth.errors.username.required'),
+      })
+      .nullable(),
+    website: zod
+      .string({
+        required_error: t('auth.errors.username.required'),
+      })
+      .nullable(),
+    licence: zod
+      .string({
+        required_error: t('auth.errors.username.required'),
+      })
+      .nullable(),
+  })
+
+  const updateFormSchema = [
+    {
+      name: 'legal_name',
+      id: 'legal_name',
+      placeholder: 'legal_name',
+      as: 'input',
+      type: 'text',
+    },
+    {
+      name: 'legal_form',
+      id: 'legal_form',
+      placeholder: 'legal_form',
+      as: 'input',
+      type: 'text',
+    },
+    {
+      name: 'person_type',
+      id: 'person_type',
+      placeholder: 'person_type',
+      as: 'select',
+
+      options: {
+        M: 'Moral Person',
+        P: 'Physical Person',
+      },
+    },
+    {
+      name: 'website',
+      id: 'website',
+      placeholder: 'website',
+      as: 'input',
+      type: 'text',
+    },
+    {
+      name: 'licence',
+      id: 'licence',
+      placeholder: 'licence',
+      as: 'input',
+      type: 'text',
+    },
+  ]
+
 
   const defaultLimit = ref(20)
   const totalClients = ref(0)
@@ -226,11 +300,14 @@
   const showFilterClientsPopup      = ref(false)
 
   const clientToUpdateId = ref()
+  const clientToUpdate   = ref()
+
   const clientToDeleteId = ref()
   const clientToViewId   = ref()
 
   async function getUpdateClientDetailsPopup(clientId) {
     clientToUpdateId.value      = clientId
+    clientToUpdate.value        = await getClientDetails(clientId)
     showUpdateClientPopup.value = true
   }
 
@@ -244,7 +321,7 @@
     showViewClientDetailsPopup.value = true
   }
 
-  function handleOperationAffect(operation) {
+  function reload(operation) {
     const currentTotal = queryParam.total
     queryParam.total = operation === "+" ? currentTotal + 1 : currentTotal - 1
   }
@@ -255,7 +332,16 @@
     notyf.success("Client Created Successfully!")
 
     showCreateClientPopup.value = false
-    handleOperationAffect('+')
+    reload('+')
+  }
+
+  function handleClientUpdateAffect() {
+
+    notyf.dismissAll()
+    notyf.success("Client Updated Successfully!")
+
+    showUpdateClientPopup.value = false
+    reload('+')
   }
 
 </script>
@@ -314,10 +400,16 @@
           @hide-popup="showViewClientDetailsPopup=false"
         />
 
-        <UpdateClientComponent
-          v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
-          @hide-update-client-details-popup="showUpdateClientPopup=false"
-          @load-clients="handleOperationAffect('+')"
+        <UpdateInstanceComponent
+          v-if="showUpdateClientPopup"
+          :validation-schema="updateClientValidationSchema"
+          :request-function="updateClientDetailsRequest"
+          :instance-details="clientToUpdate"
+          :form-schema="updateFormSchema"
+          :instance-id="clientToUpdateId"
+          modal-title="Update Client"
+          @hide-popup="showUpdateClientPopup=false"
+          @handle-update-instance-affect="handleClientUpdateAffect"
         />
 
         <DeleteClientComponent

@@ -150,6 +150,7 @@ declare module '@vue/runtime-core' {
     UIWidgetToolbarIcon: typeof import('./src/components/partials/widgets/ui-creative/toolbar/UIWidgetToolbarIcon.vue')['default']
     UIWidgetToolbarIcons: typeof import('./src/components/partials/widgets/ui-creative/toolbar/UIWidgetToolbarIcons.vue')['default']
     UpdateClientComponent: typeof import('./src/components/custom/clients/UpdateClientComponent.vue')['default']
+    UpdateInstanceComponent: typeof import('./src/components/custom/UpdateInstanceComponent.vue')['default']
     UserCardDropdown: typeof import('./src/components/partials/dropdowns/UserCardDropdown.vue')['default']
     UserPopoverContent: typeof import('./src/components/partials/popover/UserPopoverContent.vue')['default']
     UserProfileDropdown: typeof import('./src/components/partials/dropdowns/UserProfileDropdown.vue')['default']
