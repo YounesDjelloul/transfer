@@ -8,6 +8,8 @@
   "auth.action.signup": "Sign Up",
   "auth.placeholder.username": "Username",
   "auth.placeholder.legal_name": "Legal Name",
+  "auth.placeholder.first_name": "First Name",
+  "auth.placeholder.last_name": "Last Name",
   "auth.placeholder.legal_form": "Legal Form",
   "auth.placeholder.website": "website",
   "auth.placeholder.licence": "licence",

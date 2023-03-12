@@ -4,30 +4,31 @@
   import { useNotyf } from '/@src/composable/useNotyf'
   import { useI18n } from 'vue-i18n'
 
+  import { convertFilterSchemaToObject } from '/@src/utils/app/CRUD/filters'
+
   const { t }  = useI18n()
   const notyf  = useNotyf()
 
   const emits = defineEmits<{
-    (e: 'hideFilterClientsPopup'): void
-    (e: 'filterClients'): void
+    (e: 'hidePopup'): void
+    (e: 'filterList'): void
   }>()
 
   const props = defineProps<{
-    initialValues: object,
     modalTitle: string,
     formSchema: object,
   }>()
 
-  initialValues = props.initialValues
+  const initialValues   = convertFilterSchemaToObject(props.formSchema)
 
   const { handleSubmit } = useForm({
     initialValues
   })
 
-  const triggerFilterClients = handleSubmit(async (values) => {
+  const onFilter = handleSubmit(async (values) => {
     try {
-      emits('filterClients', values)
-      emits('hideFilterClientsPopup')
+      emits('filterList', values)
+      emits('hidePopup')
     } catch (err) {
       notyf.error(err)
     }
@@ -42,7 +43,7 @@
     size="meduim"
     actions="right"
     noscroll
-    @close="$emit('hideFilterClientsPopup')"
+    @close="$emit('hidePopup')"
   >
     <template #content>
       <form class="modal-form">
@@ -58,15 +59,12 @@
               :placeholder="t(`auth.placeholder.${schemaField.placeholder}`)"
               :autocomplete="schemaField.name"
             />
-            <!--p v-if="field?.errors?.value?.length" class="help is-danger">
-              {{ field.errors?.value?.join(', ') }}
-            </p-->
           </VControl>
         </VField>
       </form>
     </template>
     <template #action>
-      <VButton type="submit" @click="triggerFilterClients" color="primary" raised>Filter</VButton>
+      <VButton type="submit" @click="onFilter" color="primary" raised>Filter</VButton>
     </template>
   </VModal>
 </template>

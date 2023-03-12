@@ -171,6 +171,40 @@
   ]
 
 
+  const filtersFormSchema = [
+    {
+      name: 'username',
+      id: 'user__username',
+      placeholder: 'username',
+      as: 'input',
+      type: 'text',
+    },
+    {
+      name: 'first_name',
+      id: 'user__first_name',
+      placeholder: 'first_name',
+      as: 'input',
+      type: 'text',
+    },
+    {
+      name: 'last_name',
+      id: 'user__last_name',
+      placeholder: 'last_name',
+      as: 'input',
+      type: 'text',
+    },
+    {
+      name: 'person_type',
+      id: 'person_type',
+      placeholder: 'person_type',
+      as: 'select',
+      options: {
+        M: 'Moral Person',
+        P: 'Physical Person',
+      },
+    },
+  ]
+
   const defaultLimit = ref(20)
   const totalClients = ref(0)
 
@@ -430,10 +464,12 @@
           @handle-delete-instance-affect="handleClientDeleteAffect"
         />
 
-        <FilterClientsComponent
+        <FilterListComponent
           v-if="showFilterClientsPopup"
-          @hide-filter-clients-popup="showFilterClientsPopup=false"
-          @filter-clients="(filters) => queryParam.filtersTerm = filters"
+          :formSchema="filtersFormSchema"
+          modal-title="Filter Clients"
+          @hide-popup="showFilterClientsPopup=false"
+          @filter-list="(filters) => queryParam.filtersTerm = filters"
         />
 
         <VFlexTable rounded>
