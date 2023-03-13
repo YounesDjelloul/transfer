@@ -15,18 +15,15 @@
 
   const props = defineProps<{
     validationSchema: object,
-    initialValues: object,
     requestFunction: void,
     modalTitle: string,
     formSchema: object,
   }>()
 
   const validationSchema = toFormValidator(props.validationSchema)
-  const initialValues    = props.initialValues
 
   const { handleSubmit } = useForm({
     validationSchema,
-    initialValues,
   })
 
   const isLoading = ref(false)
@@ -66,7 +63,7 @@
         <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
           <VControl class="has-icons-left" icon="feather:user">
             <VSelect v-if="schemaField.as === 'select'">
-              <VOption value="">Select a Type</VOption>
+              <VOption disabled hidden value="undefined">Select a Type</VOption>
               <VOption v-for="(option, index) in schemaField.options" :value="index">{{ option }}</VOption>
             </VSelect>
             <VInput

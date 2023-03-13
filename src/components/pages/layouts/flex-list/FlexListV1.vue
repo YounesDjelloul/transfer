@@ -54,15 +54,6 @@
     })
   })
 
-  const createClientInitialValues = {
-    person_type: '',
-    user: {
-      username: '',
-      email: '',
-      ip: '',
-    },
-  }
-
   const creationFormSchema = [
     {
       name: 'name',
@@ -97,7 +88,6 @@
       type: 'text',
     },
   ]
-
 
 
   const updateClientValidationSchema = zod.object({
@@ -212,7 +202,7 @@
 
     const defaultPage    = 1
     const defaultSearch  = ''
-    const defaultFilters = "user__username=&user__firstname=&user__lastname=&person_type="
+    const defaultFilters = "user__username=&user__first_name=&user__last_name=&person_type="
     const defaultSort    = ''
 
     const searchTerm = computed({
