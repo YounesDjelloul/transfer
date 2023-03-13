@@ -5,7 +5,7 @@ const emit = defineEmits(['close'])
 <template>
   <div class="sidebar-panel is-generic">
     <div class="subpanel-header">
-      <h3 class="no-mb">Dashboards</h3>
+      <h3 class="no-mb">Sides</h3>
       <div
         class="panel-close"
         tabindex="0"
@@ -18,9 +18,15 @@ const emit = defineEmits(['close'])
     <div class="inner" data-simplebar>
       <ul>
         <li>
-          <RouterLink to="app">
+          <RouterLink to="dashboard">
             <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
             Home
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="clients">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Clients
           </RouterLink>
         </li>
       </ul>

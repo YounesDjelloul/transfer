@@ -33,6 +33,7 @@ declare module '@vue/runtime-core' {
     CreateClientComponent: typeof import('./src/components/custom/clients/CreateClientComponent.vue')['default']
     CreateInstanceComponent: typeof import('./src/components/custom/CreateInstanceComponent.vue')['default']
     CreateObjectComponent: typeof import('./src/components/custom/CreateObjectComponent.vue')['default']
+    DashboardComponent: typeof import('./src/components/pages/dashboards/personal/DashboardComponent.vue')['default']
     DashboardHeaderWrapper: typeof import('./src/components/partials/lifestyle/DashboardHeaderWrapper.vue')['default']
     DashboardsMobileSubsidebar: typeof import('./src/layouts/mobile-subsidebars/DashboardsMobileSubsidebar.vue')['default']
     DashboardsSubsidebar: typeof import('./src/layouts/sidebar-subsidebar/DashboardsSubsidebar.vue')['default']

@@ -77,7 +77,7 @@ watch(
     >
       <template #links>
         <li>
-          <RouterLink to="app">
+          <RouterLink to="dashboard">
             <i aria-hidden="true" class="iconify" data-icon="feather:home"></i>
           </RouterLink>
         </li>
@@ -105,7 +105,7 @@ watch(
         <li>
           <a
             :class="[activeMobileSubsidebar === 'dashboard' && 'is-active']"
-            data-content="Dashboards"
+            data-content="Dashboard"
             tabindex="0"
             @keydown.space.prevent="switchSidebar('dashboard')"
             @click="switchSidebar('dashboard')"
