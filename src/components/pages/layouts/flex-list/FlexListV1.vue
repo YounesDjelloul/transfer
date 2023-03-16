@@ -313,7 +313,7 @@
           result.forEach(updateCurrentClient, [clientToUpdateId, operatedClient])
           break;
         case 'create':
-          result = currentStateData.push(toRaw(created_client.value))
+          result.unshift(toRaw(operatedClient.value))
           break;
       }
 
