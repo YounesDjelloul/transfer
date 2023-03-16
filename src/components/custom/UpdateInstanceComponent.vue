@@ -46,7 +46,6 @@
 
       emits('handleUpdateInstanceAffect', data)
     } catch (error) {
-      console.log(error)
       notyf.error(error)
 
     } finally {
