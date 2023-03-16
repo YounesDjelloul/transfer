@@ -12,7 +12,7 @@
   const { t }       = useI18n()
 
   const emits = defineEmits<{
-    (e: 'handleUpdateInstanceAffect'): void
+    (e: 'handleUpdateInstanceAffect', data): void
     (e: 'hidePopup'): void
   }>()
 
@@ -42,10 +42,11 @@
 
       const toUpdate = props.requestFunction
       
-      await toUpdate(props.instanceId, values)
-      
-      emits('handleUpdateInstanceAffect')
+      const { data } = await toUpdate(props.instanceId, values)
+
+      emits('handleUpdateInstanceAffect', data)
     } catch (error) {
+      console.log(error)
       notyf.error(error)
 
     } finally {

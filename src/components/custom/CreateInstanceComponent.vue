@@ -9,7 +9,7 @@
   const notyf  = useNotyf()
 
   const emits = defineEmits<{
-    (e: 'handleCreateInstanceAffect'): void
+    (e: 'handleCreateInstanceAffect', data): void
     (e: 'hidePopup'): void
   }>()
 
@@ -35,9 +35,9 @@
     try {
 
       const toRequest = props.requestFunction
-      await toRequest(values)
+      const { data } = await toRequest(values)
 
-      emits('handleCreateInstanceAffect')
+      emits('handleCreateInstanceAffect', data)
     } catch (err) {
       notyf.error(err)
 

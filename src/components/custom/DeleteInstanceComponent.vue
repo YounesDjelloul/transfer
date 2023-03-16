@@ -28,6 +28,7 @@
       emits('handleDeleteInstanceAffect')
 
     } catch (error) {
+      console.log(error)
       notyf.error(error)
 
     } finally {

@@ -38,3 +38,24 @@ export function formatView(instance: object) {
 
   return result
 }
+
+
+export function deleteCurrentClient(client: object) {
+  return client.user.id !== this.value
+}
+
+export function updateCurrentClient(client: object, clientIndex: number, clients: []) {
+  
+  const clientId   = this[0]
+  const clientData = this[1]
+
+  if (client.user.id === clientId.value) {
+    for (const prop in clientData.value) {
+      clients[clientIndex][prop] = clientData.value[prop]
+    }
+  }
+}
+
+export function sleep(time: number) {
+  return new Promise(resolve => setTimeout(resolve, time));
+}

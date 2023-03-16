@@ -37,6 +37,7 @@ declare module '@vue/runtime-core' {
     DashboardHeaderWrapper: typeof import('./src/components/partials/lifestyle/DashboardHeaderWrapper.vue')['default']
     DashboardsMobileSubsidebar: typeof import('./src/layouts/mobile-subsidebars/DashboardsMobileSubsidebar.vue')['default']
     DashboardsSubsidebar: typeof import('./src/layouts/sidebar-subsidebar/DashboardsSubsidebar.vue')['default']
+    DatatableV3: typeof import('./src/components/pages/layouts/flex-list/DatatableV3.vue')['default']
     DeleteClientComponent: typeof import('./src/components/custom/clients/DeleteClientComponent.vue')['default']
     DeleteInstanceComponent: typeof import('./src/components/custom/DeleteInstanceComponent.vue')['default']
     DocumentationColor: typeof import('./src/components/partials/documentation/DocumentationColor.vue')['default']

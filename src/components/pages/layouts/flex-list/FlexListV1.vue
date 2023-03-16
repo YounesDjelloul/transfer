@@ -1,6 +1,9 @@
 <script setup lang="ts">
 
+  import { toRaw } from 'vue';
+
   import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
+  import { sleep, deleteCurrentClient, updateCurrentClient } from '/@src/utils/app/CRUD/helpers'
   import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
 
   import { createNewClient, getClients, updateClientDetailsRequest, getClientDetails, deleteClientRequest } from '/@src/utils/api/clients'
@@ -195,8 +198,9 @@
     },
   ]
 
-  const defaultLimit = ref(20)
-  const totalClients = ref(0)
+  const defaultLimit     = ref(20)
+  const totalClients     = ref(0)
+  const currentReload    = ref(false)
 
   function useQueryParam() {
 
@@ -270,13 +274,13 @@
       },
     })
 
-    const total = computed({
+    const reload = computed({
       
       get() {
-        return totalClients.value
+        return currentReload.value
       },
       set(value) {
-        totalClients.value = value
+        currentReload.value = value
       },
     })
 
@@ -285,7 +289,7 @@
       searchTerm,
       filtersTerm,
       sort,
-      total,
+      reload,
     })
   }
 
@@ -293,7 +297,29 @@
 
   const fetchClients = async() => {
 
-    const { page, searchTerm, filtersTerm, sort, total } = queryParam
+    const { page, searchTerm, filtersTerm, sort, reload } = queryParam
+
+    if (status) {
+
+      let result = toRaw(currentStateData)
+
+      await sleep(1000)
+      
+      switch (status) {
+        case 'delete':
+          result = result.filter(deleteCurrentClient, clientToDeleteId)
+          break;
+        case 'update':
+          result.forEach(updateCurrentClient, [clientToUpdateId, operatedClient])
+          break;
+        case 'create':
+          result = currentStateData.push(toRaw(created_client.value))
+          break;
+      }
+
+      status = undefined
+      return result
+    }
 
     const pageQuery = `page=${page}`
     let sortQuery   = ''
@@ -313,9 +339,13 @@
     const endpointRoute  = `?${sortQuery}${searchFilterQuery}${pageQuery}`
     const { results, count } = await getClients(endpointRoute)
     
-    queryParam.total = count
+    totalClients.value  = count
     return results
   }
+
+  let status            = undefined
+  let currentStateData  = undefined
+  const operatedClient  = ref()
 
   const showCreateClientPopup       = ref(false)
   const showDeleteClientPopup       = ref(false)
@@ -329,14 +359,21 @@
   const clientToDeleteId = ref()
   const clientToViewId   = ref()
 
-  async function getUpdateClientDetailsPopup(clientId) {
+  async function getUpdateClientDetailsPopup(clientId, stateData) {
     clientToUpdateId.value      = clientId
+    currentStateData            = stateData
     clientToUpdate.value        = await getClientDetails(clientId)
     showUpdateClientPopup.value = true
   }
 
-  async function getDeleteClientPopup(clientId) {
+  async function getCreateClientPopup(stateData) {
+    currentStateData       = stateData
+    showCreateClientPopup.value = true
+  }
+
+  async function getDeleteClientPopup(clientId, stateData) {
     clientToDeleteId.value      = clientId
+    currentStateData            = stateData
     showDeleteClientPopup.value = true
   }
 
@@ -346,26 +383,28 @@
   }
 
   function reload(operation) {
-    const currentTotal = queryParam.total
-    queryParam.total = operation === "+" ? currentTotal + 1 : currentTotal - 1
+    status = operation
+    queryParam.reload = !currentReload.value
   }
 
-  function handleClientCreationAffect() {
+  function handleClientCreationAffect(data) {
 
     notyf.dismissAll()
     notyf.success("Client Created Successfully!")
 
     showCreateClientPopup.value = false
-    reload('+')
+    operatedClient.value        = data
+    reload('create')
   }
 
-  function handleClientUpdateAffect() {
+  function handleClientUpdateAffect(data) {
 
     notyf.dismissAll()
     notyf.success("Client Updated Successfully!")
 
     showUpdateClientPopup.value = false
-    reload('+')
+    operatedClient.value        = data
+    reload('update')
   }
 
   function handleClientDeleteAffect() {
@@ -374,7 +413,7 @@
     notyf.success("Client Deleted Successfully!")
 
     showDeleteClientPopup.value = false
-    reload('-')
+    reload('delete')
   }
 
 </script>
@@ -387,7 +426,7 @@
       :limit="defaultLimit"
       :columns="columns"
       :data="fetchClients"
-      :total="queryParam.total"
+      :total="totalClients"
     >
       <template #default="wrapperState">
         <VFlexTableToolbar>
@@ -408,7 +447,7 @@
             <VButtons>
               <VButton @click="showFilterClientsPopup=true" color="primary" icon="feather:settings" outlined> Filters
               </VButton>
-              <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus"> Add User
+              <VButton @click="getCreateClientPopup(wrapperState.data)" color="primary" icon="feather:plus"> Add User
               </VButton>
             </VButtons>
           </template>
@@ -417,7 +456,6 @@
         <CreateInstanceComponent
           v-if="showCreateClientPopup"
           :validation-schema="createClientValidationSchema"
-          :initial-values="createClientInitialValues"
           :request-function="createNewClient"
           :formSchema="creationFormSchema"
           modal-title="Create New Client"
@@ -523,8 +561,8 @@
             <template v-if="column.key == 'actions'">
               <FlexTableDropdown
                 @view-detail="getViewClientDetailsPopup(row.user.id)"
-                @update-details="getUpdateClientDetailsPopup(row.user.id)"
-                @delete-client="getDeleteClientPopup(row.user.id)"
+                @update-details="getUpdateClientDetailsPopup(row.user.id, wrapperState.data)"
+                @delete-client="getDeleteClientPopup(row.user.id, wrapperState.data)"
               />
             </template>
           </template>
