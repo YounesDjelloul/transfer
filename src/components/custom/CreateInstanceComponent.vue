@@ -1,9 +1,10 @@
 <script setup lang="ts">
 
-  import { useForm } from 'vee-validate'
+  import { useForm, ErrorMessage } from 'vee-validate'
   import { toFormValidator } from '@vee-validate/zod'
   import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
+  import { formatError } from '/@src/utils/app/CRUD/helpers'
 
   const { t }  = useI18n()
   const notyf  = useNotyf()
@@ -28,18 +29,22 @@
 
   const isLoading = ref(false)
 
-  const onCreate = handleSubmit(async (values) => {
+  const onCreate = handleSubmit(async (values, actions) => {
 
     isLoading.value = true
 
     try {
 
       const toRequest = props.requestFunction
-      const { data } = await toRequest(values)
+      const response  = await toRequest(values)
 
-      emits('handleCreateInstanceAffect', data)
+      emits('handleCreateInstanceAffect', response.data)
     } catch (err) {
-      notyf.error(err)
+
+      const formattedErrors = formatError(undefined, err.response.data)
+      actions.setErrors(formattedErrors)
+
+      notyf.error("Form Invalid")
 
     } finally {
       isLoading.value = false
@@ -58,8 +63,7 @@
     @close="$emit('hidePopup')"
   >
     <template #content>
-      <VPlaceload v-if="isLoading"/>
-      <form class="modal-form" v-else>
+      <form class="modal-form">
         <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
           <VControl class="has-icons-left" icon="feather:user">
             <VSelect v-if="schemaField.as === 'select'">
@@ -80,7 +84,7 @@
       </form>
     </template>
     <template #action>
-      <VButton type="submit" @click="onCreate" color="primary" raised>Create</VButton>
+      <VButton :loading="isLoading" type="submit" @click="onCreate" color="primary" raised>Create</VButton>
     </template>
   </VModal>
 </template>

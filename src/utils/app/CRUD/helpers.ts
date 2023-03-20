@@ -56,6 +56,25 @@ export function updateCurrentClient(client: object, clientIndex: number, clients
   }
 }
 
-export function sleep(time: number) {
-  return new Promise(resolve => setTimeout(resolve, time));
+export function formatError(key?: string | undefined, errorObject: object) {
+
+  let result = {}
+
+  function recurse(errorKey: string | undefined, errorInner: object){
+
+    for (const one in errorInner) {
+
+      const errorValue = errorInner[one]
+
+      if (Array.isArray(errorValue)) {
+        errorKey ? result[`${errorKey}.${one}`] = errorValue : result[one] = errorValue
+      
+      } else if (typeof errorValue === 'object') {
+        recurse(one, errorValue)
+      }
+    }
+  }
+
+  recurse(key, errorObject)
+  return result
 }

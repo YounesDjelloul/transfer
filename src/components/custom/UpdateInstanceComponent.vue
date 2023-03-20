@@ -6,7 +6,7 @@
   import { useNotyf } from '/@src/composable/useNotyf'
 
   import { getClientDetails } from '/@src/utils/api/clients'
-  import { generateInitialValues } from '/@src/utils/app/CRUD/helpers'
+  import { generateInitialValues, formatError } from '/@src/utils/app/CRUD/helpers'
 
   const notyf       = useNotyf()
   const { t }       = useI18n()
@@ -35,7 +35,7 @@
 
   const isLoading = ref(false)
 
-  const onUpdate = handleSubmit(async (values) => {
+  const onUpdate = handleSubmit(async (values, actions) => {
     isLoading.value = true
 
     try {
@@ -45,8 +45,11 @@
       const { data } = await toUpdate(props.instanceId, values)
 
       emits('handleUpdateInstanceAffect', data)
-    } catch (error) {
-      notyf.error(error)
+    } catch (err) {
+      const formattedErrors = formatError(undefined, err.response.data)
+      actions.setErrors(formattedErrors)
+
+      notyf.error("Form Invalid")
 
     } finally {
       isLoading.value = false
@@ -65,9 +68,7 @@
     @close="$emit('hidePopup')"
   >
     <template #content>
-      <VPlaceload v-if="isLoading" />
-      
-      <form class="form-layout is-stacked" v-if="!isLoading">
+      <form class="form-layout is-stacked">
         <div class="form-outer">
           <div class="form-body">
             <div class="form-section is-grey">
@@ -99,7 +100,7 @@
       </form>
     </template>
     <template #action>
-      <VButton type="submit" @click="onUpdate" color="primary" raised>Update</VButton>
+      <VButton :loading="isLoading" type="submit" @click="onUpdate" color="primary" raised>Update</VButton>
     </template>
   </VModal>
 </template>

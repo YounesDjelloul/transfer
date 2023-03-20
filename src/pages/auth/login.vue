@@ -11,6 +11,7 @@ import { z as zod } from 'zod'
 import { useI18n } from 'vue-i18n'
 
 import APP_URLs from '/@src/utils/app/urls'
+import { formatError } from '/@src/utils/app/CRUD/helpers'
 
 import { authenticateUser } from '/@src/services/modules/auth/accounts'
 import { useDarkmode } from '/@src/stores/darkmode'
@@ -49,7 +50,7 @@ const { handleSubmit } = useForm({
   },
 })
 
-const onLogin = handleSubmit(async (values) => {
+const onLogin = handleSubmit(async (values, actions) => {
   if (!isLoading.value) {
     isLoading.value = true
 
@@ -66,8 +67,8 @@ const onLogin = handleSubmit(async (values) => {
         router.push(APP_URLs.DASHBOARD)
       }
 
-    } catch (error: any) {
-      notyf.error(error)
+    } catch (err: any) {
+      notyf.error("Invalid Credentials")
 
     } finally {
       isLoading.value = false

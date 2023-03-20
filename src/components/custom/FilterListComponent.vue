@@ -5,6 +5,7 @@
   import { useI18n } from 'vue-i18n'
 
   import { convertFilterSchemaToObject } from '/@src/utils/app/CRUD/filters'
+  import { formatError } from '/@src/utils/app/CRUD/helpers'
 
   const { t }  = useI18n()
   const notyf  = useNotyf()
@@ -25,12 +26,15 @@
     initialValues
   })
 
-  const onFilter = handleSubmit(async (values) => {
+  const onFilter = handleSubmit(async (values, actions) => {
     try {
       emits('filterList', values)
       emits('hidePopup')
     } catch (err) {
-      notyf.error(err)
+      const formattedErrors = formatError(undefined, err.response.data)
+      actions.setErrors(formattedErrors)
+
+      notyf.error("Form Invalid")
     }
   })
 

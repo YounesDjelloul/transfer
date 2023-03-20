@@ -27,8 +27,8 @@
       const response = await toDelete(props.instanceId)
       emits('handleDeleteInstanceAffect')
 
-    } catch (error) {
-      notyf.error(error)
+    } catch (err) {
+      notyf.error(err.response.data)
 
     } finally {
       isLoading.value = false

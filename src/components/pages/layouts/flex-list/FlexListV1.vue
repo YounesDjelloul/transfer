@@ -3,7 +3,7 @@
   import { toRaw } from 'vue';
 
   import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
-  import { sleep, deleteCurrentClient, updateCurrentClient } from '/@src/utils/app/CRUD/helpers'
+  import { deleteCurrentClient, updateCurrentClient } from '/@src/utils/app/CRUD/helpers'
   import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
 
   import { createNewClient, getClients, updateClientDetailsRequest, getClientDetails, deleteClientRequest } from '/@src/utils/api/clients'
@@ -302,8 +302,6 @@
     if (status) {
 
       let result = toRaw(currentStateData)
-
-      await sleep(1000)
       
       switch (status) {
         case 'delete':
@@ -366,18 +364,18 @@
     showUpdateClientPopup.value = true
   }
 
-  async function getCreateClientPopup(stateData) {
+  function getCreateClientPopup(stateData) {
     currentStateData       = stateData
     showCreateClientPopup.value = true
   }
 
-  async function getDeleteClientPopup(clientId, stateData) {
+  function getDeleteClientPopup(clientId, stateData) {
     clientToDeleteId.value      = clientId
     currentStateData            = stateData
     showDeleteClientPopup.value = true
   }
 
-  async function getViewClientDetailsPopup(clientId) {
+  function getViewClientDetailsPopup(clientId) {
     clientToViewId.value             = clientId
     showViewClientDetailsPopup.value = true
   }
