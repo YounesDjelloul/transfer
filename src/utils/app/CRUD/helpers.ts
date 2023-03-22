@@ -78,3 +78,63 @@ export function formatError(key?: string | undefined, errorObject: object) {
   recurse(key, errorObject)
   return result
 }
+
+export function formatCreateSchema(fullSchema: object) {
+
+  let result = []
+
+  function recurse(fieldIdPrefix: string, obj: object) {
+
+    for (const field in obj) {
+
+      let fieldProp: object = obj[field]
+      
+      if (!fieldProp.required) {
+        continue
+      }
+
+      if (fieldProp.type === "nested object") {
+        recurse(fieldIdPrefix+`${field}.`, fieldProp.children)
+        continue
+      }
+
+      fieldProp["name"] = field
+      fieldProp["id"]   = fieldIdPrefix + field
+      result.push(fieldProp)
+    }
+  }
+
+  recurse("", fullSchema)
+
+  return result
+}
+
+export function formatUpdateSchema(fullSchema: object) {
+
+  let result = []
+
+  function recurse(fieldIdPrefix: string, obj: object) {
+
+    for (const field in obj) {
+
+      let fieldProp: object = obj[field]
+      
+      if (fieldProp.read_only) {
+        continue
+      }
+
+      if (fieldProp.type === "nested object") {
+        recurse(fieldIdPrefix+`${field}.`, fieldProp.children)
+        continue
+      }
+
+      fieldProp["name"] = field
+      fieldProp["id"]   = fieldIdPrefix + field
+      result.push(fieldProp)
+    }
+  }
+
+  recurse("", fullSchema)
+
+  return result
+}

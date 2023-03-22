@@ -1,5 +1,6 @@
 import { useApi } from '/@src/composable/useApi'
 import API_URLs from '/@src/utils/api/urls'
+import { z as zod } from 'zod'
 
 const api = useApi()
 
@@ -28,4 +29,16 @@ export async function deleteClientRequest(clientId: number) {
 export async function updateClientDetailsRequest(clientId: number, body: object) {
 
 	return await api.put(API_URLs.CLIENTS+clientId+'/', body)
+}
+
+export async function getCreateClientSchema() {
+
+	const { data } = await api.options(API_URLs.CLIENTS)
+	return data
+}
+
+export async function getUpdateClientSchema(clientId: number) {
+
+	const { data } = await api.options(API_URLs.CLIENTS+clientId+'/')
+	return data
 }

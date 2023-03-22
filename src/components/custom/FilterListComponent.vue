@@ -34,7 +34,7 @@
       const formattedErrors = formatError(undefined, err.response.data)
       actions.setErrors(formattedErrors)
 
-      notyf.error("Form Invalid")
+      notyf.error(t('form.invalid'))
     }
   })
 

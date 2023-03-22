@@ -3,10 +3,24 @@
   import { toRaw } from 'vue';
 
   import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
-  import { deleteCurrentClient, updateCurrentClient } from '/@src/utils/app/CRUD/helpers'
   import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
 
-  import { createNewClient, getClients, updateClientDetailsRequest, getClientDetails, deleteClientRequest } from '/@src/utils/api/clients'
+  import {
+    deleteCurrentClient,
+    updateCurrentClient,
+    formatCreateSchema,
+    formatUpdateSchema,
+  } from '/@src/utils/app/CRUD/helpers'
+
+  import {
+    createNewClient,
+    getClients,
+    updateClientDetailsRequest,
+    getClientDetails,
+    deleteClientRequest,
+    getCreateClientSchema,
+    getUpdateClientSchema,
+  } from '/@src/utils/api/clients'
 
   import { z as zod } from 'zod'
   import { useI18n } from 'vue-i18n'
@@ -36,6 +50,9 @@
   } as const
 
 
+  const { actions: createActions } = await getCreateClientSchema()
+  const { actions: updateActions } = await getUpdateClientSchema(49)
+
   const createClientValidationSchema = zod.object({
     person_type: zod
       .string()
@@ -50,47 +67,11 @@
         .string({
           required_error: t('auth.errors.email.required'),
         })
-        .min(8, t('auth.errors.email.format')),   
-      ip: zod
-        .string()
-        .min(1, t('auth.errors.ip.required')),
+        .min(8, t('auth.errors.email.format')),
     })
   })
 
-  const creationFormSchema = [
-    {
-      name: 'name',
-      id: 'user.username',
-      placeholder: 'username',
-      as: 'input',
-      type: 'text',
-    },
-    {
-      name: 'person_type',
-      id: 'person_type',
-      placeholder: 'person_type',
-      as: 'select',
-
-      options: {
-        M: 'Moral Person',
-        P: 'Physical Person',
-      },
-    },
-    {
-      name: 'email',
-      id: 'user.email',
-      placeholder: 'email',
-      as: 'input',
-      type: 'email',
-    },
-    {
-      name: 'ip',
-      id: 'user.ip',
-      placeholder: 'ip',
-      as: 'input',
-      type: 'text',
-    },
-  ]
+  const creationFormSchema = formatCreateSchema(createActions.POST)
 
 
   const updateClientValidationSchema = zod.object({
@@ -121,47 +102,7 @@
       .nullable(),
   })
 
-  const updateFormSchema = [
-    {
-      name: 'legal_name',
-      id: 'legal_name',
-      placeholder: 'legal_name',
-      as: 'input',
-      type: 'text',
-    },
-    {
-      name: 'legal_form',
-      id: 'legal_form',
-      placeholder: 'legal_form',
-      as: 'input',
-      type: 'text',
-    },
-    {
-      name: 'person_type',
-      id: 'person_type',
-      placeholder: 'person_type',
-      as: 'select',
-
-      options: {
-        M: 'Moral Person',
-        P: 'Physical Person',
-      },
-    },
-    {
-      name: 'website',
-      id: 'website',
-      placeholder: 'website',
-      as: 'input',
-      type: 'text',
-    },
-    {
-      name: 'licence',
-      id: 'licence',
-      placeholder: 'licence',
-      as: 'input',
-      type: 'text',
-    },
-  ]
+  const updateFormSchema = formatUpdateSchema(updateActions.PUT)
 
 
   const filtersFormSchema = [

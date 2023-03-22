@@ -49,7 +49,7 @@
       const formattedErrors = formatError(undefined, err.response.data)
       actions.setErrors(formattedErrors)
 
-      notyf.error("Form Invalid")
+      notyf.error(t('form.invalid'))
 
     } finally {
       isLoading.value = false
@@ -76,17 +76,16 @@
                 <div class="left"><h3>General</h3></div>
               </div>
               <div class="form-section-inner is-horizontal">
-                <VField v-for="schemaField in formSchema" :id="schemaField.id" :label="schemaField.name" v-slot="{ field }">
+                <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
                   <VControl class="has-icons-left" icon="feather:user">
-                    <VSelect v-if="schemaField.as === 'select'">
-                      <VOption value="">Select a Type</VOption>
-                      <VOption v-for="(option, index) in schemaField.options" :value="index">{{ option }}</VOption>
+                    <VSelect v-if="schemaField.type === 'choice'">
+                      <VOption disabled hidden value="undefined">Select a Type</VOption>
+                      <VOption v-for="choice in schemaField.choices" :value="choice.value">{{ choice.display_name }}</VOption>
                     </VSelect>
                     <VInput
                       v-else
                       :type="schemaField.type"
-                      :placeholder="t(`auth.placeholder.${schemaField.placeholder}`)"
-                      :autocomplete="schemaField.name"
+                      :placeholder="t(`auth.placeholder.${schemaField.name}`)"
                     />
                     <p v-if="field?.errors?.value?.length" class="help is-danger">
                       {{ field.errors?.value?.join(', ') }}

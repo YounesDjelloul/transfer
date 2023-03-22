@@ -68,7 +68,7 @@ const onLogin = handleSubmit(async (values, actions) => {
       }
 
     } catch (err: any) {
-      notyf.error("Invalid Credentials")
+      notyf.error(t('auth.login.credentials.invalid'))
 
     } finally {
       isLoading.value = false
