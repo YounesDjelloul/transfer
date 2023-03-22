@@ -118,6 +118,9 @@ watch(
           </a>
         </li>
       </template>
+      <template #bottom-links>
+        <!-- Dashboards -->
+      </template>
     </Sidebar>
 
     <Transition name="slide-x">
@@ -158,7 +161,9 @@ watch(
               <h1 class="title is-4">{{ viewWrapper.pageTitle }}</h1>
             </div>
 
-            <Toolbar class="desktop-toolbar" />
+            <Toolbar class="desktop-toolbar">
+              <UserProfileDropdown />
+            </Toolbar>
           </div>
 
           <slot></slot>

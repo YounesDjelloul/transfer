@@ -1,3 +1,22 @@
+<script setup>
+  import { useUserSession } from '/@src/stores/userSession'
+  import { useNotyf } from '/@src/composable/useNotyf'
+  import { useI18n } from 'vue-i18n'
+  
+  import APP_URLs from '/@src/utils/app/urls'
+  
+  const { t } = useI18n()
+  const router = useRouter()
+  const notyf = useNotyf()
+  const userSession = useUserSession()
+
+  function logout() {
+    userSession.logoutUser()
+    notyf.success(t('auth.logout.success'))
+    router.push(APP_URLs.LOGIN)
+  }
+</script>
+
 <template>
   <VDropdown right spaced class="user-dropdown profile-dropdown">
     <template #button="{ toggle }">
@@ -76,6 +95,7 @@
           role="menuitem"
           raised
           fullwidth
+          @click="logout"
         >
           Logout
         </VButton>

@@ -4,12 +4,11 @@
 
   import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
   import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
+  import { useCreateClientSchema, useUpdateClientSchema } from '/@src/utils/app/CRUD/clientsCache'
 
   import {
     deleteCurrentClient,
     updateCurrentClient,
-    formatCreateSchema,
-    formatUpdateSchema,
   } from '/@src/utils/app/CRUD/helpers'
 
   import {
@@ -18,8 +17,6 @@
     updateClientDetailsRequest,
     getClientDetails,
     deleteClientRequest,
-    getCreateClientSchema,
-    getUpdateClientSchema,
   } from '/@src/utils/api/clients'
 
   import { z as zod } from 'zod'
@@ -49,10 +46,6 @@
     },
   } as const
 
-
-  const { actions: createActions } = await getCreateClientSchema()
-  const { actions: updateActions } = await getUpdateClientSchema(49)
-
   const createClientValidationSchema = zod.object({
     person_type: zod
       .string()
@@ -71,7 +64,7 @@
     })
   })
 
-  const creationFormSchema = formatCreateSchema(createActions.POST)
+  const creationFormSchema = await useCreateClientSchema()
 
 
   const updateClientValidationSchema = zod.object({
@@ -102,7 +95,7 @@
       .nullable(),
   })
 
-  const updateFormSchema = formatUpdateSchema(updateActions.PUT)
+  let updateFormSchema = undefined
 
 
   const filtersFormSchema = [
@@ -301,6 +294,7 @@
   async function getUpdateClientDetailsPopup(clientId, stateData) {
     clientToUpdateId.value      = clientId
     currentStateData            = stateData
+    updateFormSchema            = await useUpdateClientSchema(clientId)
     clientToUpdate.value        = await getClientDetails(clientId)
     showUpdateClientPopup.value = true
   }
