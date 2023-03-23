@@ -229,6 +229,10 @@
 
   const queryParam = useQueryParam()
 
+  let status            = undefined
+  let currentStateData  = undefined
+  const operatedClient  = ref()
+
   const fetchClients = async() => {
 
     const { page, searchTerm, filtersTerm, sort, reload } = queryParam
@@ -275,24 +279,20 @@
     return results
   }
 
-  let status            = undefined
-  let currentStateData  = undefined
-  const operatedClient  = ref()
-
   const showCreateClientPopup       = ref(false)
   const showDeleteClientPopup       = ref(false)
   const showViewClientDetailsPopup  = ref(false)
   const showUpdateClientPopup       = ref(false)
   const showFilterClientsPopup      = ref(false)
 
-  const clientToUpdateId = ref()
   const clientToUpdate   = ref()
 
-  const clientToDeleteId = ref()
-  const clientToViewId   = ref()
+  let clientToUpdateId = undefined
+  let clientToDeleteId = undefined
+  let clientToViewId   = undefined
 
   async function getUpdateClientDetailsPopup(clientId, stateData) {
-    clientToUpdateId.value      = clientId
+    clientToUpdateId            = clientId
     currentStateData            = stateData
     updateFormSchema            = await useUpdateClientSchema(clientId)
     clientToUpdate.value        = await getClientDetails(clientId)
@@ -305,13 +305,13 @@
   }
 
   function getDeleteClientPopup(clientId, stateData) {
-    clientToDeleteId.value      = clientId
+    clientToDeleteId            = clientId
     currentStateData            = stateData
     showDeleteClientPopup.value = true
   }
 
   function getViewClientDetailsPopup(clientId) {
-    clientToViewId.value             = clientId
+    clientToViewId                   = clientId
     showViewClientDetailsPopup.value = true
   }
 

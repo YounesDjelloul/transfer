@@ -8,14 +8,16 @@ import {
   formatUpdateSchema,
 } from '/@src/utils/app/CRUD/helpers'
 
-function saveSchematoStorage(action: string, schema: object) {
+function saveSchematoStorage(action: string, schema: string) {
 
-	const actionRepo = {
-		"create": localStorage.setItem("createClientSchema", schema),
-		"update": localStorage.setItem("updateClientSchema", schema),
+	switch (action) {
+		case "create":
+			localStorage.setItem("createClientSchema", schema)
+			break;
+		case "update":
+			localStorage.setItem("updateClientSchema", schema)
+			break;
 	}
-
-	return actionRepo.action
 }
 
 export async function useCreateClientSchema() {

@@ -41,7 +41,7 @@ export function formatView(instance: object) {
 
 
 export function deleteCurrentClient(client: object) {
-  return client.user.id !== this.value
+  return client.user.id !== this
 }
 
 export function updateCurrentClient(client: object, clientIndex: number, clients: []) {
@@ -49,7 +49,7 @@ export function updateCurrentClient(client: object, clientIndex: number, clients
   const clientId   = this[0]
   const clientData = this[1]
 
-  if (client.user.id === clientId.value) {
+  if (client.user.id === clientId) {
     for (const prop in clientData.value) {
       clients[clientIndex][prop] = clientData.value[prop]
     }
