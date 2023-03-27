@@ -1,3 +1,6 @@
+import { z as zod } from 'zod'
+import { useI18n } from 'vue-i18n'
+
 export function generateInitialValues(instance: object, schema: []) {
   let result = {}
 
@@ -137,4 +140,43 @@ export function formatUpdateSchema(fullSchema: object) {
   recurse("", fullSchema)
 
   return result
+}
+
+export function generateValidationSchema(fullSchema: object) {
+
+  const zodFunctionsRepo = {
+    "string": "string",
+    "choice": "string",
+    "email": "string",
+  }
+
+  function foo(fieldType, fieldName) {
+    const currentZodFunction = zodFunctionsRepo[fieldType]
+    return zod[currentZodFunction]({required_error: "This field is required"})
+  }
+
+  function recurse(schema) {
+
+    let current = zod.object({})
+
+    for (const fieldName in schema) {
+
+      const fieldProp = schema[fieldName]
+
+      if (!fieldProp.required) {
+        continue
+      }
+
+      if (fieldProp.type === "nested object") {
+        current = current.extend({ [fieldName] : recurse(fieldProp.children)})
+        continue
+      }
+
+      current = current.extend({ [fieldName] : foo(fieldProp.type, fieldName)});
+    }
+    
+    return current
+  }
+
+  return recurse(fullSchema)
 }

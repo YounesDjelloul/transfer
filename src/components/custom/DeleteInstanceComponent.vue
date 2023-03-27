@@ -24,7 +24,7 @@
     try {
 
       const toDelete = props.requestFunction
-      //const response = await toDelete(props.instanceId)
+      const response = await toDelete(props.instanceId)
       emits('handleDeleteInstanceAffect')
 
     } catch (err) {

@@ -7,6 +7,13 @@ meta:
 
 import { registerUser } from '/@src/services/modules/auth/accounts'
 import APP_URLs from '/@src/utils/app/urls'
+import { getSignupSchema } from '/@src/utils/api/auth'
+
+import {
+  formatCreateSchema,
+  formatError,
+  generateValidationSchema,
+} from '/@src/utils/app/CRUD/helpers'
 
 import { useApi } from '/@src/composable/useApi'
 import { useI18n } from 'vue-i18n'
@@ -27,29 +34,11 @@ const api = useApi()
 const isLoading = ref(false)
 const { t } = useI18n()
 
-// Define a validation schema
-const validationSchema = toFormValidator(
-  zod.object({
+const signupSchema    = await getSignupSchema()
+const formattedSchema = formatCreateSchema(signupSchema)
 
-    username: zod
-      .string({
-        required_error: t('auth.errors.username.required'),
-      })
-      .min(8, t('auth.errors.username.length')),
-    email: zod
-      .string({
-        required_error: t('auth.errors.email.required'),
-      })
-      .email(t('auth.errors.email.format')),
-    password1: zod
-      .string({
-        required_error: t('auth.errors.password.required'),
-      })
-      .min(8, t('auth.errors.password.length')),
-    password2: zod.string({
-      required_error: t('auth.errors.passwordCheck.required'),
-    }),
-  })
+const validationSchema = toFormValidator(
+  generateValidationSchema(signupSchema)
   .refine((data) => data.password1 === data.password2, {
     message: t('auth.errors.passwordCheck.match'),
     path: ['password2'],
@@ -58,15 +47,9 @@ const validationSchema = toFormValidator(
 
 const { handleSubmit } = useForm({
   validationSchema,
-  initialValues: {
-    username: '',
-    email: '',
-    password1: '',
-    password2: '',
-  },
 })
 
-const onSignup = handleSubmit(async (values) => {
+const onSignup = handleSubmit(async (values, actions) => {
   if (!isLoading.value) {
     isLoading.value = true
 
@@ -78,9 +61,10 @@ const onSignup = handleSubmit(async (values) => {
       notyf.success('Welcome, ' + values.username)
 
       router.push(APP_URLs.LOGIN)
-    } catch (error: any) {
-      notyf.dismissAll()
-      notyf.error(error)
+    } catch (err: any) {
+      const formattedErrors = formatError(undefined, err.response.data)
+      actions.setErrors(formattedErrors)
+      notyf.error(t('form.invalid'))
 
     } finally {
       isLoading.value = false
@@ -134,61 +118,23 @@ useHead({
                   <form @submit="onSignup">
                     <div id="signin-form" class="login-form">
                       <!-- Input -->
-                      <VField id="username" v-slot="{ field }">
-                        <VControl icon="feather:user">
+
+                      <VField v-for="schemaField in formattedSchema" :id="schemaField.id" v-slot="{ field }">
+                        <VControl class="has-icons-left" icon="feather:user">
+                          <VSelect v-if="schemaField.type === 'choice'">
+                            <VOption disabled hidden value="undefined">Select a Type</VOption>
+                            <VOption v-for="choice in schemaField.choices" :value="choice.value">{{ choice.display_name }}</VOption>
+                          </VSelect>
                           <VInput
-                            type="text"
-                            :placeholder="t('auth.placeholder.username')"
-                            autocomplete="name"
+                            v-else
+                            :type="schemaField.type"
+                            :placeholder="schemaField.label"
                           />
                           <p v-if="field?.errors?.value?.length" class="help is-danger">
                             {{ field.errors?.value?.join(', ') }}
                           </p>
                         </VControl>
                       </VField>
-
-                      <!-- Input -->
-                      <VField id="email" v-slot="{ field }">
-                        <VControl icon="feather:mail">
-                          <VInput
-                            type="text"
-                            :placeholder="t('auth.placeholder.email')"
-                            autocomplete="email"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-
-                      <!-- Input -->
-                      <VField id="password1" v-slot="{ field }">
-                        <VControl icon="feather:lock">
-                          <VInput
-                            type="password"
-                            :placeholder="t('auth.placeholder.password')"
-                            autocomplete="new-password"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-
-                      <!-- Input -->
-                      <VField id="password2" v-slot="{ field }">
-                        <VControl icon="feather:lock">
-                          <VInput
-                            type="password"
-                            :placeholder="t('auth.placeholder.passwordCheck')"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-
-                      <!-- Submit -->
 
                       <div class="login">
                         <VButton :loading="isLoading" type="submit" color="primary" bold fullwidth raised>

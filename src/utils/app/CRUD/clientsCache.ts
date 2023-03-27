@@ -6,31 +6,38 @@ import {
 import {
   formatCreateSchema,
   formatUpdateSchema,
+  generateValidationSchema,
 } from '/@src/utils/app/CRUD/helpers'
 
-function saveSchematoStorage(action: string, schema: string) {
+function saveSchematoStorage(action: string, formSchema: string, validationSchema: string) {
 
 	switch (action) {
 		case "create":
-			localStorage.setItem("createClientSchema", schema)
+			localStorage.setItem("createClientSchema", formSchema)
+			localStorage.setItem("createClientValidationSchema", validationSchema)
 			break;
 		case "update":
-			localStorage.setItem("updateClientSchema", schema)
+			localStorage.setItem("updateClientSchema", formSchema)
 			break;
 	}
 }
 
 export async function useCreateClientSchema() {
 
-	let formattedSchema = localStorage.getItem("createClientSchema");
+	let formattedSchema = undefined;
+	let validationSchema = undefined;
 
-	if (!formattedSchema) {
+	if (!formattedSchema || !validationSchema) {
 		const { actions: createActions } = await getCreateClientSchema()
-		formattedSchema = formatCreateSchema(createActions.POST)
-		saveSchematoStorage("create", JSON.stringify(formattedSchema))
+		formattedSchema  = formatCreateSchema(createActions.POST)
+		validationSchema = generateValidationSchema(createActions.POST)
+		saveSchematoStorage("create", JSON.stringify(formattedSchema), validationSchema)
 	}
 
-	return typeof formattedSchema === "string" ? JSON.parse(formattedSchema) : formattedSchema
+	return {
+		formSchema: typeof formattedSchema === "string" ? JSON.parse(formattedSchema) : formattedSchema,
+		validationSchema: validationSchema,
+	}
 }
 
 export async function useUpdateClientSchema(clientId: number) {

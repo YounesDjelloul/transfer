@@ -9,6 +9,7 @@
   import {
     deleteCurrentClient,
     updateCurrentClient,
+    generateValidationSchema,
   } from '/@src/utils/app/CRUD/helpers'
 
   import {
@@ -29,43 +30,33 @@
   const route  = useRoute()
 
   const columns = {
-    created_by_id: {
-      label: 'Created By Id',
+    id: {
+      label: 'Id',
       sortable: true,
     },
-    username: 'Username',
-    user_id: {
-      label: 'User Id',
+    user__email: {
+      label: 'Email',
+      grow: true,
+    },
+    user__username: {
+      label: 'Username',
       sortable: true,
     },
-    person_type: 'Person Type',
-    user_ip: 'Ip',
+    user__first_name: {
+      label: 'Firstname',
+      sortable: true,
+    },
+    user__last_name: {
+      label: 'Lastname',
+      sortable: true,
+    },
     actions: {
       label: 'Actions',
       align: 'end',
     },
   } as const
 
-  const createClientValidationSchema = zod.object({
-    person_type: zod
-      .string()
-      .min(1, t('auth.errors.person_type.required')),
-    user: zod.object({
-      username: zod
-      .string({
-        required_error: t('auth.errors.username.required'),
-      })
-      .min(8, t('auth.errors.username.length')),
-      email: zod
-        .string({
-          required_error: t('auth.errors.email.required'),
-        })
-        .min(8, t('auth.errors.email.format')),
-    })
-  })
-
-  const creationFormSchema = await useCreateClientSchema()
-
+  const { formSchema: creationFormSchema, validationSchema: createClientValidationSchema } = await useCreateClientSchema()
 
   const updateClientValidationSchema = zod.object({
     legal_name: zod
@@ -274,7 +265,7 @@
 
     const endpointRoute  = `?${sortQuery}${searchFilterQuery}${pageQuery}`
     const { results, count } = await getClients(endpointRoute)
-    
+
     totalClients.value  = count
     return results
   }
@@ -424,7 +415,7 @@
           @hide-popup="showDeleteClientPopup=false"
           @handle-delete-instance-affect="handleClientDeleteAffect"
         />
-
+        
         <FilterListComponent
           v-if="showFilterClientsPopup"
           :formSchema="filtersFormSchema"
@@ -466,36 +457,31 @@
           </template>
 
           <template #body-cell="{ row, column }">
-            <template v-if="column.key == 'created_by_id'">
+            <template v-if="column.key == 'user__email'">
               <VFlexTableCell>
-                <span>{{ row.created_by.id }}</span>
+                <span>{{ row.user.email }}</span>
               </VFlexTableCell>
             </template>
-            <template v-if="column.key == 'username'">
+            <template v-if="column.key == 'user__username'">
               <VFlexTableCell>
                 <span>{{ row.user.username }}</span>
               </VFlexTableCell>
             </template>
-            <template v-if="column.key == 'user_id'">
+            <template v-if="column.key == 'user__first_name'">
               <VFlexTableCell>
-                <span>{{ row.user.id }}</span>
+                <span>{{ row.user.first_name }}</span>
               </VFlexTableCell>
             </template>
-            <template v-if="column.key == 'person_type'">
+            <template v-if="column.key == 'user__last_name'">
               <VFlexTableCell>
-                <span>{{ row.person_type }}</span>
-              </VFlexTableCell>
-            </template>
-            <template v-if="column.key == 'user_ip'">
-              <VFlexTableCell>
-                <span>{{ row.user.ip }}</span>
+                <span>{{ row.user.last_name }}</span>
               </VFlexTableCell>
             </template>
             <template v-if="column.key == 'actions'">
               <FlexTableDropdown
-                @view-detail="getViewClientDetailsPopup(row.user.id)"
-                @update-details="getUpdateClientDetailsPopup(row.user.id, wrapperState.data)"
-                @delete-client="getDeleteClientPopup(row.user.id, wrapperState.data)"
+                @view-detail="getViewClientDetailsPopup(row.id)"
+                @update-details="getUpdateClientDetailsPopup(row.id, wrapperState.data)"
+                @delete-client="getDeleteClientPopup(row.id, wrapperState.data)"
               />
             </template>
           </template>
@@ -516,6 +502,7 @@
 <style lang="scss">
   @import '/@src/scss/abstracts/all';
   @import '/@src/scss/components/forms-outer';
+
   .view-container {
     margin: 20px;
     .view-section {

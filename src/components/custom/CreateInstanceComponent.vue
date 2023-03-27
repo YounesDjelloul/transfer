@@ -72,8 +72,8 @@
             </VSelect>
             <VInput
               v-else
-              :type="schemaField.type"
-              :placeholder="t(`auth.placeholder.${schemaField.name}`)"
+              :type="schemaField.html_input_type"
+              :placeholder="schemaField.label"
             />
             <p v-if="field?.errors?.value?.length" class="help is-danger">
               {{ field.errors?.value?.join(', ') }}
