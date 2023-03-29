@@ -9,12 +9,11 @@ import {
   generateValidationSchema,
 } from '/@src/utils/app/CRUD/helpers'
 
-function saveSchematoStorage(action: string, formSchema: string, validationSchema: string) {
+function saveSchematoStorage(action: string, formSchema: string) {
 
 	switch (action) {
 		case "create":
 			localStorage.setItem("createClientSchema", formSchema)
-			localStorage.setItem("createClientValidationSchema", validationSchema)
 			break;
 		case "update":
 			localStorage.setItem("updateClientSchema", formSchema)
@@ -25,24 +24,19 @@ function saveSchematoStorage(action: string, formSchema: string, validationSchem
 export async function useCreateClientSchema() {
 
 	let formattedSchema = undefined;
-	let validationSchema = undefined;
 
-	if (!formattedSchema || !validationSchema) {
+	if (!formattedSchema) {
 		const { actions: createActions } = await getCreateClientSchema()
 		formattedSchema  = formatCreateSchema(createActions.POST)
-		validationSchema = generateValidationSchema(createActions.POST)
-		saveSchematoStorage("create", JSON.stringify(formattedSchema), validationSchema)
+		saveSchematoStorage("create", JSON.stringify(formattedSchema))
 	}
 
-	return {
-		formSchema: typeof formattedSchema === "string" ? JSON.parse(formattedSchema) : formattedSchema,
-		validationSchema: validationSchema,
-	}
+	return typeof formattedSchema === "string" ? JSON.parse(formattedSchema) : formattedSchema
 }
 
 export async function useUpdateClientSchema(clientId: number) {
 
-	let formattedSchema = localStorage.getItem("updateClientSchema");
+	let formattedSchema = undefined;
 
 	if (!formattedSchema) {
 		const { actions: updateActions } = await getUpdateClientSchema(clientId)

@@ -5,8 +5,7 @@
   import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
 
-  import { getClientDetails } from '/@src/utils/api/clients'
-  import { generateInitialValues, formatError } from '/@src/utils/app/CRUD/helpers'
+  import { generateInitialValues, formatError, generateValidationSchema } from '/@src/utils/app/CRUD/helpers'
 
   const notyf       = useNotyf()
   const { t }       = useI18n()
@@ -17,23 +16,42 @@
   }>()
 
   const props = defineProps<{
-    validationSchema: object,
     requestFunction: void,
-    instanceDetails: void,
+    formSchemaFunction: void,
+    instanceDetailsFunction: void,
     modalTitle: string,
-    formSchema: object,
     instanceId: number,
   }>()
 
-  const validationSchema = toFormValidator(props.validationSchema)
-  const initialValues    = generateInitialValues(props.instanceDetails, props.formSchema)
+  const isLoading  = ref(true)
+
+  let formSchema       = undefined
+  let validationSchema = undefined
+  let instanceDetails  = undefined
+  let initialValues    = undefined
+
+  onMounted(async () => {
+
+    try {
+      
+      formSchema       = await props.formSchemaFunction(props.instanceId)
+      validationSchema = generateValidationSchema(formSchema)
+      instanceDetails  = await props.instanceDetailsFunction(props.instanceId)
+      initialValues    = generateInitialValues(instanceDetails, formSchema)
+
+    } catch (error) {
+      notyf.error(error.response.data.detail)
+      emits('hidePopup')
+
+    } finally {
+      isLoading.value = false
+    }
+  })
 
   const { handleSubmit } = useForm({
     validationSchema,
     initialValues,
   })
-
-  const isLoading = ref(false)
 
   const onUpdate = handleSubmit(async (values, actions) => {
     isLoading.value = true
@@ -68,7 +86,8 @@
     @close="$emit('hidePopup')"
   >
     <template #content>
-      <form class="form-layout is-stacked">
+      <VPlaceload v-if="isLoading" />
+      <form class="form-layout is-stacked" v-else>
         <div class="form-outer">
           <div class="form-body">
             <div class="form-section is-grey">
@@ -84,7 +103,7 @@
                     </VSelect>
                     <VInput
                       v-else
-                      :type="schemaField.type"
+                      :type="schemaField.html_input_type"
                       :placeholder="schemaField.label"
                     />
                     <p v-if="field?.errors?.value?.length" class="help is-danger">
@@ -98,7 +117,7 @@
         </div>
       </form>
     </template>
-    <template #action>
+    <template #action v-if="!isLoading">
       <VButton :loading="isLoading" type="submit" @click="onUpdate" color="primary" raised>Update</VButton>
     </template>
   </VModal>

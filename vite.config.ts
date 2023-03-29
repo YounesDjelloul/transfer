@@ -38,11 +38,7 @@ export default defineConfig({
   // Adjust console output verbosity.
   logLevel: 'info',
   // development server configuration
-
-  server: {
-    port: 3000,
-  },
-
+ 
   /**
    * By default, Vite will crawl your index.html to detect dependencies that
    * need to be pre-bundled. If build.rollupOptions.input is specified,

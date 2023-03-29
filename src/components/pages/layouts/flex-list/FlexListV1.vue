@@ -56,38 +56,8 @@
     },
   } as const
 
-  const { formSchema: creationFormSchema, validationSchema: createClientValidationSchema } = await useCreateClientSchema()
-
-  const updateClientValidationSchema = zod.object({
-    legal_name: zod
-      .string({
-        required_error: t('auth.errors.username.required'),
-      })
-      .nullable(),
-    legal_form: zod
-      .string({
-        required_error: t('auth.errors.username.required'),
-      })
-      .nullable(),
-    person_type: zod
-      .string({
-        required_error: t('auth.errors.username.required'),
-      })
-      .nullable(),
-    website: zod
-      .string({
-        required_error: t('auth.errors.username.required'),
-      })
-      .nullable(),
-    licence: zod
-      .string({
-        required_error: t('auth.errors.username.required'),
-      })
-      .nullable(),
-  })
-
-  let updateFormSchema = undefined
-
+  const creationFormSchema           = await useCreateClientSchema()
+  const createClientValidationSchema = generateValidationSchema(creationFormSchema, t)
 
   const filtersFormSchema = [
     {
@@ -276,18 +246,14 @@
   const showUpdateClientPopup       = ref(false)
   const showFilterClientsPopup      = ref(false)
 
-  const clientToUpdate   = ref()
-
   let clientToUpdateId = undefined
   let clientToDeleteId = undefined
   let clientToViewId   = undefined
 
-  async function getUpdateClientDetailsPopup(clientId, stateData) {
-    clientToUpdateId            = clientId
-    currentStateData            = stateData
-    updateFormSchema            = await useUpdateClientSchema(clientId)
-    clientToUpdate.value        = await getClientDetails(clientId)
-    showUpdateClientPopup.value = true
+  function getUpdateClientDetailsPopup(clientId, stateData) {
+    clientToUpdateId             = clientId
+    currentStateData             = stateData
+    showUpdateClientPopup.value  = true
   }
 
   function getCreateClientPopup(stateData) {
@@ -397,10 +363,9 @@
 
         <UpdateInstanceComponent
           v-if="showUpdateClientPopup"
-          :validation-schema="updateClientValidationSchema"
           :request-function="updateClientDetailsRequest"
-          :instance-details="clientToUpdate"
-          :form-schema="updateFormSchema"
+          :form-schema-function="useUpdateClientSchema"
+          :instance-details-function="getClientDetails"
           :instance-id="clientToUpdateId"
           modal-title="Update Client"
           @hide-popup="showUpdateClientPopup=false"

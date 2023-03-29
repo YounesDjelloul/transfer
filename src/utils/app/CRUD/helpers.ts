@@ -142,7 +142,9 @@ export function formatUpdateSchema(fullSchema: object) {
   return result
 }
 
-export function generateValidationSchema(fullSchema: object) {
+export function generateValidationSchema(formSchema: object, translateFunction) {
+
+  const t = translateFunction
 
   const zodFunctionsRepo = {
     "string": "string",
@@ -150,33 +152,35 @@ export function generateValidationSchema(fullSchema: object) {
     "email": "string",
   }
 
-  function foo(fieldType, fieldName) {
+  function getZodField(fieldType: string, fieldName: string) {
     const currentZodFunction = zodFunctionsRepo[fieldType]
-    return zod[currentZodFunction]({required_error: "This field is required"})
+    return zod[currentZodFunction]({required_error: t(`auth.errors.${fieldName}.required`)})
   }
 
-  function recurse(schema) {
+  let result = zod.object({})
 
-    let current = zod.object({})
+  function handleNestedFields(parent, child, fieldType, fieldName) {
 
-    for (const fieldName in schema) {
+    let parentObject = result.shape[parent] ? result.shape[parent] : zod.object({})
 
-      const fieldProp = schema[fieldName]
+    parentObject = parentObject.extend({ [child]: getZodField(fieldType, fieldName) })
+    result       = result.extend({ [parent]: parentObject })
+  }
 
-      if (!fieldProp.required) {
-        continue
-      }
+  for (const fieldIndex in formSchema) {
 
-      if (fieldProp.type === "nested object") {
-        current = current.extend({ [fieldName] : recurse(fieldProp.children)})
-        continue
-      }
+    const fieldProp = formSchema[fieldIndex]
+    const fieldId   = fieldProp.id
+    const fieldName = fieldProp.name
 
-      current = current.extend({ [fieldName] : foo(fieldProp.type, fieldName)});
+    if (fieldId.includes(".")) {
+      const nesting = fieldId.split(".")
+      handleNestedFields(nesting[0], nesting[1], fieldProp.type, fieldName)
+      continue
     }
-    
-    return current
+
+    result = result.extend({ [fieldId] : getZodField(fieldProp.type, fieldName)});
   }
 
-  return recurse(fullSchema)
+  return result
 }
