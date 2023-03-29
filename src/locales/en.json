@@ -6,6 +6,8 @@
   "auth.label.promotional": "Receive promotional offers",
   "auth.action.login": "I already have an account",
   "auth.action.signup": "Sign Up",
+  "auth.placeholder.first_name": "Firstname",
+  "auth.placeholder.last_name": "Lastname",
   "auth.placeholder.username": "Username",
   "auth.placeholder.email": "Email Address",
   "auth.placeholder.password": "Password",

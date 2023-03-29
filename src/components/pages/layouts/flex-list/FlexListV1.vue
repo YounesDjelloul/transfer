@@ -1,107 +1,47 @@
 <script setup lang="ts">
 
   import { toRaw } from 'vue';
-
-  import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
-  import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
-  import { useCreateClientSchema, useUpdateClientSchema } from '/@src/utils/app/CRUD/clientsCache'
-
-  import {
-    deleteCurrentClient,
-    updateCurrentClient,
-    generateValidationSchema,
-  } from '/@src/utils/app/CRUD/helpers'
-
-  import {
-    createNewClient,
-    getClients,
-    updateClientDetailsRequest,
-    getClientDetails,
-    deleteClientRequest,
-  } from '/@src/utils/api/clients'
-
   import { z as zod } from 'zod'
   import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
+
+  import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
+  import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
+  import { generateValidationSchema } from '/@src/utils/app/CRUD/helpers'
 
   const notyf  = useNotyf()
   const { t }  = useI18n()
   const router = useRouter()
   const route  = useRoute()
 
-  const columns = {
-    id: {
-      label: 'Id',
-      sortable: true,
-    },
-    user__email: {
-      label: 'Email',
-      grow: true,
-    },
-    user__username: {
-      label: 'Username',
-      sortable: true,
-    },
-    user__first_name: {
-      label: 'Firstname',
-      sortable: true,
-    },
-    user__last_name: {
-      label: 'Lastname',
-      sortable: true,
-    },
-    actions: {
-      label: 'Actions',
-      align: 'end',
-    },
-  } as const
+  const props = defineProps<{
+    columns: object,
+    filtersFormSchema: object,
+    defaultFilters: string,
 
-  const creationFormSchema           = await useCreateClientSchema()
-  const createClientValidationSchema = generateValidationSchema(creationFormSchema, t)
+    fetchInstancesFunction: void,
+    createInstanceFormSchemaFunction: void,
+    updateInstanceFormSchemaFunction: void,
+    updateCurrentInstanceFunction: void,
+    deleteCurrentInstanceFunction: void,
+    createNewInstanceFunction: void,
+    updateInstanceDetailsFunction: void
+    getInstanceDetailsFunction: void,
+    deleteInstanceFunction: void,
+  }>()
 
-  const filtersFormSchema = [
-    {
-      name: 'username',
-      id: 'user__username',
-      placeholder: 'username',
-      as: 'input',
-      type: 'text',
-    },
-    {
-      name: 'first_name',
-      id: 'user__first_name',
-      placeholder: 'first_name',
-      as: 'input',
-      type: 'text',
-    },
-    {
-      name: 'last_name',
-      id: 'user__last_name',
-      placeholder: 'last_name',
-      as: 'input',
-      type: 'text',
-    },
-    {
-      name: 'person_type',
-      id: 'person_type',
-      placeholder: 'person_type',
-      as: 'select',
-      options: {
-        M: 'Moral Person',
-        P: 'Physical Person',
-      },
-    },
-  ]
+  const creationFormSchema             = await props.createInstanceFormSchemaFunction()
+  const createInstanceValidationSchema = generateValidationSchema(creationFormSchema, t)
 
-  const defaultLimit     = ref(20)
-  const totalClients     = ref(0)
-  const currentReload    = ref(false)
+  const defaultLimit    = ref(20)
+  const totalInstances  = ref(0)
+  const currentReload   = ref(false)
 
   function useQueryParam() {
 
     const defaultPage    = 1
     const defaultSearch  = ''
-    const defaultFilters = "user__username=&user__first_name=&user__last_name=&person_type="
+    const defaultFilters = props.defaultFilters
     const defaultSort    = ''
 
     const searchTerm = computed({
@@ -192,9 +132,9 @@
 
   let status            = undefined
   let currentStateData  = undefined
-  const operatedClient  = ref()
+  const operatedInstance  = ref()
 
-  const fetchClients = async() => {
+  const fetchInstances = async() => {
 
     const { page, searchTerm, filtersTerm, sort, reload } = queryParam
 
@@ -204,13 +144,13 @@
       
       switch (status) {
         case 'delete':
-          result = result.filter(deleteCurrentClient, clientToDeleteId)
+          result = result.filter(props.deleteCurrentInstanceFunction, instanceToDeleteId)
           break;
         case 'update':
-          result.forEach(updateCurrentClient, [clientToUpdateId, operatedClient])
+          result.forEach(props.updateCurrentInstanceFunction, [instanceToUpdateId, operatedInstance])
           break;
         case 'create':
-          result.unshift(toRaw(operatedClient.value))
+          result.unshift(toRaw(operatedInstance.value))
           break;
       }
 
@@ -234,42 +174,42 @@
     }
 
     const endpointRoute  = `?${sortQuery}${searchFilterQuery}${pageQuery}`
-    const { results, count } = await getClients(endpointRoute)
+    const { results, count } = await props.fetchInstancesFunction(endpointRoute)
 
-    totalClients.value  = count
+    totalInstances.value  = count
     return results
   }
 
-  const showCreateClientPopup       = ref(false)
-  const showDeleteClientPopup       = ref(false)
-  const showViewClientDetailsPopup  = ref(false)
-  const showUpdateClientPopup       = ref(false)
-  const showFilterClientsPopup      = ref(false)
+  const showCreateInstancePopup       = ref(false)
+  const showDeleteInstancePopup       = ref(false)
+  const showViewInstanceDetailsPopup  = ref(false)
+  const showUpdateInstancePopup       = ref(false)
+  const showFilterInstancesPopup      = ref(false)
 
-  let clientToUpdateId = undefined
-  let clientToDeleteId = undefined
-  let clientToViewId   = undefined
+  let instanceToUpdateId = undefined
+  let instanceToDeleteId = undefined
+  let instanceToViewId   = undefined
 
-  function getUpdateClientDetailsPopup(clientId, stateData) {
-    clientToUpdateId             = clientId
-    currentStateData             = stateData
-    showUpdateClientPopup.value  = true
+  function getUpdateInstanceDetailsPopup(instanceId, stateData) {
+    instanceToUpdateId            = instanceId
+    currentStateData              = stateData
+    showUpdateInstancePopup.value = true
   }
 
-  function getCreateClientPopup(stateData) {
+  function getCreateInstancePopup(stateData) {
     currentStateData       = stateData
-    showCreateClientPopup.value = true
+    showCreateInstancePopup.value = true
   }
 
-  function getDeleteClientPopup(clientId, stateData) {
-    clientToDeleteId            = clientId
+  function getDeleteInstancePopup(instanceId, stateData) {
+    instanceToDeleteId          = instanceId
     currentStateData            = stateData
-    showDeleteClientPopup.value = true
+    showDeleteInstancePopup.value = true
   }
 
-  function getViewClientDetailsPopup(clientId) {
-    clientToViewId                   = clientId
-    showViewClientDetailsPopup.value = true
+  function getViewInstanceDetailsPopup(instanceId) {
+    instanceToViewId                 = instanceId
+    showViewInstanceDetailsPopup.value = true
   }
 
   function reload(operation) {
@@ -277,32 +217,32 @@
     queryParam.reload = !currentReload.value
   }
 
-  function handleClientCreationAffect(data) {
+  function handleInstanceCreationAffect(data) {
 
     notyf.dismissAll()
-    notyf.success("Client Created Successfully!")
+    notyf.success("Record Created Successfully!")
 
-    showCreateClientPopup.value = false
-    operatedClient.value        = data
+    showCreateInstancePopup.value = false
+    operatedInstance.value        = data
     reload('create')
   }
 
-  function handleClientUpdateAffect(data) {
+  function handleInstanceUpdateAffect(data) {
 
     notyf.dismissAll()
-    notyf.success("Client Updated Successfully!")
+    notyf.success("Record Updated Successfully!")
 
-    showUpdateClientPopup.value = false
-    operatedClient.value        = data
+    showUpdateInstancePopup.value = false
+    operatedInstance.value        = data
     reload('update')
   }
 
-  function handleClientDeleteAffect() {
+  function handleInstanceDeleteAffect() {
 
     notyf.dismissAll()
-    notyf.success("Client Deleted Successfully!")
+    notyf.success("Record Deleted Successfully!")
 
-    showDeleteClientPopup.value = false
+    showDeleteInstancePopup.value = false
     reload('delete')
   }
 
@@ -315,8 +255,8 @@
       v-model:sort="queryParam.sort"
       :limit="defaultLimit"
       :columns="columns"
-      :data="fetchClients"
-      :total="totalClients"
+      :data="fetchInstances"
+      :total="totalInstances"
     >
       <template #default="wrapperState">
         <VFlexTableToolbar>
@@ -335,57 +275,57 @@
 
           <template #right>
             <VButtons>
-              <VButton @click="showFilterClientsPopup=true" color="primary" icon="feather:settings" outlined> Filters
+              <VButton @click="showFilterInstancesPopup=true" color="primary" icon="feather:settings" outlined> Filters
               </VButton>
-              <VButton @click="getCreateClientPopup(wrapperState.data)" color="primary" icon="feather:plus"> Add User
+              <VButton @click="getCreateInstancePopup(wrapperState.data)" color="primary" icon="feather:plus"> Add User
               </VButton>
             </VButtons>
           </template>
         </VFlexTableToolbar>
 
         <CreateInstanceComponent
-          v-if="showCreateClientPopup"
-          :validation-schema="createClientValidationSchema"
-          :request-function="createNewClient"
+          v-if="showCreateInstancePopup"
+          :validation-schema="createInstanceValidationSchema"
+          :request-function="createNewInstanceFunction"
           :formSchema="creationFormSchema"
-          modal-title="Create New Client"
-          @hide-popup="showCreateClientPopup=false"
-          @handle-create-instance-affect="handleClientCreationAffect"
+          modal-title="Create New Record"
+          @hide-popup="showCreateInstancePopup=false"
+          @handle-create-instance-affect="handleInstanceCreationAffect"
         />
 
         <ViewInstanceComponent
-          v-if="showViewClientDetailsPopup"
-          :instance-id="clientToViewId"
-          :request-function="getClientDetails"
-          modal-title="Client Details"
-          @hide-popup="showViewClientDetailsPopup=false"
+          v-if="showViewInstanceDetailsPopup"
+          :instance-id="instanceToViewId"
+          :request-function="getInstanceDetailsFunction"
+          modal-title="Record Details"
+          @hide-popup="showViewInstanceDetailsPopup=false"
         />
 
         <UpdateInstanceComponent
-          v-if="showUpdateClientPopup"
-          :request-function="updateClientDetailsRequest"
-          :form-schema-function="useUpdateClientSchema"
-          :instance-details-function="getClientDetails"
-          :instance-id="clientToUpdateId"
-          modal-title="Update Client"
-          @hide-popup="showUpdateClientPopup=false"
-          @handle-update-instance-affect="handleClientUpdateAffect"
+          v-if="showUpdateInstancePopup"
+          :request-function="updateInstanceDetailsFunction"
+          :form-schema-function="updateInstanceFormSchemaFunction"
+          :instance-details-function="getInstanceDetailsFunction"
+          :instance-id="instanceToUpdateId"
+          modal-title="Update Record"
+          @hide-popup="showUpdateInstancePopup=false"
+          @handle-update-instance-affect="handleInstanceUpdateAffect"
         />
 
         <DeleteInstanceComponent
-          v-if="showDeleteClientPopup"
-          :request-function="deleteClientRequest"
-          :instance-id="clientToDeleteId"
-          modal-title="Delete Client"
-          @hide-popup="showDeleteClientPopup=false"
-          @handle-delete-instance-affect="handleClientDeleteAffect"
+          v-if="showDeleteInstancePopup"
+          :request-function="deleteInstanceFunction"
+          :instance-id="instanceToDeleteId"
+          modal-title="Delete Record"
+          @hide-popup="showDeleteInstancePopup=false"
+          @handle-delete-instance-affect="handleInstanceDeleteAffect"
         />
         
         <FilterListComponent
-          v-if="showFilterClientsPopup"
+          v-if="showFilterInstancesPopup"
           :formSchema="filtersFormSchema"
-          modal-title="Filter Clients"
-          @hide-popup="showFilterClientsPopup=false"
+          modal-title="Filter Records"
+          @hide-popup="showFilterInstancesPopup=false"
           @filter-list="(filters) => queryParam.filtersTerm = filters"
         />
 
@@ -402,7 +342,7 @@
             <div v-else-if="wrapperState.total === 0" class="flex-list-inner">
               <VPlaceholderSection
                 title="No matches"
-                subtitle="There is no clients founds."
+                subtitle="No instances found."
                 class="my-6"
               >
                 <template #image>
@@ -444,9 +384,9 @@
             </template>
             <template v-if="column.key == 'actions'">
               <FlexTableDropdown
-                @view-detail="getViewClientDetailsPopup(row.id)"
-                @update-details="getUpdateClientDetailsPopup(row.id, wrapperState.data)"
-                @delete-client="getDeleteClientPopup(row.id, wrapperState.data)"
+                @view-detail="getViewInstanceDetailsPopup(row.id)"
+                @update-details="getUpdateInstanceDetailsPopup(row.id, wrapperState.data)"
+                @delete-instance="getDeleteInstancePopup(row.id, wrapperState.data)"
               />
             </template>
           </template>

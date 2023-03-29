@@ -2,7 +2,7 @@
 const emits = defineEmits<{
   (e: 'viewDetail'): void
   (e: 'updateDetails'): void
-  (e: 'deleteClient'): void
+  (e: 'deleteInstance'): void
 }>()
 </script>
 
@@ -25,7 +25,7 @@ const emits = defineEmits<{
         </div>
         <div class="meta">
           <span>View</span>
-          <span>View client details</span>
+          <span>View details</span>
         </div>
       </a>
 
@@ -45,7 +45,7 @@ const emits = defineEmits<{
         </div>
         <div class="meta">
           <span>Update</span>
-          <span>Update client details</span>
+          <span>Update details</span>
         </div>
       </a>
 
@@ -57,7 +57,7 @@ const emits = defineEmits<{
         class="dropdown-item is-media"
         @click.prevent="
           () => {
-            emits('deleteClient')
+            emits('deleteInstance')
             close()
           }
         "
@@ -67,7 +67,7 @@ const emits = defineEmits<{
         </div>
         <div class="meta">
           <span>Delete</span>
-          <span>Delete client record</span>
+          <span>Delete record</span>
         </div>
       </a>
     </template>
