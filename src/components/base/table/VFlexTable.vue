@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type VNode } from 'vue'
 import { flewTableWrapperSymbol } from './VFlexTableWrapper.vue'
+import { getValueFromNestedObject } from '/@src/utils/app/VFlexTable/helpers'
 
 export interface VFlexTableColumn {
   key: string
@@ -90,8 +91,6 @@ const columns = computed(() => {
   return columns
 })
 
-const handleNested = (fieldProps, path) => (path.split('.').reduce((value, el) => value[el], fieldProps))
-
 </script>
 
 <template>
@@ -162,7 +161,7 @@ const handleNested = (fieldProps, path) => (path.split('.').reduce((value, el) =
                   :row="row"
                   :column="column"
                   :index="index"
-                  :value="column.format(handleNested(row, column.id), row, index)"
+                  :value="column.format(getValueFromNestedObject(row, column.id), row, index)"
                 >
                   <component
                     :is="{ render: () => column.renderRow?.(row, column, index) }"
@@ -170,7 +169,7 @@ const handleNested = (fieldProps, path) => (path.split('.').reduce((value, el) =
                   ></component>
                   <span
                     v-else-if="
-                      typeof column.format(handleNested(row, column.id), row, index) === 'object'
+                      typeof column.format(getValueFromNestedObject(row, column.id), row, index) === 'object'
                     "
                     :class="[
                       column.cellClass,
@@ -180,7 +179,7 @@ const handleNested = (fieldProps, path) => (path.split('.').reduce((value, el) =
                   >
                     <details v-if="printObjects">
                       <div class="language-json py-4">
-                        <pre><code>{{ column.format(handleNested(row, column.id), row, index) }}</code></pre>
+                        <pre><code>{{ column.format(getValueFromNestedObject(row, column.id), row, index) }}</code></pre>
                       </div>
                     </details>
                   </span>
@@ -192,7 +191,7 @@ const handleNested = (fieldProps, path) => (path.split('.').reduce((value, el) =
                       !column.inverted && (column.bold ? 'dark-text' : 'light-text'),
                     ]"
                   >
-                    {{ column.format(handleNested(row, column.id), row, index) }}
+                    {{ column.format(getValueFromNestedObject(row, column.id), row, index) }}
                   </span>
                 </slot>
               </VFlexTableCell>
