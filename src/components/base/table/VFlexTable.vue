@@ -61,7 +61,7 @@ const columns = computed(() => {
   let columns: VFlexTableColumn[] = []
 
   if (columnsSrc) {
-    for (const [key, label] of Object.entries(columnsSrc)) {
+    for (let [key, label] of Object.entries(columnsSrc)) {
       if (typeof label === 'string') {
         columns.push({
           format: defaultFormatter,
@@ -89,6 +89,9 @@ const columns = computed(() => {
 
   return columns
 })
+
+const handleNested = (fieldProps, path) => (path.split('.').reduce((value, el) => value[el], fieldProps))
+
 </script>
 
 <template>
@@ -159,7 +162,7 @@ const columns = computed(() => {
                   :row="row"
                   :column="column"
                   :index="index"
-                  :value="column.format(row[column.key], row, index)"
+                  :value="column.format(handleNested(row, column.id), row, index)"
                 >
                   <component
                     :is="{ render: () => column.renderRow?.(row, column, index) }"
@@ -167,7 +170,7 @@ const columns = computed(() => {
                   ></component>
                   <span
                     v-else-if="
-                      typeof column.format(row[column.key], row, index) === 'object'
+                      typeof column.format(handleNested(row, column.id), row, index) === 'object'
                     "
                     :class="[
                       column.cellClass,
@@ -177,7 +180,7 @@ const columns = computed(() => {
                   >
                     <details v-if="printObjects">
                       <div class="language-json py-4">
-                        <pre><code>{{ column.format(row[column.key], row, index) }}</code></pre>
+                        <pre><code>{{ column.format(handleNested(row, column.id), row, index) }}</code></pre>
                       </div>
                     </details>
                   </span>
@@ -189,7 +192,7 @@ const columns = computed(() => {
                       !column.inverted && (column.bold ? 'dark-text' : 'light-text'),
                     ]"
                   >
-                    {{ column.format(row[column.key], row, index) }}
+                    {{ column.format(handleNested(row, column.id), row, index) }}
                   </span>
                 </slot>
               </VFlexTableCell>

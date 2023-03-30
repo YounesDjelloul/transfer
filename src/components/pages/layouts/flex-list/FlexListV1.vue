@@ -362,26 +362,6 @@
           </template>
 
           <template #body-cell="{ row, column }">
-            <template v-if="column.key == 'user__email'">
-              <VFlexTableCell>
-                <span>{{ row.user.email }}</span>
-              </VFlexTableCell>
-            </template>
-            <template v-if="column.key == 'user__username'">
-              <VFlexTableCell>
-                <span>{{ row.user.username }}</span>
-              </VFlexTableCell>
-            </template>
-            <template v-if="column.key == 'user__first_name'">
-              <VFlexTableCell>
-                <span>{{ row.user.first_name }}</span>
-              </VFlexTableCell>
-            </template>
-            <template v-if="column.key == 'user__last_name'">
-              <VFlexTableCell>
-                <span>{{ row.user.last_name }}</span>
-              </VFlexTableCell>
-            </template>
             <template v-if="column.key == 'actions'">
               <FlexTableDropdown
                 @view-detail="getViewInstanceDetailsPopup(row.id)"

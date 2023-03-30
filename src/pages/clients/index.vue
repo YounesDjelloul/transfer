@@ -16,31 +16,40 @@
     deleteClientRequest,
   } from '/@src/utils/api/clients'
 
+  const email = "user.email"
+
   const columns = {
     id: {
+      id: "id",
       label: 'Id',
       sortable: true,
     },
-    user__email: {
+    email: {
+      id: "user.email",
       label: 'Email',
       grow: true,
     },
-    user__username: {
+    username: {
+      id: "user.username",
       label: 'Username',
       sortable: true,
     },
-    user__first_name: {
+    first_name: {
+      id: "user.first_name",
       label: 'Firstname',
       sortable: true,
     },
-    user__last_name: {
+    last_name: {
+      id: "user.last_name",
       label: 'Lastname',
       sortable: true,
     },
     actions: {
+      id: "actions",
       label: 'Actions',
       align: 'end',
     },
+
   } as const
 
   const filtersFormSchema = [
@@ -65,19 +74,9 @@
       as: 'input',
       type: 'text',
     },
-    {
-      name: 'person_type',
-      id: 'person_type',
-      placeholder: 'person_type',
-      as: 'select',
-      options: {
-        M: 'Moral Person',
-        P: 'Physical Person',
-      },
-    },
   ]
 
-  const defaultFilters    = "user__username=&user__first_name=&user__last_name=&person_type="
+  const defaultFilters    = "user__username=&user__first_name=&user__last_name="
 
   const viewWrapper = useViewWrapper()
   viewWrapper.setPageTitle('Clients')
