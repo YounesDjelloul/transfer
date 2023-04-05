@@ -109,6 +109,7 @@
                     <p v-if="field?.errors?.value?.length" class="help is-danger">
                       {{ field.errors?.value?.join(', ') }}
                     </p>
+                    <p class="help is-primary" v-else-if="schemaField.required">Required Field</p>
                   </VControl>
                 </VField>
               </div>

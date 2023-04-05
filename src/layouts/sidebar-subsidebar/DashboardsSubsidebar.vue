@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const emit = defineEmits(['close'])
+  const emit = defineEmits(['close'])
+  import APP_URLs from '/@src/utils/app/urls'
 </script>
 
 <template>
@@ -18,13 +19,13 @@ const emit = defineEmits(['close'])
     <div class="inner" data-simplebar>
       <ul>
         <li>
-          <RouterLink to="dashboard">
+          <RouterLink :to="APP_URLs.DASHBOARD">
             <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
             Home
           </RouterLink>
         </li>
         <li>
-          <RouterLink to="clients">
+          <RouterLink :to="APP_URLs.CLIENTS">
             <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
             Clients
           </RouterLink>

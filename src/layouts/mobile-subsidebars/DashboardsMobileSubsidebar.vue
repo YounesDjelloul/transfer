@@ -7,13 +7,13 @@
 
       <ul class="submenu" data-simplebar>
         <li>
-          <RouterLink to="dashboard">
+          <RouterLink :to="APP_URLs.DASHBOARD">
             <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
             Home
           </RouterLink>
         </li>
         <li>
-          <RouterLink to="clients">
+          <RouterLink :to="APP_URLs.CLIENTS">
             <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
             Clients
           </RouterLink>

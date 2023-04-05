@@ -7,7 +7,8 @@
 
   import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
   import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
-  import { generateValidationSchema } from '/@src/utils/app/CRUD/helpers'
+  import { generateValidationSchema, generateInitialValues } from '/@src/utils/app/CRUD/helpers'
+  import { arrayPop } from '/@src/utils/app/profile/helpers'
 
   const notyf  = useNotyf()
   const { t }  = useI18n()
@@ -32,6 +33,7 @@
 
   const creationFormSchema             = await props.createInstanceFormSchemaFunction()
   const createInstanceValidationSchema = generateValidationSchema(creationFormSchema, t)
+  const createInstanceInitialValues    = generateInitialValues({}, creationFormSchema)
 
   const defaultLimit    = ref(20)
   const totalInstances  = ref(0)
@@ -286,6 +288,7 @@
         <CreateInstanceComponent
           v-if="showCreateInstancePopup"
           :validation-schema="createInstanceValidationSchema"
+          :initial-values="createInstanceInitialValues"
           :request-function="createNewInstanceFunction"
           :formSchema="creationFormSchema"
           modal-title="Create New Record"

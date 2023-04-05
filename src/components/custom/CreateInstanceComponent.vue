@@ -16,15 +16,20 @@
 
   const props = defineProps<{
     validationSchema: object,
+    initialValues: object,
     requestFunction: void,
     modalTitle: string,
     formSchema: object,
   }>()
 
   const validationSchema = toFormValidator(props.validationSchema)
+  const initialValues    = props.initialValues
+
+  console.log(initialValues)
 
   const { handleSubmit } = useForm({
     validationSchema,
+    initialValues,
   })
 
   const isLoading = ref(false)
@@ -35,8 +40,10 @@
 
     try {
 
+      console.log(values)
+
       const toRequest = props.requestFunction
-      const response  = await toRequest(values)
+      //const response  = await toRequest(values)
 
       emits('handleCreateInstanceAffect', response.data)
     } catch (err) {
@@ -67,7 +74,7 @@
         <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
           <VControl class="has-icons-left" icon="feather:user">
             <VSelect v-if="schemaField.type === 'choice'">
-              <VOption disabled hidden value="undefined">Select a Type</VOption>
+              <VOption disabled hidden value="">Select a Type</VOption>
               <VOption v-for="choice in schemaField.choices" :value="choice.value">{{ choice.display_name }}</VOption>
             </VSelect>
             <VInput
@@ -78,6 +85,7 @@
             <p v-if="field?.errors?.value?.length" class="help is-danger">
               {{ field.errors?.value?.join(', ') }}
             </p>
+            <p class="help is-primary" v-else-if="schemaField.required">Required Field</p>
           </VControl>
         </VField>
       </form>

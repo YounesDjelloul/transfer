@@ -4,13 +4,25 @@ import { useI18n } from 'vue-i18n'
 export function generateInitialValues(instance: object, schema: []) {
   let result = {}
 
+  function recurse(nesting, val) {
+
+    const lastKey = nesting.pop()
+    const lastObj = nesting.reduce((result, key) => 
+      result[key] = result[key] || {}, result
+    )
+
+    lastObj[lastKey] = val
+  }
+
   for (const field of schema) {
 
-    if (!instance.hasOwnProperty(field.name)) { 
+    const currentValue = instance[field.name] ?? ""
+
+    if (field.id.includes(".")) {
+      const nesting = field.id.split(".")
+      recurse(nesting, currentValue)
       continue
     }
-
-    const currentValue = instance[field.name] !== null ? instance[field.name] : ''
 
     result[field.name] = currentValue
   }
@@ -70,7 +82,7 @@ export function formatError(key?: string | undefined, errorObject: object) {
       const errorValue = errorInner[one]
 
       if (Array.isArray(errorValue)) {
-        errorKey ? result[`${errorKey}.${one}`] = errorValue : result[one] = errorValue
+        errorKey ? result[`${errorKey}.${one}`] = errorValue[0] : result[one] = errorValue[0]
       
       } else if (typeof errorValue === 'object') {
         recurse(one, errorValue)
@@ -91,8 +103,8 @@ export function formatCreateSchema(fullSchema: object) {
     for (const field in obj) {
 
       let fieldProp: object = obj[field]
-      
-      if (!fieldProp.required) {
+
+      if (fieldProp.read_only) {
         continue
       }
 
@@ -138,7 +150,6 @@ export function formatUpdateSchema(fullSchema: object) {
   }
 
   recurse("", fullSchema)
-
   return result
 }
 
@@ -152,18 +163,27 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
     "email": "string",
   }
 
-  function getZodField(fieldType: string, fieldName: string) {
-    const currentZodFunction = zodFunctionsRepo[fieldType]
-    return zod[currentZodFunction]({required_error: t(`auth.errors.${fieldName}.required`)})
+  function getZodField(fieldProp) {
+
+    const fieldType = fieldProp.fieldType
+    const currentZodFunction = zodFunctionsRepo[fieldType] ?? "string"
+    
+    let result = zod[currentZodFunction]()
+
+    if (fieldProp.required) {
+      result = result.min(1, {message: "Field Required"})
+    }
+
+    return result
   }
 
   let result = zod.object({})
 
-  function handleNestedFields(parent, child, fieldType, fieldName) {
+  function handleNestedFields(parent, child, fieldProp) {
 
-    let parentObject = result.shape[parent] ? result.shape[parent] : zod.object({})
+    let parentObject = result.shape[parent] ?? zod.object({})
 
-    parentObject = parentObject.extend({ [child]: getZodField(fieldType, fieldName) })
+    parentObject = parentObject.extend({ [child]: getZodField(fieldProp) })
     result       = result.extend({ [parent]: parentObject })
   }
 
@@ -175,11 +195,11 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
 
     if (fieldId.includes(".")) {
       const nesting = fieldId.split(".")
-      handleNestedFields(nesting[0], nesting[1], fieldProp.type, fieldName)
+      handleNestedFields(nesting[0], nesting[1], fieldProp)
       continue
     }
 
-    result = result.extend({ [fieldId] : getZodField(fieldProp.type, fieldName)});
+    result = result.extend({ [fieldId] : getZodField(fieldProp)});
   }
 
   return result

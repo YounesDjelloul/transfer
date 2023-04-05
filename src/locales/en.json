@@ -30,6 +30,7 @@
   "auth.login.credentials.invalid": "Invalid Credentials",
   "auth.logout.success": "Logging Out...",
   "form.invalid": "Form Invalid",
+  "profile.form.update.success": "Profile Updated Successfully",
   "pages.not-found.page-title": "Page not found",
   "pages.not-found.page-heading": "We couldn't find that page",
   "pages.not-found.page-body": "Looks like we couldn't find that page. Please try again or contact an administrator if the problem persists.",

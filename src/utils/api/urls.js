@@ -5,5 +5,6 @@ API_URLs.LOGIN = '/auth/login/'
 API_URLs.CURRENT_USER_PROFILE = '/auth/user/'
 API_URLs.NEW_ACCESS_TOKEN = '/auth/token/refresh/'
 API_URLs.CLIENTS = '/clients/'
+API_URLs.USERS = '/users/'
 
 export default API_URLs

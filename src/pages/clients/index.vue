@@ -19,6 +19,11 @@
   const email = "user.email"
 
   const columns = {
+    user_avatar: {
+      id: "user.user_avatar.url",
+      label: 'Avatar',
+      media: true,
+    },
     id: {
       id: "id",
       label: 'Id',

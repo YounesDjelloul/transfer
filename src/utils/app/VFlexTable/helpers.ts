@@ -1,3 +1,13 @@
 export function getValueFromNestedObject(fieldProps: object, path: string) {
-	return path.split('.').reduce((value, el) => value[el], fieldProps)
+
+	const nesting = path.split(".")
+	let result = fieldProps
+
+	for (const one of nesting) {
+		
+		if (!result) return null
+		result = result[one]
+	}
+
+	return result
 }

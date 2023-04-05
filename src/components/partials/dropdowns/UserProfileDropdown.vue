@@ -41,7 +41,7 @@
         </div>
       </div>
 
-      <a href="#" role="menuitem" class="dropdown-item is-media">
+      <RouterLink :to="APP_URLs.VIEW_PROFILE" role="menuitem" class="dropdown-item is-media">
         <div class="icon">
           <i aria-hidden="true" class="lnil lnil-user-alt"></i>
         </div>
@@ -49,7 +49,7 @@
           <span>Profile</span>
           <span>View your profile</span>
         </div>
-      </a>
+      </RouterLink>
 
       <hr class="dropdown-divider" />
 
@@ -75,7 +75,7 @@
 
       <hr class="dropdown-divider" />
 
-      <a href="#" role="menuitem" class="dropdown-item is-media">
+      <RouterLink :to="APP_URLs.UPDATE_PROFILE" role="menuitem" class="dropdown-item is-media">
         <div class="icon">
           <i aria-hidden="true" class="lnil lnil-cog"></i>
         </div>
@@ -83,7 +83,7 @@
           <span>Settings</span>
           <span>Account settings</span>
         </div>
-      </a>
+      </RouterLink>
 
       <hr class="dropdown-divider" />
 
