@@ -3,6 +3,8 @@
   import { useViewWrapper } from '/@src/stores/viewWrapper'
   import { useCreateClientSchema, useUpdateClientSchema } from '/@src/utils/app/CRUD/clientsCache'
 
+  import { useFilterClientsSchema } from '/@src/utils/app/CRUD/filters'
+
   import {
     deleteCurrentClient,
     updateCurrentClient,
@@ -15,8 +17,6 @@
     getClientDetails,
     deleteClientRequest,
   } from '/@src/utils/api/clients'
-
-  const email = "user.email"
 
   const columns = {
     user_avatar: {
@@ -57,32 +57,6 @@
 
   } as const
 
-  const filtersFormSchema = [
-    {
-      name: 'username',
-      id: 'user__username',
-      placeholder: 'username',
-      as: 'input',
-      type: 'text',
-    },
-    {
-      name: 'first_name',
-      id: 'user__first_name',
-      placeholder: 'first_name',
-      as: 'input',
-      type: 'text',
-    },
-    {
-      name: 'last_name',
-      id: 'user__last_name',
-      placeholder: 'last_name',
-      as: 'input',
-      type: 'text',
-    },
-  ]
-
-  const defaultFilters    = "user__username=&user__first_name=&user__last_name="
-
   const viewWrapper = useViewWrapper()
   viewWrapper.setPageTitle('Clients')
 
@@ -96,10 +70,9 @@
     <div class="column is-12">
       <FlexListV1
         :columns="columns"
-        :filters-form-schema="filtersFormSchema"
-        :default-filters="defaultFilters"
 
         :fetch-instances-function="getClients"
+        :filter-instances-form-schema-function="useFilterClientsSchema"
         :create-instance-form-schema-function="useCreateClientSchema"
         :update-instance-form-schema-function="useUpdateClientSchema"
         :update-current-instance-function="updateCurrentClient"

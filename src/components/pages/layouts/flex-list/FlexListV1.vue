@@ -5,10 +5,9 @@
   import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
 
-  import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
+  import { convertObjectToFilterString, convertSchemaToEmptyFilterString } from '/@src/utils/app/CRUD/filters'
   import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
   import { generateValidationSchema, generateInitialValues } from '/@src/utils/app/CRUD/helpers'
-  import { arrayPop } from '/@src/utils/app/profile/helpers'
 
   const notyf  = useNotyf()
   const { t }  = useI18n()
@@ -17,10 +16,9 @@
 
   const props = defineProps<{
     columns: object,
-    filtersFormSchema: object,
-    defaultFilters: string,
 
     fetchInstancesFunction: void,
+    filterInstancesFormSchemaFunction: void,
     createInstanceFormSchemaFunction: void,
     updateInstanceFormSchemaFunction: void,
     updateCurrentInstanceFunction: void,
@@ -35,6 +33,8 @@
   const createInstanceValidationSchema = generateValidationSchema(creationFormSchema, t)
   const createInstanceInitialValues    = generateInitialValues({}, creationFormSchema)
 
+  const filtersFormSchema = await props.filterInstancesFormSchemaFunction()
+
   const defaultLimit    = ref(20)
   const totalInstances  = ref(0)
   const currentReload   = ref(false)
@@ -43,7 +43,7 @@
 
     const defaultPage    = 1
     const defaultSearch  = ''
-    const defaultFilters = props.defaultFilters
+    const defaultFilters = convertSchemaToEmptyFilterString(filtersFormSchema)
     const defaultSort    = ''
 
     const searchTerm = computed({

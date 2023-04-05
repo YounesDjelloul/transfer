@@ -161,6 +161,7 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
     "string": "string",
     "choice": "string",
     "email": "string",
+    "image upload": "any",
   }
 
   function getZodField(fieldProp) {

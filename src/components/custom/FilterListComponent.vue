@@ -54,13 +54,13 @@
         <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
           <VControl class="has-icons-left" icon="feather:user">
             <VSelect v-if="schemaField.as === 'select'">
-              <VOption value="">Select a Type</VOption>
+              <VOption value>Select a Type</VOption>
               <VOption v-for="(option, index) in schemaField.options" :value="index">{{ option }}</VOption>
             </VSelect>
             <VInput
               v-else
               :type="schemaField.type"
-              :placeholder="t(`auth.placeholder.${schemaField.placeholder}`)"
+              :placeholder="schemaField.name"
               :autocomplete="schemaField.name"
             />
           </VControl>

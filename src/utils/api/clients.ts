@@ -42,3 +42,9 @@ export async function getUpdateClientSchema(clientId: number) {
 	const { data } = await api.options(API_URLs.CLIENTS+clientId+'/')
 	return data
 }
+
+export async function getFilterClientsSchema() {
+
+	const { data } = await api.options(API_URLs.CLIENTS)
+	return data
+}
