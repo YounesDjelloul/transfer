@@ -1,17 +1,22 @@
 <script setup lang="ts">
 
+  import 'vue-search-select/dist/VueSearchSelect.css'
+  import { ModelListSelect } from 'vue-search-select'
   import { useForm, ErrorMessage } from 'vee-validate'
   import { toFormValidator } from '@vee-validate/zod'
   import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
   import { formatError } from '/@src/utils/app/CRUD/helpers'
 
+  import { useHandleInstance } from '/@src/stores/handleInstance'
+
+  const handleInstance = useHandleInstance()
+
   const { t }  = useI18n()
   const notyf  = useNotyf()
 
   const emits = defineEmits<{
     (e: 'handleCreateInstanceAffect', data): void
-    (e: 'hidePopup'): void
   }>()
 
   const props = defineProps<{
@@ -24,8 +29,6 @@
 
   const validationSchema = toFormValidator(props.validationSchema)
   const initialValues    = props.initialValues
-
-  console.log(initialValues)
 
   const { handleSubmit } = useForm({
     validationSchema,
@@ -67,14 +70,15 @@
     size="meduim"
     actions="right"
     noscroll
-    @close="$emit('hidePopup')"
+    @close="handleInstance.showCreateInstancePopup=false"
   >
     <template #content>
       <form class="modal-form">
         <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
           <VControl class="has-icons-left" icon="feather:user">
-            <VSelect v-if="schemaField.type === 'choice'">
-              <VOption disabled hidden value="">Select a Type</VOption>
+            <VInput v-if="schemaField.type === 'field'" />
+            <VSelect v-if="schemaField.html_input_type === 'select'">
+              <VOption disabled hidden value="">Select an option</VOption>
               <VOption v-for="choice in schemaField.choices" :value="choice.value">{{ choice.display_name }}</VOption>
             </VSelect>
             <VInput

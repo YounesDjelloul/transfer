@@ -15,20 +15,20 @@ export async function createNewClient(body: object) {
 	return await api.post(API_URLs.CLIENTS, body)
 }
 
-export async function getClientDetails(clientId: number) {
+export async function getClientDetails(clientPk: string) {
 
-	const { data: data } = await api.get(API_URLs.CLIENTS+clientId)
+	const { data: data } = await api.get(API_URLs.CLIENTS+clientPk)
 	return data
 }
 
-export async function deleteClientRequest(clientId: number) {
+export async function deleteClientRequest(clientPk: string) {
 
-	const response = await api.delete(API_URLs.CLIENTS+clientId)
+	const response = await api.delete(API_URLs.CLIENTS+clientPk)
 }
 
-export async function updateClientDetailsRequest(clientId: number, body: object) {
+export async function updateClientDetailsRequest(clientPk: string, body: object) {
 
-	return await api.put(API_URLs.CLIENTS+clientId+'/', body)
+	return await api.put(API_URLs.CLIENTS+clientPk+'/', body)
 }
 
 export async function getCreateClientSchema() {
@@ -37,9 +37,9 @@ export async function getCreateClientSchema() {
 	return data
 }
 
-export async function getUpdateClientSchema(clientId: number) {
+export async function getUpdateClientSchema(clientPk: string) {
 
-	const { data } = await api.options(API_URLs.CLIENTS+clientId+'/')
+	const { data } = await api.options(API_URLs.CLIENTS+clientPk+'/')
 	return data
 }
 

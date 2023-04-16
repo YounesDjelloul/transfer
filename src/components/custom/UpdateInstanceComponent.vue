@@ -7,12 +7,14 @@
 
   import { generateInitialValues, formatError, generateValidationSchema } from '/@src/utils/app/CRUD/helpers'
 
-  const notyf       = useNotyf()
-  const { t }       = useI18n()
+  import { useHandleInstance } from '/@src/stores/handleInstance'
+
+  const handleInstance = useHandleInstance()
+  const notyf          = useNotyf()
+  const { t }          = useI18n()
 
   const emits = defineEmits<{
     (e: 'handleUpdateInstanceAffect', data): void
-    (e: 'hidePopup'): void
   }>()
 
   const props = defineProps<{
@@ -20,7 +22,6 @@
     formSchemaFunction: void,
     instanceDetailsFunction: void,
     modalTitle: string,
-    instanceId: number,
   }>()
 
   const isLoading  = ref(true)
@@ -34,14 +35,14 @@
 
     try {
       
-      formSchema       = await props.formSchemaFunction(props.instanceId)
+      formSchema       = await props.formSchemaFunction(handleInstance.instanceToUpdatePk)
       validationSchema = generateValidationSchema(formSchema)
-      instanceDetails  = await props.instanceDetailsFunction(props.instanceId)
+      instanceDetails  = await props.instanceDetailsFunction(handleInstance.instanceToUpdatePk)
       initialValues    = generateInitialValues(instanceDetails, formSchema)
 
     } catch (error) {
       notyf.error(error.response.data.detail)
-      emits('hidePopup')
+      handleInstance.showUpdateInstancePopup = false
 
     } finally {
       isLoading.value = false
@@ -83,7 +84,7 @@
     size="large"
     actions="right"
     noscroll
-    @close="$emit('hidePopup')"
+    @close="handleInstance.showUpdateInstancePopup=false"
   >
     <template #content>
       <VPlaceload v-if="isLoading" />

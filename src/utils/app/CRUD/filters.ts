@@ -6,36 +6,20 @@ export function convertObjectToFilterString(obj: object) {
 	let result: string = ''
 
 	for (const key in obj) {
-		result += `${key}=${obj[key]}&`
+		const currentValue = obj[key]
+
+		if (!currentValue) {
+			continue
+		}
+
+		result += `${key}=${currentValue}&`
 	}
 
 	return result.slice(0, -1)
-}
-
-export function convertSchemaToEmptyFilterString(filterSchema: object) {
-
-	let result: string = ''
-
-	for (const one of filterSchema) {
-		result += `${one.id}=&`
-	}
-
-	return result.slice(0, -1)
-}
-
-export function convertFilterSchemaToObject(schema: object[]) {
-
-	const result: object = {}
-
-	for (const schemaField of schema) {
-		result[schemaField.id] = ''
-	}
-
-	return result
 }
 
 export async function useFilterClientsSchema() {
 
-	const { filters } = await getFilterClientsSchema()
-	return formatCreateSchema(filters.filtering)
+	const { filtering_schema } = await getFilterClientsSchema()
+	return formatCreateSchema(filtering_schema)
 }

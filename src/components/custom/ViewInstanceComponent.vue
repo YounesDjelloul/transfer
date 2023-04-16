@@ -2,15 +2,13 @@
 
   import { useNotyf } from '/@src/composable/useNotyf'
   import { formatView } from '/@src/utils/app/CRUD/helpers'
+  import { useHandleInstance } from '/@src/stores/handleInstance'
 
-	const emits = defineEmits<{
-    (e: 'hidePopup'): void
-  }>()
+  const handleInstance = useHandleInstance()
 
   const props = defineProps<{
     requestFunction: void,
     modalTitle: string,
-    instanceId: number,
   }>()
 
 	const notyf = useNotyf()
@@ -23,12 +21,13 @@
     try {
       
       const toRequest = props.requestFunction
-      const response = await toRequest(props.instanceId)
+
+      const response = await toRequest(handleInstance.instanceToViewPk)
       instance.value = await formatView(response)
 
     } catch (error) {
       notyf.error(error)
-      emits('hidePopup')
+      handleInstance.showViewInstanceDetailsPopup = false
 
     } finally {
       isLoading.value = false
@@ -44,7 +43,7 @@
     size="meduim"
     actions="right"
     noscroll
-    @close="$emit('hidePopup')"
+    @close="handleInstance.showViewInstanceDetailsPopup=false"
   >
     <template #content>
       <VPlaceload v-if="isLoading" />

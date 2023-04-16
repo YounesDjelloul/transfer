@@ -1,18 +1,19 @@
 <script setup lang='ts'>
 	
   import { useNotyf } from '/@src/composable/useNotyf'
+  import { useHandleInstance } from '/@src/stores/handleInstance'
+
+  const handleInstance = useHandleInstance()
 
   const notyf = useNotyf()
 
 	const emits = defineEmits<{
     (e: 'handleDeleteInstanceAffect'): void
-    (e: 'hidePopup'): void
   }>()
 	
   const props = defineProps<{
     requestFunction: void,
     modalTitle: string,
-    instanceId: number,
   }>()
 
 	const isLoading = ref(false)
@@ -24,7 +25,7 @@
     try {
 
       const toDelete = props.requestFunction
-      const response = await toDelete(props.instanceId)
+      const response = await toDelete(handleInstance.instanceToDeletePk)
       emits('handleDeleteInstanceAffect')
 
     } catch (err) {
@@ -44,7 +45,7 @@
     size="meduim"
     actions="right"
     noscroll
-    @close="$emit('hidePopup')"
+    @close="handleInstance.showDeleteInstancePopup=false"
   >
     <template #content>
       <VPlaceload v-if="isLoading" />

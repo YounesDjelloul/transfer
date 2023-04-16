@@ -4,159 +4,48 @@
   import { z as zod } from 'zod'
   import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
+  import { useHandleInstance } from '/@src/stores/handleInstance'
+  import { useQueryParam } from '/@src/stores/queryParam'
+  import { storeToRefs } from 'pinia';
 
   import { convertObjectToFilterString, convertSchemaToEmptyFilterString } from '/@src/utils/app/CRUD/filters'
   import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
   import { generateValidationSchema, generateInitialValues } from '/@src/utils/app/CRUD/helpers'
 
-  const notyf  = useNotyf()
-  const { t }  = useI18n()
-  const router = useRouter()
-  const route  = useRoute()
-
   const props = defineProps<{
     columns: object,
 
     fetchInstancesFunction: void,
-    filterInstancesFormSchemaFunction: void,
-    createInstanceFormSchemaFunction: void,
-    updateInstanceFormSchemaFunction: void,
     updateCurrentInstanceFunction: void,
     deleteCurrentInstanceFunction: void,
-    createNewInstanceFunction: void,
-    updateInstanceDetailsFunction: void
-    getInstanceDetailsFunction: void,
-    deleteInstanceFunction: void,
   }>()
 
-  const creationFormSchema             = await props.createInstanceFormSchemaFunction()
-  const createInstanceValidationSchema = generateValidationSchema(creationFormSchema, t)
-  const createInstanceInitialValues    = generateInitialValues({}, creationFormSchema)
+  const handleInstance = useHandleInstance()
+  const queryParam     = useQueryParam()
 
-  const filtersFormSchema = await props.filterInstancesFormSchemaFunction()
-
-  const defaultLimit    = ref(20)
-  const totalInstances  = ref(0)
-  const currentReload   = ref(false)
-
-  function useQueryParam() {
-
-    const defaultPage    = 1
-    const defaultSearch  = ''
-    const defaultFilters = convertSchemaToEmptyFilterString(filtersFormSchema)
-    const defaultSort    = ''
-
-    const searchTerm = computed({
-      get() {
-        return route.query.search ? route.query.search : defaultSearch
-      },
-      set(value) {
-        router.push({
-          query: {
-            search: value === defaultSearch ? undefined : value,
-            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
-            page: page.value === defaultPage ? undefined : page.value,
-            sort: sort.value === defaultSort ? undefined : sort.value,
-          },
-        })
-      },
-    })
-
-    const filtersTerm = computed({
-      get() {
-        return route.query.filter
-      },
-      set(value) {
-        const result = convertObjectToFilterString(value)
-        router.push({
-          query: {
-            filter: result === defaultFilters ? undefined : result,
-            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
-            page: page.value === defaultPage ? undefined : page.value,
-            sort: sort.value === defaultSort ? undefined : sort.value,
-          },
-        })
-      },
-    })
-
-    const sort = computed({
-      get() {
-        return route.query.sort ? route.query.sort : defaultSort
-      },
-      set(value) {
-        router.push({
-          query: {
-            sort: value === defaultSort ? undefined : value,
-            page: page.value === defaultPage ? undefined : page.value,
-            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
-            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
-          },
-        })
-      }
-    })
-
-    const page = computed({
-      get() {
-        return route.query.page ? parseInt(route.query.page) : defaultPage
-      },
-      set(value) {
-        router.push({
-          query: {
-            page: value === defaultPage ? undefined : value,
-            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
-            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
-            sort: sort.value === defaultSort ? undefined : sort.value,
-          },
-        })
-      },
-    })
-
-    const reload = computed({
-      
-      get() {
-        return currentReload.value
-      },
-      set(value) {
-        currentReload.value = value
-      },
-    })
-
-    return reactive({
-      page,
-      searchTerm,
-      filtersTerm,
-      sort,
-      reload,
-    })
-  }
-
-  const queryParam = useQueryParam()
-
-  let status            = undefined
-  let currentStateData  = undefined
-  const operatedInstance  = ref()
+  const defaultLimit = ref(20)
 
   const fetchInstances = async() => {
 
     const { page, searchTerm, filtersTerm, sort, reload } = queryParam
 
-    if (status) {
+    if (handleInstance.status) {
 
-      let result = toRaw(currentStateData)
+      let result = toRaw(handleInstance.currentStateData)
       
-      switch (status) {
+      switch (handleInstance.status) {
         case 'delete':
-          result = result.filter(props.deleteCurrentInstanceFunction, instanceToDeleteId)
+          result = result.filter(props.deleteCurrentInstanceFunction, handleInstance.instanceToDeleteId)
           break;
         case 'update':
-          result.forEach(props.updateCurrentInstanceFunction, [instanceToUpdateId, operatedInstance])
+          result.forEach(props.updateCurrentInstanceFunction, [handleInstance.instanceToUpdateId, handleInstance.operatedInstance])
           break;
         case 'create':
-          result.unshift(toRaw(operatedInstance.value))
+          result.unshift(toRaw(handleInstance.operatedInstance))
           break;
       }
 
-      status = undefined
+      handleInstance.status = undefined
       return result
     }
 
@@ -178,74 +67,8 @@
     const endpointRoute  = `?${sortQuery}${searchFilterQuery}${pageQuery}`
     const { results, count } = await props.fetchInstancesFunction(endpointRoute)
 
-    totalInstances.value  = count
+    handleInstance.totalInstances = count
     return results
-  }
-
-  const showCreateInstancePopup       = ref(false)
-  const showDeleteInstancePopup       = ref(false)
-  const showViewInstanceDetailsPopup  = ref(false)
-  const showUpdateInstancePopup       = ref(false)
-  const showFilterInstancesPopup      = ref(false)
-
-  let instanceToUpdateId = undefined
-  let instanceToDeleteId = undefined
-  let instanceToViewId   = undefined
-
-  function getUpdateInstanceDetailsPopup(instanceId, stateData) {
-    instanceToUpdateId            = instanceId
-    currentStateData              = stateData
-    showUpdateInstancePopup.value = true
-  }
-
-  function getCreateInstancePopup(stateData) {
-    currentStateData       = stateData
-    showCreateInstancePopup.value = true
-  }
-
-  function getDeleteInstancePopup(instanceId, stateData) {
-    instanceToDeleteId          = instanceId
-    currentStateData            = stateData
-    showDeleteInstancePopup.value = true
-  }
-
-  function getViewInstanceDetailsPopup(instanceId) {
-    instanceToViewId                 = instanceId
-    showViewInstanceDetailsPopup.value = true
-  }
-
-  function reload(operation) {
-    status = operation
-    queryParam.reload = !currentReload.value
-  }
-
-  function handleInstanceCreationAffect(data) {
-
-    notyf.dismissAll()
-    notyf.success("Record Created Successfully!")
-
-    showCreateInstancePopup.value = false
-    operatedInstance.value        = data
-    reload('create')
-  }
-
-  function handleInstanceUpdateAffect(data) {
-
-    notyf.dismissAll()
-    notyf.success("Record Updated Successfully!")
-
-    showUpdateInstancePopup.value = false
-    operatedInstance.value        = data
-    reload('update')
-  }
-
-  function handleInstanceDeleteAffect() {
-
-    notyf.dismissAll()
-    notyf.success("Record Deleted Successfully!")
-
-    showDeleteInstancePopup.value = false
-    reload('delete')
   }
 
 </script>
@@ -258,7 +81,7 @@
       :limit="defaultLimit"
       :columns="columns"
       :data="fetchInstances"
-      :total="totalInstances"
+      :total="handleInstance.totalInstances"
     >
       <template #default="wrapperState">
         <VFlexTableToolbar>
@@ -277,59 +100,37 @@
 
           <template #right>
             <VButtons>
-              <VButton @click="showFilterInstancesPopup=true" color="primary" icon="feather:settings" outlined> Filters
+              <VButton @click="handleInstance.showFilterInstancesPopup=true" color="primary" icon="feather:settings" outlined> Filters
               </VButton>
-              <VButton @click="getCreateInstancePopup(wrapperState.data)" color="primary" icon="feather:plus"> Add User
+              <VButton @click="handleInstance.getCreateInstancePopup(wrapperState.data)" color="primary" icon="feather:plus"> Add User
               </VButton>
             </VButtons>
           </template>
         </VFlexTableToolbar>
 
-        <CreateInstanceComponent
-          v-if="showCreateInstancePopup"
-          :validation-schema="createInstanceValidationSchema"
-          :initial-values="createInstanceInitialValues"
-          :request-function="createNewInstanceFunction"
-          :formSchema="creationFormSchema"
-          modal-title="Create New Record"
-          @hide-popup="showCreateInstancePopup=false"
-          @handle-create-instance-affect="handleInstanceCreationAffect"
+        <slot
+          v-if="handleInstance.showCreateInstancePopup"
+          name="createInstanceSlot"
         />
 
-        <ViewInstanceComponent
-          v-if="showViewInstanceDetailsPopup"
-          :instance-id="instanceToViewId"
-          :request-function="getInstanceDetailsFunction"
-          modal-title="Record Details"
-          @hide-popup="showViewInstanceDetailsPopup=false"
+        <slot
+          v-if="handleInstance.showViewInstanceDetailsPopup"
+          name="viewInstanceSlot"
         />
 
-        <UpdateInstanceComponent
-          v-if="showUpdateInstancePopup"
-          :request-function="updateInstanceDetailsFunction"
-          :form-schema-function="updateInstanceFormSchemaFunction"
-          :instance-details-function="getInstanceDetailsFunction"
-          :instance-id="instanceToUpdateId"
-          modal-title="Update Record"
-          @hide-popup="showUpdateInstancePopup=false"
-          @handle-update-instance-affect="handleInstanceUpdateAffect"
+        <slot
+          v-if="handleInstance.showUpdateInstancePopup"
+          name="updateInstanceSlot"
         />
 
-        <DeleteInstanceComponent
-          v-if="showDeleteInstancePopup"
-          :request-function="deleteInstanceFunction"
-          :instance-id="instanceToDeleteId"
-          modal-title="Delete Record"
-          @hide-popup="showDeleteInstancePopup=false"
-          @handle-delete-instance-affect="handleInstanceDeleteAffect"
+        <slot
+          v-if="handleInstance.showDeleteInstancePopup"
+          name="deleteInstanceSlot"
         />
-        
-        <FilterListComponent
-          v-if="showFilterInstancesPopup"
-          :formSchema="filtersFormSchema"
-          modal-title="Filter Records"
-          @hide-popup="showFilterInstancesPopup=false"
-          @filter-list="(filters) => queryParam.filtersTerm = filters"
+
+        <slot
+          v-if="handleInstance.showFilterInstancesPopup"
+          name="filterInstancesSlot"
         />
 
         <VFlexTable rounded>
@@ -367,9 +168,9 @@
           <template #body-cell="{ row, column }">
             <template v-if="column.key == 'actions'">
               <FlexTableDropdown
-                @view-detail="getViewInstanceDetailsPopup(row.id)"
-                @update-details="getUpdateInstanceDetailsPopup(row.id, wrapperState.data)"
-                @delete-instance="getDeleteInstancePopup(row.id, wrapperState.data)"
+                @view-detail="handleInstance.getViewInstanceDetailsPopup(row.user.username)"
+                @update-details="handleInstance.getUpdateInstanceDetailsPopup(row.user.username, wrapperState.data)"
+                @delete-instance="handleInstance.getDeleteInstancePopup(row.user.username, wrapperState.data)"
               />
             </template>
           </template>

@@ -4,14 +4,16 @@
   import { useNotyf } from '/@src/composable/useNotyf'
   import { useI18n } from 'vue-i18n'
 
-  import { convertFilterSchemaToObject } from '/@src/utils/app/CRUD/filters'
   import { formatError } from '/@src/utils/app/CRUD/helpers'
+  import { useHandleInstance } from '/@src/stores/handleInstance'
+  import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
 
-  const { t }  = useI18n()
+
+  const handleInstance = useHandleInstance()
+
   const notyf  = useNotyf()
 
   const emits = defineEmits<{
-    (e: 'hidePopup'): void
     (e: 'filterList'): void
   }>()
 
@@ -20,17 +22,14 @@
     formSchema: object,
   }>()
 
-  const initialValues   = convertFilterSchemaToObject(props.formSchema)
-
-  const { handleSubmit } = useForm({
-    initialValues
-  })
+  const { handleSubmit } = useForm()
 
   const onFilter = handleSubmit(async (values, actions) => {
     try {
-      emits('filterList', values)
-      emits('hidePopup')
+      emits('filterList', convertObjectToFilterString(values))
+      handleInstance.showFilterInstancesPopup=false
     } catch (err) {
+      console.log(err)
       const formattedErrors = formatError(undefined, err.response.data)
       actions.setErrors(formattedErrors)
 
@@ -47,7 +46,7 @@
     size="meduim"
     actions="right"
     noscroll
-    @close="$emit('hidePopup')"
+    @close="handleInstance.showFilterInstancesPopup=false"
   >
     <template #content>
       <form class="modal-form">
