@@ -11,7 +11,7 @@ export async function getClients(pageQuery) {
 }
 
 export async function createNewClient(body: object) {
-
+	
 	return await api.post(API_URLs.CLIENTS, body)
 }
 
@@ -47,4 +47,9 @@ export async function getFilterClientsSchema() {
 
 	const { data } = await api.options(API_URLs.CLIENTS)
 	return data
+}
+
+export async function getFieldChoices(endpointUrl, searchKeyword) {
+	const { data } = await api.get(`${endpointUrl}?search=${searchKeyword}`)
+	return data.results
 }

@@ -49,10 +49,10 @@ export const useHandleInstance = defineStore('handleInstance', () => {
     showViewInstanceDetailsPopup.value = true
   }
 
-  /*function reload(operation) {
+  function reload(operation) {
     status = operation
     queryParam.reload = !currentReload.value
-  }*/
+  }
 
   function handleInstanceCreationAffect(data) {
 
@@ -61,7 +61,7 @@ export const useHandleInstance = defineStore('handleInstance', () => {
 
     showCreateInstancePopup.value = false
     operatedInstance.value        = data
-    //reload('create')
+    reload('create')
   }
 
   function handleInstanceUpdateAffect(data) {
@@ -71,7 +71,7 @@ export const useHandleInstance = defineStore('handleInstance', () => {
 
     showUpdateInstancePopup.value    = false
     operatedInstance.value = data
-    //reload('update')
+    reload('update')
   }
 
   function handleInstanceDeleteAffect() {
@@ -79,8 +79,8 @@ export const useHandleInstance = defineStore('handleInstance', () => {
     notyf.dismissAll()
     notyf.success("Record Deleted Successfully!")
 
-    showDeleteInstancePopu.value = false
-    //reload('delete')
+    showDeleteInstancePopup.value = false
+    reload('delete')
   }
 
   return {

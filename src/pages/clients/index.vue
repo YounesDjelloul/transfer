@@ -69,14 +69,12 @@
   const queryParam     = useQueryParam()
 
   let creationFormSchema = undefined
-  let createInstanceValidationSchema = undefined
   let createInstanceInitialValues = undefined
   let filtersFormSchema = undefined
 
   onMounted(async () => {
 
     creationFormSchema             = await useCreateClientSchema()
-    createInstanceValidationSchema = generateValidationSchema(creationFormSchema, t)
     createInstanceInitialValues    = generateInitialValues({}, creationFormSchema)
 
     filtersFormSchema              = await useFilterClientsSchema()
@@ -102,10 +100,10 @@
       >
         <template #createInstanceSlot>
           <CreateInstanceComponent
-            :validation-schema="createInstanceValidationSchema"
             :initial-values="createInstanceInitialValues"
             :request-function="createNewClient"
             :formSchema="creationFormSchema"
+            :hasPicture="true"
             modal-title="Create New Record"
             @handle-create-instance-affect="handleInstance.handleInstanceCreationAffect"
           />

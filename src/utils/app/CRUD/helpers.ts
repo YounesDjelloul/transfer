@@ -18,7 +18,11 @@ export function generateInitialValues(instance: object, schema: []) {
 
   for (const field of schema) {
 
-    const currentValue = instance[field.name] ?? ""
+    let currentValue = instance[field.name] ?? ""
+
+    if (field.type == "image upload") {
+      currentValue = null
+    }
 
     if (field.id.includes(".")) {
       const nesting = field.id.split(".")
@@ -168,7 +172,7 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
 
   function getZodField(fieldProp) {
 
-    const fieldType = fieldProp.fieldType
+    const fieldType = fieldProp.type
     const currentZodFunction = zodFunctionsRepo[fieldType] ?? "string"
     
     let result = zod[currentZodFunction]()
@@ -182,12 +186,43 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
 
   let result = zod.object({})
 
-  function handleNestedFields(parent, child, fieldProp) {
+  function handleNestedFields(nesting, fieldProp) {
 
-    let parentObject = result.shape[parent] ?? zod.object({})
+    const zodField = getZodField(fieldProp)
+    
+    let SchemaCopy = result
+    let record     = {}
 
-    parentObject = parentObject.extend({ [child]: getZodField(fieldProp) })
-    result       = result.extend({ [parent]: parentObject })
+    for (let ind = 0; ind < nesting.length; ind++) {
+
+      const part = nesting[ind]
+
+      if (ind == nesting.length - 1) {
+        SchemaCopy = SchemaCopy.extend({ [part]: zodField })
+      }
+
+      if (SchemaCopy.shape[part] == undefined) {
+        SchemaCopy = SchemaCopy.extend({ [part]: zod.object({}) })
+      }
+
+      record[part] = SchemaCopy.shape[part]
+      SchemaCopy = SchemaCopy.shape[part]
+    }
+
+    let props = Object.keys(record).reverse()
+
+    for (let i = 0; i < props.length; i++) {
+
+      const currentZodName = props[i]
+      const nextZodName    = props[i+1]
+
+      if (i == props.length - 1) {
+        result = result.extend({ [currentZodName]: record[currentZodName] })
+        continue
+      }
+
+      record[nextZodName] = record[nextZodName].extend({ [currentZodName]: record[currentZodName] })
+    }
   }
 
   for (const fieldIndex in formSchema) {
@@ -198,7 +233,7 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
 
     if (fieldId.includes(".")) {
       const nesting = fieldId.split(".")
-      handleNestedFields(nesting[0], nesting[1], fieldProp)
+      handleNestedFields(nesting, fieldProp)
       continue
     }
 
@@ -207,3 +242,34 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
 
   return result
 }
+
+export function formatFieldChoices(choicesObject: object) {
+
+  let result = []
+
+  for (const one of choicesObject) {
+    const current = {value: one.id, display_name: one.name}
+    result.push(current)
+  }
+
+  return result
+}
+
+export function objectToFormData(obj, formData, namespace="") {
+    
+  const fd = formData || new FormData();
+  
+  for (const key in obj) {
+
+    const value = obj[key]
+
+    if (typeof value == 'object' && !(value instanceof File)) {
+      objectToFormData(value, fd, `${namespace}${key}.`)
+      continue
+    }
+
+    fd.append(`${namespace}${key}`, value)
+  }
+  
+  return fd;
+};
