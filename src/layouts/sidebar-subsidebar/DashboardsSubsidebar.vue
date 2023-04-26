@@ -30,6 +30,12 @@
             Clients
           </RouterLink>
         </li>
+        <li>
+          <RouterLink :to="APP_URLs.EMPLOYEES">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Employees
+          </RouterLink>
+        </li>
       </ul>
     </div>
   </div>

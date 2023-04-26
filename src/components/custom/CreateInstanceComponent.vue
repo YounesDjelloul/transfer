@@ -7,7 +7,7 @@
   import { toFormValidator } from '@vee-validate/zod'
   import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
-  import { formatError, formatFieldChoices, generateValidationSchema, objectToFormData } from '/@src/utils/app/CRUD/helpers'
+  import { formatError, formatFieldChoices, generateInitialValues, generateValidationSchema, objectToFormData } from '/@src/utils/app/shared/helpers'
   import { getFieldChoices } from '/@src/utils/api/clients'
   import { arrayPop } from '/@src/utils/app/profile/helpers'
 
@@ -21,25 +21,21 @@
   }>()
 
   const props = defineProps<{
-    initialValues: object,
     requestFunction: void,
     modalTitle: string,
     formSchema: object,
-    hasPicture: boolean,
   }>()
 
-  const handleInstance   = useHandleInstance()
+  const handleInstance = useHandleInstance()
 
-  const formSchema       = props.formSchema
-  const validationSchema = toFormValidator(generateValidationSchema(formSchema, t))
-  const initialValues    = props.initialValues
+  const validationSchema = toFormValidator(generateValidationSchema(props.formSchema))
+  const initialValues    = generateInitialValues(props.formSchema)
 
   const { handleSubmit, setFieldValue } = useForm({
     validationSchema,
     initialValues,
   })
 
-  const isUploading = ref(false)
   const isLoading   = ref(false)
 
   const onCreate = handleSubmit(async (values, actions) => {
@@ -73,7 +69,7 @@
       return;
     }
 
-    const response = await getFieldChoices("/users_/job_titles/", currentValue)
+    const response = await getFieldChoices(endpointUrl, currentValue)
     choicesObject.value[currentId] = formatFieldChoices(response)
   }
 
@@ -98,6 +94,7 @@
     @close="handleInstance.showCreateInstancePopup=false"
   >
     <template #content>
+      <VPlaceload v-if="isLoading" />
       <form class="modal-form" enctype='multipart/form-data'>
         <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
           <VControl class="has-icons-left" icon="feather:user">
@@ -119,7 +116,7 @@
             </VSelect>
             <div class="file has-name" v-else-if="schemaField.html_input_type == 'file'">
               <label class="file-label">
-                <input class="file-input" type="file" name="resume" @change="handleUpload($event, schemaField)" />
+                <input class="file-input" type="file" :id="schemaField.id" name="resume" @change="handleUpload($event, schemaField)" />
                 <span class="file-cta">
                   <span class="file-icon">
                     <i class="fas fa-cloud-upload-alt"></i>

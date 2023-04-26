@@ -2,8 +2,44 @@ import { z as zod } from 'zod'
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
 import { convertObjectToFilterString, convertSchemaToEmptyFilterString } from '/@src/utils/app/CRUD/filters'
+import { getFieldChoices } from '/@src/utils/api/clients'
 
-export function generateInitialValues(instance: object, schema: []) {
+export function deleteCurrentInstance(instance: object) {
+  return instance.user.id !== this
+}
+
+export function updateCurrentInstance(instance: object, instanceIndex: number, data: []) {
+  
+  const instanceId   = this[0]
+  const instanceData = this[1]
+
+  if (instance.user.id === instanceId) {
+    for (const prop in instanceData.value) {
+      data[instanceIndex][prop] = instanceData.value[prop]
+    }
+  }
+}
+
+const flattenObj = (ob) => {
+ 
+  let result = {};
+
+  for (const i in ob) {
+    if ((typeof ob[i]) === 'object' && !Array.isArray(ob[i])) {
+      const temp = flattenObj(ob[i]);
+      for (const j in temp) {
+        result[i + '.' + j] = temp[j];
+      }
+    }
+
+    else {
+      result[i] = ob[i];
+    }
+  }
+  return result;
+};
+
+export function generateInitialValues(schema: [], instance: object = {}) {
   let result = {}
 
   function recurse(nesting, val) {
@@ -16,11 +52,13 @@ export function generateInitialValues(instance: object, schema: []) {
     lastObj[lastKey] = val
   }
 
+  const flattendInstance = flattenObj(instance)
+
   for (const field of schema) {
 
-    let currentValue = instance[field.name] ?? ""
+    let currentValue = flattendInstance[field.id] ?? ""
 
-    if (field.type == "image upload") {
+    if (field.type == "image upload" && currentValue == "") {
       currentValue = null
     }
 
@@ -58,23 +96,6 @@ export function formatView(instance: object) {
   recurse(instance)
 
   return result
-}
-
-
-export function deleteCurrentClient(client: object) {
-  return client.user.id !== this
-}
-
-export function updateCurrentClient(client: object, clientIndex: number, clients: []) {
-  
-  const clientId   = this[0]
-  const clientData = this[1]
-
-  if (client.user.id === clientId) {
-    for (const prop in clientData.value) {
-      clients[clientIndex][prop] = clientData.value[prop]
-    }
-  }
 }
 
 export function formatError(key?: string | undefined, errorObject: object) {
@@ -168,6 +189,7 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
     "choice": "string",
     "email": "string",
     "image upload": "any",
+    "field": "any",
   }
 
   function getZodField(fieldProp) {
@@ -175,13 +197,13 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
     const fieldType = fieldProp.type
     const currentZodFunction = zodFunctionsRepo[fieldType] ?? "string"
     
-    let result = zod[currentZodFunction]()
+    let zodField = zod[currentZodFunction]()
 
     if (fieldProp.required) {
-      result = result.min(1, {message: "Field Required"})
+      zodField = zodField.min(1, {message: "Field Required"})
     }
 
-    return result
+    return zodField
   }
 
   let result = zod.object({})
@@ -229,15 +251,10 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
 
     const fieldProp = formSchema[fieldIndex]
     const fieldId   = fieldProp.id
-    const fieldName = fieldProp.name
 
-    if (fieldId.includes(".")) {
-      const nesting = fieldId.split(".")
-      handleNestedFields(nesting, fieldProp)
-      continue
-    }
-
-    result = result.extend({ [fieldId] : getZodField(fieldProp)});
+    const nesting = fieldId.split(".")
+    handleNestedFields(nesting, fieldProp)
+  
   }
 
   return result
@@ -271,5 +288,43 @@ export function objectToFormData(obj, formData, namespace="") {
     fd.append(`${namespace}${key}`, value)
   }
   
-  return fd;
-};
+  return fd
+}
+
+export function cleanValuesIfPatch(values, updateAllowedMethod, instanceValues) {
+
+  if (updateAllowedMethod == "PUT") {
+    return values
+  }
+
+  const flattendValues         = flattenObj(values)
+  const flattendInstanceValues = flattenObj(instanceValues)
+  let nestedResult             = {}
+
+  for (const valueKey in flattendValues) {
+    const value = flattendValues[valueKey]
+
+    if (value != flattendInstanceValues[valueKey]) {
+      nestedResult[valueKey] = value
+    }
+  }
+
+  let result = {}
+
+  function recurse(nesting, val) {
+
+    const lastKey = nesting.pop()
+    const lastObj = nesting.reduce((result, key) => 
+      result[key] = result[key] || {}, result
+    )
+
+    lastObj[lastKey] = val
+  }
+
+  for (const one in nestedResult) {
+    const nesting = one.split(".")
+    recurse(nesting, nestedResult[one])
+  }
+
+  return result
+}

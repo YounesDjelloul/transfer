@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 
   import { useNotyf } from '/@src/composable/useNotyf'
-  import { formatView } from '/@src/utils/app/CRUD/helpers'
+  import { formatView } from '/@src/utils/app/shared/helpers'
   import { useHandleInstance } from '/@src/stores/handleInstance'
 
   const handleInstance = useHandleInstance()

@@ -3,7 +3,7 @@
   import { useI18n } from 'vue-i18n'
   import { useHead } from '@vueuse/head'
   import { useViewWrapper } from '/@src/stores/viewWrapper'
-  import { useClientSchemas } from '/@src/utils/app/CRUD/clientsCache'
+  import { useEmployeeSchemas } from '/@src/utils/app/CRUD/employeesCache'
 
   import { useHandleInstance } from '/@src/stores/handleInstance'
   import { useQueryParam } from '/@src/stores/queryParam'
@@ -14,12 +14,12 @@
   } from '/@src/utils/app/shared/helpers'
 
   import {
-    createNewClient,
-    getClients,
-    updateClientDetailsRequest,
-    getClientDetails,
-    deleteClientRequest,
-  } from '/@src/utils/api/clients'
+    createNewEmployee,
+    getEmployees,
+    updateEmployeeDetailsRequest,
+    getEmployeeDetails,
+    deleteEmployeeRequest,
+  } from '/@src/utils/api/employees'
 
   const columns = {
     user_avatar: {
@@ -72,19 +72,19 @@
 
   onMounted(async () => {
 
-    const { createClientSchema, updateClientSchema, filtersClientSchema, updateAllowedMethod } = await useClientSchemas()
+    const { createEmployeeSchema, updateEmployeeSchema, filtersEmployeeSchema, updateAllowedMethod } = await useEmployeeSchemas()
     
-    createSchema  = createClientSchema
-    updateSchema  = updateClientSchema
-    filtersSchema = filtersClientSchema
+    createSchema  = createEmployeeSchema
+    updateSchema  = updateEmployeeSchema
+    filtersSchema = filtersEmployeeSchema
     updateMethod  = updateAllowedMethod
   })
 
   const viewWrapper = useViewWrapper()
-  viewWrapper.setPageTitle('Clients')
+  viewWrapper.setPageTitle('Employees')
 
   useHead({
-    title: 'Lex Algeria - Clients',
+    title: 'Lex Algeria - Employees',
   })
 </script>
 
@@ -94,13 +94,13 @@
       <FlexListV1
         :columns="columns"
 
-        :fetch-instances-function="getClients"
+        :fetch-instances-function="getEmployees"
         :update-current-instance-function="updateCurrentInstance"
         :delete-current-instance-function="deleteCurrentInstance"
       >
         <template #createInstanceSlot>
           <CreateInstanceComponent
-            :request-function="createNewClient"
+            :request-function="createNewEmployee"
             :formSchema="createSchema"
             modal-title="Create New Record"
             @handle-create-instance-affect="handleInstance.handleInstanceCreationAffect"
@@ -114,9 +114,9 @@
         </template>
         <template #updateInstanceSlot>
           <UpdateInstanceComponent
-            :request-function="updateClientDetailsRequest"
+            :request-function="updateEmployeeDetailsRequest"
             :form-schema="updateSchema"
-            :instance-details-function="getClientDetails"
+            :instance-details-function="getEmployeeDetails"
             :update-allowed-method="updateMethod"
             modal-title="Update Record"
             @handle-update-instance-affect="handleInstance.handleInstanceUpdateAffect"
@@ -124,7 +124,7 @@
         </template>
         <template #deleteInstanceSlot>
           <DeleteInstanceComponent
-            :request-function="deleteClientRequest"
+            :request-function="deleteEmployeeRequest"
             modal-title="Delete Record"
             @handle-delete-instance-affect="handleInstance.handleInstanceDeleteAffect"
           />

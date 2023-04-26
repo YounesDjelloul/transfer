@@ -4,7 +4,7 @@
   import { useNotyf } from '/@src/composable/useNotyf'
   import { useI18n } from 'vue-i18n'
 
-  import { formatError } from '/@src/utils/app/CRUD/helpers'
+  import { formatError } from '/@src/utils/app/shared/helpers'
   import { useHandleInstance } from '/@src/stores/handleInstance'
   import { convertObjectToFilterString } from '/@src/utils/app/CRUD/filters'
 

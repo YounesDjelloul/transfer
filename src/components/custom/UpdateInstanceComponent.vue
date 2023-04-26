@@ -1,11 +1,13 @@
 <script setup lang="ts">
 
+  import { ref, onMounted } from 'vue'
   import { useForm } from 'vee-validate'
   import { toFormValidator } from '@vee-validate/zod'
   import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
+  import { getFieldChoices } from '/@src/utils/api/clients'
 
-  import { generateInitialValues, formatError, generateValidationSchema } from '/@src/utils/app/CRUD/helpers'
+  import { generateInitialValues, formatFieldChoices, objectToFormData, formatError, generateValidationSchema, cleanValuesIfPatch } from '/@src/utils/app/shared/helpers'
 
   import { useHandleInstance } from '/@src/stores/handleInstance'
 
@@ -19,49 +21,32 @@
 
   const props = defineProps<{
     requestFunction: void,
-    formSchemaFunction: void,
+    formSchema: object,
     instanceDetailsFunction: void,
     modalTitle: string,
+    updateAllowedMethod: string,
   }>()
 
-  const isLoading  = ref(true)
-
-  let formSchema       = undefined
-  let validationSchema = undefined
-  let instanceDetails  = undefined
-  let initialValues    = undefined
-
-  onMounted(async () => {
-
-    try {
-      
-      formSchema       = await props.formSchemaFunction(handleInstance.instanceToUpdatePk)
-      validationSchema = generateValidationSchema(formSchema)
-      instanceDetails  = await props.instanceDetailsFunction(handleInstance.instanceToUpdatePk)
-      initialValues    = generateInitialValues(instanceDetails, formSchema)
-
-    } catch (error) {
-      notyf.error(error.response.data.detail)
-      handleInstance.showUpdateInstancePopup = false
-
-    } finally {
-      isLoading.value = false
-    }
-  })
+  const instanceDetails  = await props.instanceDetailsFunction(handleInstance.instanceToUpdatePk)
+  const validationSchema = toFormValidator(generateValidationSchema(props.formSchema))
+  const initialValues    = generateInitialValues(props.formSchema, instanceDetails)
 
   const { handleSubmit } = useForm({
     validationSchema,
     initialValues,
   })
 
+  const isLoading  = ref(false)
+
   const onUpdate = handleSubmit(async (values, actions) => {
     isLoading.value = true
 
     try {
 
+      const formattedValues = cleanValuesIfPatch(values, props.updateAllowedMethod, initialValues)
+      const valuesInFormData = objectToFormData(formattedValues)
       const toUpdate = props.requestFunction
-      
-      const { data } = await toUpdate(props.instanceId, values)
+      const { data } = await toUpdate(handleInstance.instanceToUpdatePk, formattedValues, props.updateAllowedMethod)
 
       emits('handleUpdateInstanceAffect', data)
     } catch (err) {
@@ -74,6 +59,30 @@
       isLoading.value = false
     }
   })
+
+  const choicesObject  = ref({})
+
+  async function getFieldChoicesFunction(event, endpointUrl) {
+    const currentValue = event.target.value
+    const currentId    = event.target.id
+
+    if (!currentValue) {
+      choicesObject.value[currentId] = []
+      return;
+    }
+
+    const response = await getFieldChoices(endpointUrl, currentValue)
+    choicesObject.value[currentId] = formatFieldChoices(response)
+  }
+
+  const selectedFileName = ref("Select a Picture..")
+
+  function handleUpload(event, schemaField) {
+    const file = event.target.files[0]
+    selectedFileName.value = file ? file.name : "Select a Picture.."
+
+    setFieldValue(schemaField.id, file)
+  }
 
 </script>
 
@@ -98,10 +107,34 @@
               <div class="form-section-inner is-horizontal">
                 <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
                   <VControl class="has-icons-left" icon="feather:user">
-                    <VSelect v-if="schemaField.type === 'choice'">
-                      <VOption disabled hidden value="undefined">Select a Type</VOption>
+                    <div v-if="schemaField.type === 'field'" class="field-type-container">
+                      <VInput
+                        type="text"
+                        class="field-type-search"
+                        :placeholder="schemaField.label+' Search'"
+                        @input="getFieldChoicesFunction($event, schemaField.endpoint_url)"
+                      />
+                      <VSelect :multiple="schemaField.relationship">
+                        <VOption disabled hidden value>Select an option</VOption>
+                        <VOption v-for="choice in choicesObject[schemaField.id]" :value="choice.value">{{ choice.display_name }}</VOption>
+                      </VSelect>
+                    </div>
+                    <VSelect v-else-if="schemaField.html_input_type === 'select'">
+                      <VOption disabled hidden value="">Select an option</VOption>
                       <VOption v-for="choice in schemaField.choices" :value="choice.value">{{ choice.display_name }}</VOption>
                     </VSelect>
+                    <div class="file has-name" v-else-if="schemaField.html_input_type == 'file'">
+                      <label class="file-label">
+                        <input class="file-input" type="file" :id="schemaField.id" name="resume" @change="handleUpload($event, schemaField)" />
+                        <span class="file-cta">
+                          <span class="file-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                          </span>
+                          <span class="file-label"> Choose a file… </span>
+                        </span>
+                        <span class="file-name light-text"> {{ selectedFileName }} </span>
+                      </label>
+                    </div>
                     <VInput
                       v-else
                       :type="schemaField.html_input_type"

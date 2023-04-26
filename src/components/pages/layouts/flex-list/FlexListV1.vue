@@ -10,7 +10,6 @@
 
   import { convertObjectToFilterString, convertSchemaToEmptyFilterString } from '/@src/utils/app/CRUD/filters'
   import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
-  import { generateValidationSchema, generateInitialValues } from '/@src/utils/app/CRUD/helpers'
 
   const props = defineProps<{
     columns: object,
@@ -19,6 +18,8 @@
     updateCurrentInstanceFunction: void,
     deleteCurrentInstanceFunction: void,
   }>()
+
+  const baseURL = import.meta.env.VITE_API_BASE_URL
 
   const handleInstance = useHandleInstance()
   const queryParam     = useQueryParam()
@@ -172,6 +173,10 @@
                 @update-details="handleInstance.getUpdateInstanceDetailsPopup(row.user.username, wrapperState.data)"
                 @delete-instance="handleInstance.getDeleteInstancePopup(row.user.username, wrapperState.data)"
               />
+            </template>
+
+            <template v-if="column.key === 'user_avatar'">
+              <VAvatar v-if="row.user.user_avatar !== null" size="medium" :picture="baseURL + row.user.user_avatar.url" />
             </template>
           </template>
         </VFlexTable>

@@ -1,13 +1,12 @@
 import {
-  getCreateClientSchema,
-  getUpdateClientSchema,
+  getClientSchemas,
 } from '/@src/utils/api/clients'
 
 import {
   formatCreateSchema,
   formatUpdateSchema,
   generateValidationSchema,
-} from '/@src/utils/app/CRUD/helpers'
+} from '/@src/utils/app/shared/helpers'
 
 function saveSchematoStorage(action: string, formSchema: string) {
 
@@ -18,31 +17,36 @@ function saveSchematoStorage(action: string, formSchema: string) {
 		case "update":
 			localStorage.setItem("updateClientSchema", formSchema)
 			break;
+		case "filters":
+			localStorage.setItem("filtersClientSchema", formSchema)
+			break;
 	}
 }
 
-export async function useCreateClientSchema() {
+export async function useClientSchemas() {
 
-	let formattedSchema = undefined;
+	let createClientSchema  = undefined;
+	let updateClientSchema  = undefined;
+	let filtersClientSchema = undefined;
+	let updateAllowedMethod;
 
-	if (!formattedSchema) {
-		const { actions: createActions } = await getCreateClientSchema()
-		formattedSchema  = formatCreateSchema(createActions.POST)
-		saveSchematoStorage("create", JSON.stringify(formattedSchema))
+	if (!createClientSchema || !updateClientSchema || !filtersClientSchema) {
+		const { actions, filtering_schema } = await getClientSchemas()
+
+		createClientSchema  = formatCreateSchema(actions.POST)
+		updateClientSchema  = formatUpdateSchema(actions.PATCH ?? actions.PUT)
+		filtersClientSchema = formatCreateSchema(filtering_schema)
+		updateAllowedMethod = actions.PATCH ? "patch" : "put"
+
+		saveSchematoStorage("create", JSON.stringify(createClientSchema))
+		saveSchematoStorage("udpate", JSON.stringify(updateClientSchema))
+		saveSchematoStorage("filters", JSON.stringify(filtersClientSchema))
 	}
 
-	return typeof formattedSchema === "string" ? JSON.parse(formattedSchema) : formattedSchema
-}
-
-export async function useUpdateClientSchema(clientId: number) {
-
-	let formattedSchema = undefined;
-
-	if (!formattedSchema) {
-		const { actions: updateActions } = await getUpdateClientSchema(clientId)
-		formattedSchema = formatUpdateSchema(updateActions.PUT)
-		saveSchematoStorage("update", JSON.stringify(formattedSchema))
+	return {
+		createClientSchema,
+		updateClientSchema,
+		filtersClientSchema,
+		updateAllowedMethod,
 	}
-
-	return typeof formattedSchema === "string" ? JSON.parse(formattedSchema) : formattedSchema
 }
