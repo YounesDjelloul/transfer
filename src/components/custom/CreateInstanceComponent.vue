@@ -1,17 +1,15 @@
 <script setup lang="ts">
 
   import { computed, ref, watch, watchEffect } from 'vue'
-  import 'vue-search-select/dist/VueSearchSelect.css'
-  import { ModelListSelect } from 'vue-search-select'
+  import VueMultiselect from 'vue-multiselect'
   import { useForm, ErrorMessage } from 'vee-validate'
   import { toFormValidator } from '@vee-validate/zod'
   import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
-  import { formatError, formatFieldChoices, generateInitialValues, generateValidationSchema, objectToFormData } from '/@src/utils/app/shared/helpers'
-  import { getFieldChoices } from '/@src/utils/api/clients'
-  import { arrayPop } from '/@src/utils/app/profile/helpers'
+  import { formatError, generateInitialValues, generateValidationSchema, objectToFormData } from '/@src/utils/app/shared/helpers'
 
   import { useHandleInstance } from '/@src/stores/handleInstance'
+  import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
 
   const { t }  = useI18n()
   const notyf  = useNotyf()
@@ -27,6 +25,7 @@
   }>()
 
   const handleInstance = useHandleInstance()
+  const fieldSelect    = useFieldSelect()
 
   const validationSchema = toFormValidator(generateValidationSchema(props.formSchema))
   const initialValues    = generateInitialValues(props.formSchema)
@@ -58,21 +57,6 @@
     }
   })
 
-  const choicesObject  = ref({})
-
-  async function getFieldChoicesFunction(event, endpointUrl) {
-    const currentValue = event.target.value
-    const currentId    = event.target.id
-
-    if (!currentValue) {
-      choicesObject.value[currentId] = []
-      return;
-    }
-
-    const response = await getFieldChoices(endpointUrl, currentValue)
-    choicesObject.value[currentId] = formatFieldChoices(response)
-  }
-
   const selectedFileName = ref("Select a Picture..")
 
   function handleUpload(event, schemaField) {
@@ -98,17 +82,31 @@
       <form class="modal-form" enctype='multipart/form-data'>
         <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
           <VControl class="has-icons-left" icon="feather:user">
-            <div v-if="schemaField.type === 'field'" class="field-type-container">
-              <VInput
-                type="text"
-                class="field-type-search"
-                :placeholder="schemaField.label+' Search'"
-                @input="getFieldChoicesFunction($event, schemaField.endpoint_url)"
-              />
-              <VSelect :multiple="schemaField.relationship">
-                <VOption disabled hidden value>Select an option</VOption>
-                <VOption v-for="choice in choicesObject[schemaField.id]" :value="choice.value">{{ choice.display_name }}</VOption>
-              </VSelect>
+            <div class="custom-dropdown" :class="{ 'is-open': fieldSelect.fieldsTypeData?.[schemaField.id]?.isOpen }" v-if="schemaField.type === 'field'">
+              <div class="dropdown-header" @click="fieldSelect.fieldsTypeData[schemaField.id].isOpen = true">
+                <VInput
+                  :type="schemaField.html_input_type"
+                  :placeholder="schemaField.label"
+                  :value="fieldSelect.fieldsTypeData?.[schemaField.id]?.selectedItem"
+                  @click.once="fieldSelect.filteredItems($event, schemaField)"
+                  @input="fieldSelect.filteredItems($event, schemaField)"
+                />
+              </div>
+              <ul class="dropdown-list" >
+                <div v-if="fieldSelect.fieldOptionsLoading" class="dropdown-loader">
+                  <VPlaceload/>
+                </div>
+                <!--div v-else-if="filteredItems.length === 0">No Records Match</div-->
+                <div v-else>
+                  <li
+                    v-for="item in fieldSelect.fieldsTypeData?.[schemaField.id]?.options"
+                    :key="item.value"
+                    @click="fieldSelect.selectItem(item, schemaField, setFieldValue)"
+                  >
+                    {{ item.display_name }}
+                  </li>
+                </div>
+              </ul>
             </div>
             <VSelect v-else-if="schemaField.html_input_type === 'select'">
               <VOption disabled hidden value="">Select an option</VOption>
@@ -146,6 +144,60 @@
 </template>
 
 <style lang="scss">
+
+  .custom-dropdown {
+    position: relative;
+    display: block;
+    width: 100%;
+    font-size: 1rem;
+
+    .dropdown-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 5;
+      display: none;
+      list-style: none;
+      background: var(--dark-sidebar-light-8);
+      width: 100%;
+      overflow-y: scroll;
+      max-height: 120px;
+      border-radius: 0px 0px 6px 6px;
+
+      .dropdown-loader {
+        padding: 20px 10px 10px 39px;
+      }
+
+      &::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 4px;
+      }
+
+      li {
+        padding: 10px 10px 10px 39px;
+        cursor: pointer;
+        color: var(--primary--color-invert);
+
+        &:hover {
+          background-color: var(--primary);
+        }
+      }
+    }
+
+    &.is-open {
+      .dropdown-list {
+        display: block;
+      }
+    }
+  }
+
+
+
+
   .field-type-container {
     display: flex;
     

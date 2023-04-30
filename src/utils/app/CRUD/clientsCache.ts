@@ -6,6 +6,7 @@ import {
   formatCreateSchema,
   formatUpdateSchema,
   generateValidationSchema,
+  getPrioritizedUpdateMethod,
 } from '/@src/utils/app/shared/helpers'
 
 function saveSchematoStorage(action: string, formSchema: string) {
@@ -34,9 +35,9 @@ export async function useClientSchemas() {
 		const { actions, filtering_schema } = await getClientSchemas()
 
 		createClientSchema  = formatCreateSchema(actions.POST)
-		updateClientSchema  = formatUpdateSchema(actions.PATCH ?? actions.PUT)
+		updateClientSchema  = formatUpdateSchema(getPrioritizedUpdateMethod(actions) == "put" ? actions.PUT : actions.PATCH)
 		filtersClientSchema = formatCreateSchema(filtering_schema)
-		updateAllowedMethod = actions.PATCH ? "patch" : "put"
+		updateAllowedMethod = getPrioritizedUpdateMethod(actions)
 
 		saveSchematoStorage("create", JSON.stringify(createClientSchema))
 		saveSchematoStorage("udpate", JSON.stringify(updateClientSchema))

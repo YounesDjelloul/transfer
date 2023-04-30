@@ -8,7 +8,22 @@
   import { useQueryParam } from '/@src/stores/queryParam'
   import { storeToRefs } from 'pinia';
 
-  import { convertObjectToFilterString, convertSchemaToEmptyFilterString } from '/@src/utils/app/CRUD/filters'
+  import {
+    convertObjectToFilterString,
+    convertSchemaToEmptyFilterString
+  } from '/@src/utils/app/CRUD/filters'
+  
+  import {
+    generateInitialValues,
+    formatFieldChoices,
+    objectToFormData,
+    formatError,
+    generateValidationSchema,
+    cleanValuesIfPatch,
+    formatUserAvatarUrl,
+    flattenObj,
+  } from '/@src/utils/app/shared/helpers'
+  
   import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
 
   const props = defineProps<{
@@ -103,7 +118,7 @@
             <VButtons>
               <VButton @click="handleInstance.showFilterInstancesPopup=true" color="primary" icon="feather:settings" outlined> Filters
               </VButton>
-              <VButton @click="handleInstance.getCreateInstancePopup(wrapperState.data)" color="primary" icon="feather:plus"> Add User
+              <VButton @click="handleInstance.getCreateInstancePopup(wrapperState.data)" color="primary" icon="feather:plus"> Create Record
               </VButton>
             </VButtons>
           </template>
@@ -176,7 +191,7 @@
             </template>
 
             <template v-if="column.key === 'user_avatar'">
-              <VAvatar v-if="row.user.user_avatar !== null" size="medium" :picture="baseURL + row.user.user_avatar.url" />
+              <VAvatar size="medium" :picture="baseURL + formatUserAvatarUrl(flattenObj(row)[column.id])" />
             </template>
           </template>
         </VFlexTable>

@@ -6,6 +6,7 @@ import {
   formatCreateSchema,
   formatUpdateSchema,
   generateValidationSchema,
+  getPrioritizedUpdateMethod,
 } from '/@src/utils/app/shared/helpers'
 
 function saveSchematoStorage(action: string, formSchema: string) {
@@ -34,9 +35,9 @@ export async function useEmployeeSchemas() {
 		const { actions, filtering_schema } = await getEmployeeSchemas()
 
 		createEmployeeSchema  = formatCreateSchema(actions.POST)
-		updateEmployeeSchema  = formatUpdateSchema(actions.PATCH ?? actions.PUT)
+		updateEmployeeSchema  = formatUpdateSchema(getPrioritizedUpdateMethod(actions) == "put" ? actions.PUT : actions.PATCH)
 		filtersEmployeeSchema = formatCreateSchema(filtering_schema)
-		updateAllowedMethod = actions.PATCH ? "patch" : "put"
+		updateAllowedMethod = getPrioritizedUpdateMethod(actions)
 
 		saveSchematoStorage("create", JSON.stringify(createEmployeeSchema))
 		saveSchematoStorage("udpate", JSON.stringify(updateEmployeeSchema))

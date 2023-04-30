@@ -20,7 +20,7 @@ export function updateCurrentInstance(instance: object, instanceIndex: number, d
   }
 }
 
-const flattenObj = (ob) => {
+export const flattenObj = (ob) => {
  
   let result = {};
 
@@ -327,4 +327,16 @@ export function cleanValuesIfPatch(values, updateAllowedMethod, instanceValues) 
   }
 
   return result
+}
+
+export function getPrioritizedUpdateMethod(actions: object) {
+  return actions.PUT ? "put" : "patch"
+}
+
+export function formatUserAvatarUrl(url: string) {
+  if (!url) {
+    return null
+  }
+  
+  return url.replace(/^(?:\/\/|[^/]+)*\//, '')
 }
