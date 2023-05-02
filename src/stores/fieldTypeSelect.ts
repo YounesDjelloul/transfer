@@ -4,32 +4,36 @@ import { getFieldChoices } from '/@src/utils/api/clients'
 
 export const useFieldSelect = defineStore('fieldTypeSelect', () => {
   
-  const fieldsTypeData      = reactive({})
-  const fieldOptionsLoading = ref(true)
+  const fieldsTypeData      = ref()
+  const fieldOptionsLoading = ref(false)
 
   const filteredItems = async (event, schemaField) => {
     const searchTerm = event.target.value
     fieldOptionsLoading.value = true
-
-    if (!fieldsTypeData[schemaField.id]) {
-      fieldsTypeData[schemaField.id] = {}
-    }
-
-    fieldsTypeData[schemaField.id].options = formatFieldChoices(await getFieldChoices(schemaField.endpoint_url, searchTerm))
+    fieldsTypeData.value[schemaField.id].options = formatFieldChoices(await getFieldChoices(schemaField.endpoint_url, searchTerm))
     fieldOptionsLoading.value = false
   }
 
   const selectItem = (item, schemaField, setFieldValue) => {
-    fieldsTypeData[schemaField.id].selectedItem = item.display_name
+    fieldsTypeData.value[schemaField.id].selectedItem = item.value
     setFieldValue(schemaField.id, item.value)
-    fieldsTypeData[schemaField.id].isOpen = false
+  }
+
+  const toggleSelect = (schemaField) => {
+    fieldsTypeData.value[schemaField.id].isOpen = !fieldsTypeData.value[schemaField.id].isOpen
+  }
+
+  const setData = (dataObj) => {
+    fieldsTypeData.value = dataObj
   }
 
   return {
+    setData,
     fieldsTypeData,
     fieldOptionsLoading,
     filteredItems,
     selectItem,
+    toggleSelect,
   }
 })
 

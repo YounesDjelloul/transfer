@@ -6,7 +6,13 @@
   import { toFormValidator } from '@vee-validate/zod'
   import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
-  import { formatError, generateInitialValues, generateValidationSchema, objectToFormData } from '/@src/utils/app/shared/helpers'
+  import {
+    formatError,
+    generateInitialValues,
+    generateValidationSchema,
+    objectToFormData,
+    generateAndAssignDataObjectToStore,
+  } from '/@src/utils/app/shared/helpers'
 
   import { useHandleInstance } from '/@src/stores/handleInstance'
   import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
@@ -29,6 +35,8 @@
 
   const validationSchema = toFormValidator(generateValidationSchema(props.formSchema))
   const initialValues    = generateInitialValues(props.formSchema)
+  
+  await generateAndAssignDataObjectToStore(initialValues, props.formSchema)
 
   const { handleSubmit, setFieldValue } = useForm({
     validationSchema,
@@ -82,14 +90,14 @@
       <form class="modal-form" enctype='multipart/form-data'>
         <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
           <VControl class="has-icons-left" icon="feather:user">
-            <div class="custom-dropdown" :class="{ 'is-open': fieldSelect.fieldsTypeData?.[schemaField.id]?.isOpen }" v-if="schemaField.type === 'field'">
-              <div class="dropdown-header" @click="fieldSelect.fieldsTypeData[schemaField.id].isOpen = true">
+            <div class="custom-dropdown" :class="{ 'is-open': fieldSelect.fieldsTypeData[schemaField.id].isOpen }" v-if="schemaField.type === 'field'">
+              <div class="dropdown-header" @click="fieldSelect.toggleSelect(schemaField)">
                 <VInput
                   :type="schemaField.html_input_type"
                   :placeholder="schemaField.label"
-                  :value="fieldSelect.fieldsTypeData?.[schemaField.id]?.selectedItem"
-                  @click.once="fieldSelect.filteredItems($event, schemaField)"
+                  v-model="fieldSelect.fieldsTypeData[schemaField.id].selectedItem"
                   @input="fieldSelect.filteredItems($event, schemaField)"
+                  @blur="fieldSelect.fieldsTypeData[schemaField.id].isOpen = false"
                 />
               </div>
               <ul class="dropdown-list" >
@@ -99,9 +107,9 @@
                 <!--div v-else-if="filteredItems.length === 0">No Records Match</div-->
                 <div v-else>
                   <li
-                    v-for="item in fieldSelect.fieldsTypeData?.[schemaField.id]?.options"
+                    v-for="item in fieldSelect.fieldsTypeData[schemaField.id].options"
                     :key="item.value"
-                    @click="fieldSelect.selectItem(item, schemaField, setFieldValue)"
+                    @mousedown="fieldSelect.selectItem(item, schemaField, setFieldValue)"
                   >
                     {{ item.display_name }}
                   </li>

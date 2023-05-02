@@ -2,7 +2,8 @@ import { z as zod } from 'zod'
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
 import { convertObjectToFilterString, convertSchemaToEmptyFilterString } from '/@src/utils/app/CRUD/filters'
-import { getFieldChoices } from '/@src/utils/api/clients'
+import { getFieldChoices, getJobTitleDetails } from '/@src/utils/api/clients'
+import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
 
 export function deleteCurrentInstance(instance: object) {
   return instance.user.id !== this
@@ -265,7 +266,7 @@ export function formatFieldChoices(choicesObject: object) {
   let result = []
 
   for (const one of choicesObject) {
-    const current = {value: one.id, display_name: one.name}
+    const current = {value: one.id, display_name: one.label}
     result.push(current)
   }
 
@@ -337,6 +338,30 @@ export function formatUserAvatarUrl(url: string) {
   if (!url) {
     return null
   }
-  
+
   return url.replace(/^(?:\/\/|[^/]+)*\//, '')
+}
+
+export async function generateAndAssignDataObjectToStore(initialValues, formSchema) {
+
+  const fieldSelect           = useFieldSelect()
+  const fieldsTypeData        = reactive({})
+  const flattendInitialValues = flattenObj(initialValues)
+
+  for (const fieldSchema of formSchema) {
+    if (fieldSchema.type !== 'field') {
+      continue
+    }
+
+    let currentObject  = {'isOpen': false}
+    const currentPk    = flattendInitialValues[fieldSchema.id]
+
+    const jobDetails   = await getJobTitleDetails(fieldSchema.endpoint_url, currentPk)
+
+    currentObject['selectedItem']  = jobDetails.label ?? ""
+    currentObject['options']       = formatFieldChoices(await getFieldChoices(fieldSchema.endpoint_url, ''))
+    fieldsTypeData[fieldSchema.id] = currentObject
+  }
+
+  fieldSelect.setData(fieldsTypeData)
 }

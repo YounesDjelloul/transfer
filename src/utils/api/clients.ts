@@ -40,3 +40,8 @@ export async function getFieldChoices(endpointUrl, searchKeyword) {
 	const { data } = await api.get(`${endpointUrl}?search=${searchKeyword}`)
 	return data.results
 }
+
+export async function getJobTitleDetails(endpointUrl, jobPk) {
+	const response = await api.get(`${endpointUrl}${jobPk}`)
+	return response.data
+}
