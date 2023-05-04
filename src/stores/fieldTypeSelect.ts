@@ -14,9 +14,43 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
     fieldOptionsLoading.value = false
   }
 
-  const selectItem = (item, schemaField, setFieldValue) => {
-    fieldsTypeData.value[schemaField.id].selectedItem = item.value
-    setFieldValue(schemaField.id, item.value)
+  const selectItem = (item, schemaField, setFieldValue, multiple) => {
+
+    const currentSelection = fieldsTypeData.value[schemaField.id].selectedItem
+
+    if ((!multiple && currentSelection.length >= 1) || currentSelection.includes(item)) {
+      return;
+    }
+
+    fieldsTypeData.value[schemaField.id].selectedItem.push(item)
+
+    if (multiple) {
+      fieldsTypeData.value[schemaField.id].toSubmitValues.push(item.value)
+    } else {
+      fieldsTypeData.value[schemaField.id].toSubmitValues = item.value
+      fieldsTypeData.value[schemaField.id].isOpen         = false
+    }
+
+    setFieldValue(schemaField.id, fieldsTypeData.value[schemaField.id].toSubmitValues)
+  }
+
+  const removeItem = (item, schemaField, setFieldValue, multiple) => {
+
+    let currentSelection = fieldsTypeData.value[schemaField.id].selectedItem
+
+    currentSelection = currentSelection.filter((selectedOption) => {
+      return selectedOption !== item
+    })
+
+    fieldsTypeData.value[schemaField.id].selectedItem = currentSelection
+
+    if (multiple) {
+      fieldsTypeData.value[schemaField.id].toSubmitValues = currentSelection
+    } else {
+      fieldsTypeData.value[schemaField.id].toSubmitValues = null
+    }
+
+    setFieldValue(schemaField.id, fieldsTypeData.value[schemaField.id].toSubmitValues)
   }
 
   const toggleSelect = (schemaField) => {
@@ -34,6 +68,7 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
     filteredItems,
     selectItem,
     toggleSelect,
+    removeItem,
   }
 })
 

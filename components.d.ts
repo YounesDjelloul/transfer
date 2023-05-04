@@ -51,6 +51,7 @@ declare module '@vue/runtime-core' {
     EditProfileSettings: typeof import('./src/components/pages/forms/edit-profile/EditProfileSettings.vue')['default']
     EditProfileSkills: typeof import('./src/components/pages/forms/edit-profile/EditProfileSkills.vue')['default']
     EditSettingItemDropdown: typeof import('./src/components/partials/dropdowns/EditSettingItemDropdown.vue')['default']
+    FieldSelectComponent: typeof import('./src/components/custom/FieldSelectComponent.vue')['default']
     FileCardDropdown: typeof import('./src/components/partials/dropdowns/FileCardDropdown.vue')['default']
     FileTileDropdown: typeof import('./src/components/partials/dropdowns/FileTileDropdown.vue')['default']
     FilterClientsComponent: typeof import('./src/components/custom/clients/FilterClientsComponent.vue')['default']

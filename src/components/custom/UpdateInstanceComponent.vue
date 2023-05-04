@@ -95,32 +95,11 @@
               <div class="form-section-inner is-horizontal">
                 <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
                   <VControl class="has-icons-left" icon="feather:user">
-                    <div class="custom-dropdown" :class="{ 'is-open': fieldSelect.fieldsTypeData[schemaField.id].isOpen }" v-if="schemaField.type === 'field'">
-                      <div class="dropdown-header" @click="fieldSelect.toggleSelect(schemaField)">
-                        <VInput
-                          :type="schemaField.html_input_type"
-                          :placeholder="schemaField.label"
-                          v-model="fieldSelect.fieldsTypeData[schemaField.id].selectedItem"
-                          @input="fieldSelect.filteredItems($event, schemaField)"
-                          @blur="fieldSelect.fieldsTypeData[schemaField.id].isOpen = false"
-                        />
-                      </div>
-                      <ul class="dropdown-list" >
-                        <div v-if="fieldSelect.fieldOptionsLoading" class="dropdown-loader">
-                          <VPlaceload/>
-                        </div>
-                        <div v-else-if="fieldSelect.fieldsTypeData[schemaField.id].options.length === 0">No Records Match</div>
-                        <div v-else>
-                          <li
-                            v-for="item in fieldSelect.fieldsTypeData?.[schemaField.id]?.options"
-                            :key="item.value"
-                            @mousedown="fieldSelect.selectItem(item, schemaField, setFieldValue)"
-                          >
-                            {{ item.display_name }}
-                          </li>
-                        </div>
-                      </ul>
-                    </div>
+                    <FieldSelectComponent
+                      v-if="schemaField.type === 'field'"
+                      :schemaField="schemaField"
+                      :setFieldValue="setFieldValue"
+                    />
                     <VSelect v-else-if="schemaField.html_input_type === 'select'">
                       <VOption disabled hidden value="">Select an option</VOption>
                       <VOption v-for="choice in schemaField.choices" :value="choice.value">{{ choice.display_name }}</VOption>

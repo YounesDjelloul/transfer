@@ -358,9 +358,10 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
 
     const jobDetails   = await getJobTitleDetails(fieldSchema.endpoint_url, currentPk)
 
-    currentObject['selectedItem']  = jobDetails.label ?? ""
-    currentObject['options']       = formatFieldChoices(await getFieldChoices(fieldSchema.endpoint_url, ''))
-    fieldsTypeData[fieldSchema.id] = currentObject
+    currentObject['selectedItem']   = jobDetails.label ? [{"display_name": jobDetails.label, "value": jobDetails.id}] : []
+    currentObject['toSubmitValues'] = fieldSchema.relationship ? [] : null
+    currentObject['options']        = formatFieldChoices(await getFieldChoices(fieldSchema.endpoint_url, ''))
+    fieldsTypeData[fieldSchema.id]  = currentObject
   }
 
   fieldSelect.setData(fieldsTypeData)
