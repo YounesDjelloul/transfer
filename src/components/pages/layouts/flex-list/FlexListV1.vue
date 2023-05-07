@@ -7,12 +7,10 @@
   import { useHandleInstance } from '/@src/stores/handleInstance'
   import { useQueryParam } from '/@src/stores/queryParam'
   import { storeToRefs } from 'pinia';
-
   import {
     convertObjectToFilterString,
     convertSchemaToEmptyFilterString
   } from '/@src/utils/app/CRUD/filters'
-  
   import {
     generateInitialValues,
     formatFieldChoices,
@@ -190,7 +188,7 @@
               />
             </template>
 
-            <template v-if="column.key === 'user_avatar'">
+            <template v-if="column.media">
               <VAvatar size="medium" :picture="baseURL + formatUserAvatarUrl(flattenObj(row)[column.id])" />
             </template>
           </template>

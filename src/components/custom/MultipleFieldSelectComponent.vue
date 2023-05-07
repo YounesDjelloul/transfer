@@ -2,7 +2,6 @@
   import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
 
   const props = defineProps<{
-    multiple?: boolean,
     schemaField: object,
     setFieldValue: void,
   }>()

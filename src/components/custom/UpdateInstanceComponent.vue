@@ -95,13 +95,17 @@
               <div class="form-section-inner is-horizontal">
                 <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
                   <VControl class="has-icons-left" icon="feather:user">
-                    <FieldSelectComponent
-                      v-if="schemaField.type === 'field'"
+                    <MultipleFieldSelectComponent
+                      v-if="schemaField.type === 'field' && schemaField.relationship === 'many_to_many'"
                       :schemaField="schemaField"
                       :setFieldValue="setFieldValue"
                     />
+                    <OneFieldSelectComponent
+                      v-if="schemaField.type === 'field' && !schemaField.relationship"
+                      :schemaField="schemaField"
+                    />
                     <VSelect v-else-if="schemaField.html_input_type === 'select'">
-                      <VOption disabled hidden value="">Select an option</VOption>
+                      <VOption value="">Select {{ schemaField.label }}</VOption>
                       <VOption v-for="choice in schemaField.choices" :value="choice.value">{{ choice.display_name }}</VOption>
                     </VSelect>
                     <div class="file has-name" v-else-if="schemaField.html_input_type == 'file'">

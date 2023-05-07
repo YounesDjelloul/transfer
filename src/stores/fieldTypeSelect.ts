@@ -9,6 +9,7 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
 
   const filteredItems = async (event, schemaField) => {
     const searchTerm = event.target.value
+
     fieldOptionsLoading.value = true
     fieldsTypeData.value[schemaField.id].options = formatFieldChoices(await getFieldChoices(schemaField.endpoint_url, searchTerm))
     fieldOptionsLoading.value = false
@@ -18,18 +19,12 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
 
     const currentSelection = fieldsTypeData.value[schemaField.id].selectedItem
 
-    if ((!multiple && currentSelection.length >= 1) || currentSelection.includes(item)) {
+    if (currentSelection.includes(item)) {
       return;
     }
 
     fieldsTypeData.value[schemaField.id].selectedItem.push(item)
-
-    if (multiple) {
-      fieldsTypeData.value[schemaField.id].toSubmitValues.push(item.value)
-    } else {
-      fieldsTypeData.value[schemaField.id].toSubmitValues = item.value
-      fieldsTypeData.value[schemaField.id].isOpen         = false
-    }
+    fieldsTypeData.value[schemaField.id].toSubmitValues.push(item.value)
 
     setFieldValue(schemaField.id, fieldsTypeData.value[schemaField.id].toSubmitValues)
   }
@@ -42,13 +37,15 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
       return selectedOption !== item
     })
 
-    fieldsTypeData.value[schemaField.id].selectedItem = currentSelection
+    fieldsTypeData.value[schemaField.id].selectedItem   = currentSelection
 
-    if (multiple) {
-      fieldsTypeData.value[schemaField.id].toSubmitValues = currentSelection
-    } else {
-      fieldsTypeData.value[schemaField.id].toSubmitValues = null
-    }
+    let currentToSubmitValues = fieldsTypeData.value[schemaField.id].toSubmitValues
+
+    currentToSubmitValues = currentToSubmitValues.filter((selectedOption) => {
+      return selectedOption !== item.value
+    })
+
+    fieldsTypeData.value[schemaField.id].toSubmitValues = currentToSubmitValues
 
     setFieldValue(schemaField.id, fieldsTypeData.value[schemaField.id].toSubmitValues)
   }

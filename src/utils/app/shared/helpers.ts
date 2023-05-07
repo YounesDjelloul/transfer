@@ -366,3 +366,44 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
 
   fieldSelect.setData(fieldsTypeData)
 }
+
+export function formatSortSchema(orderingSchema) {
+
+  let result = new Set()
+
+  for (const field of orderingSchema) {
+
+    const fieldId = field.value.replaceAll('__', '.')
+    result.add(fieldId)
+  }
+
+  return result
+}
+
+export function generateColumns(formSchema, sortingSchema, toShow) {
+
+  let result = {}
+
+  for (const field of formSchema) {
+    if (!toShow.has(field.id)) {
+      continue
+    }
+
+    let currentObj = {
+      'id': field.id,
+      'label': field.name,
+      'sortable': sortingSchema.has(field.id),
+      'media': field.html_input_type === 'file' ? true : false
+    }
+
+    result[field.name] = currentObj
+  }
+
+  result['actions'] = {
+    id: "actions",
+    label: 'Actions',
+    align: 'end',
+  }
+
+  return result
+}

@@ -11,6 +11,7 @@
   import {
     deleteCurrentInstance,
     updateCurrentInstance,
+    generateColumns,
   } from '/@src/utils/app/shared/helpers'
 
   import {
@@ -21,64 +22,32 @@
     deleteClientRequest,
   } from '/@src/utils/api/clients'
 
-  const columns = {
-    user_avatar: {
-      id: "user.user_avatar.url",
-      label: 'Avatar',
-      media: true,
-    },
-    id: {
-      id: "id",
-      label: 'Id',
-      sortable: true,
-    },
-    email: {
-      id: "user.email",
-      label: 'Email',
-      grow: true,
-    },
-    username: {
-      id: "user.username",
-      label: 'Username',
-      sortable: true,
-    },
-    first_name: {
-      id: "user.first_name",
-      label: 'Firstname',
-      sortable: true,
-    },
-    last_name: {
-      id: "user.last_name",
-      label: 'Lastname',
-      sortable: true,
-    },
-    actions: {
-      id: "actions",
-      label: 'Actions',
-      align: 'end',
-    },
-
-  } as const
-
-  const { t }  = useI18n()
-
-  const handleInstance = useHandleInstance()
-  const queryParam     = useQueryParam()
+  const renderLoading = ref(true)
 
   let createSchema;
   let updateSchema;
   let filtersSchema;
+  let sortingSchema;
   let updateMethod;
+  let columns;
+  let toShow;
 
   onMounted(async () => {
+    const { createClientSchema, updateClientSchema, filtersClientSchema, sortingClientSchema, updateAllowedMethod } = await useClientSchemas()
 
-    const { createClientSchema, updateClientSchema, filtersClientSchema, updateAllowedMethod } = await useClientSchemas()
-    
     createSchema  = createClientSchema
     updateSchema  = updateClientSchema
     filtersSchema = filtersClientSchema
+    sortingSchema = sortingClientSchema
     updateMethod  = updateAllowedMethod
+    toShow        = sortingClientSchema
+    columns       = generateColumns(createClientSchema, sortingClientSchema, toShow)
+    
+    renderLoading.value = false
   })
+
+  const handleInstance = useHandleInstance()
+  const queryParam     = useQueryParam()
 
   const viewWrapper = useViewWrapper()
   viewWrapper.setPageTitle('Clients')
@@ -92,12 +61,12 @@
   <div class="page-content-inner">
     <div class="column is-12">
       <FlexListV1
+        v-if="!renderLoading"
         :columns="columns"
 
         :fetch-instances-function="getClients"
         :update-current-instance-function="updateCurrentInstance"
-        :delete-current-instance-function="deleteCurrentInstance"
-      >
+        :delete-current-instance-function="deleteCurrentInstance">
         <template #createInstanceSlot>
           <CreateInstanceComponent
             :request-function="createNewClient"
