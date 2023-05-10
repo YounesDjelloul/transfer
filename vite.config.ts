@@ -40,7 +40,7 @@ export default defineConfig({
   // development server configuration
  
   server: {
-    port: 3000,
+    port: 3967,
   },
 
   /**

@@ -36,6 +36,18 @@
             Employees
           </RouterLink>
         </li>
+        <li>
+          <RouterLink :to="APP_URLs.MATTERS">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Matters
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="APP_URLs.COMPANIES">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Companies
+          </RouterLink>
+        </li>
       </ul>
     </div>
   </div>

@@ -20,6 +20,7 @@
     cleanValuesIfPatch,
     formatUserAvatarUrl,
     flattenObj,
+    getRowPk,
   } from '/@src/utils/app/shared/helpers'
   
   import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
@@ -27,6 +28,7 @@
   const props = defineProps<{
     columns: object,
 
+    modelPk: any,
     fetchInstancesFunction: void,
     updateCurrentInstanceFunction: void,
     deleteCurrentInstanceFunction: void,
@@ -75,6 +77,7 @@
 
     if (sort) {
       const formattedSort = FormatingOrderingParam(sort)
+      console.log(sort, formattedSort)
       sortQuery = `ordering=${formattedSort}&`
     }
 
@@ -182,9 +185,9 @@
           <template #body-cell="{ row, column }">
             <template v-if="column.key == 'actions'">
               <FlexTableDropdown
-                @view-detail="handleInstance.getViewInstanceDetailsPopup(row.user.username)"
-                @update-details="handleInstance.getUpdateInstanceDetailsPopup(row.user.username, wrapperState.data)"
-                @delete-instance="handleInstance.getDeleteInstancePopup(row.user.username, wrapperState.data)"
+                @view-detail="handleInstance.getViewInstanceDetailsPopup(getRowPk(row, modelPk))"
+                @update-details="handleInstance.getUpdateInstanceDetailsPopup(getRowPk(row, modelPk), wrapperState.data)"
+                @delete-instance="handleInstance.getDeleteInstancePopup(getRowPk(row, modelPk), wrapperState.data)"
               />
             </template>
 

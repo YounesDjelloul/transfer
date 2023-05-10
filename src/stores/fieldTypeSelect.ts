@@ -3,12 +3,21 @@ import { formatFieldChoices } from '/@src/utils/app/shared/helpers'
 import { getFieldChoices } from '/@src/utils/api/clients'
 
 export const useFieldSelect = defineStore('fieldTypeSelect', () => {
-  
+
   const fieldsTypeData      = ref()
   const fieldOptionsLoading = ref(false)
 
-  const filteredItems = async (event, schemaField) => {
+  const clearSelectedValueForOne = (schemaField, setFieldValue) => {
+    fieldsTypeData.value[schemaField.id].toSubmitValues = null
+    setFieldValue(schemaField.id, fieldsTypeData.value[schemaField.id].toSubmitValues)
+  }
+
+  const filteredItems = async (event, schemaField, setFieldValue) => {
     const searchTerm = event.target.value
+
+    if (searchTerm.length <= 0 && schemaField.relationship !== "many_to_many") {
+      clearSelectedValueForOne(schemaField, setFieldValue)
+    }
 
     fieldOptionsLoading.value = true
     fieldsTypeData.value[schemaField.id].options = formatFieldChoices(await getFieldChoices(schemaField.endpoint_url, searchTerm))
@@ -24,7 +33,13 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
     }
 
     fieldsTypeData.value[schemaField.id].selectedItem.push(item)
-    fieldsTypeData.value[schemaField.id].toSubmitValues.push(item.value)
+    fieldsTypeData.value[schemaField.id].typed = item.display_name
+
+    if (multiple) {
+      fieldsTypeData.value[schemaField.id].toSubmitValues.push(item.value)
+    } else {
+      fieldsTypeData.value[schemaField.id].toSubmitValues = item.value
+    }
 
     setFieldValue(schemaField.id, fieldsTypeData.value[schemaField.id].toSubmitValues)
   }
@@ -41,9 +56,13 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
 
     let currentToSubmitValues = fieldsTypeData.value[schemaField.id].toSubmitValues
 
-    currentToSubmitValues = currentToSubmitValues.filter((selectedOption) => {
-      return selectedOption !== item.value
-    })
+    if (multiple) {
+      currentToSubmitValues = currentToSubmitValues.filter((selectedOption) => {
+        return selectedOption !== item.value
+      })
+    } else {
+      currentToSubmitValues = ""
+    }
 
     fieldsTypeData.value[schemaField.id].toSubmitValues = currentToSubmitValues
 

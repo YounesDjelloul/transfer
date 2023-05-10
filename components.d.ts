@@ -160,6 +160,7 @@ declare module '@vue/runtime-core' {
     UIWidgetToolbarIcon: typeof import('./src/components/partials/widgets/ui-creative/toolbar/UIWidgetToolbarIcon.vue')['default']
     UIWidgetToolbarIcons: typeof import('./src/components/partials/widgets/ui-creative/toolbar/UIWidgetToolbarIcons.vue')['default']
     UpdateClientComponent: typeof import('./src/components/custom/clients/UpdateClientComponent.vue')['default']
+    UpdateCreateForm: typeof import('./src/components/custom/UpdateCreateForm.vue')['default']
     UpdateInstanceComponent: typeof import('./src/components/custom/UpdateInstanceComponent.vue')['default']
     UpdateProfile: typeof import('./src/components/pages/layouts/profile/UpdateProfile.vue')['default']
     UpdateProfileContainer: typeof import('./src/components/pages/layouts/profile/UpdateProfileContainer.vue')['default']

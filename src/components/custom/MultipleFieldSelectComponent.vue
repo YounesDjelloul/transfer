@@ -4,6 +4,7 @@
   const props = defineProps<{
     schemaField: object,
     setFieldValue: void,
+    multiple: boolean,
   }>()
 
   const fieldSelect = useFieldSelect()

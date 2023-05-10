@@ -7,10 +7,12 @@
 
   import { useHandleInstance } from '/@src/stores/handleInstance'
   import { useQueryParam } from '/@src/stores/queryParam'
+  import { useModelSchemas } from '/@src/utils/app/CRUD/modelCache'
 
   import {
     deleteCurrentInstance,
     updateCurrentInstance,
+    generateColumns,
   } from '/@src/utils/app/shared/helpers'
 
   import {
@@ -19,65 +21,36 @@
     updateEmployeeDetailsRequest,
     getEmployeeDetails,
     deleteEmployeeRequest,
+    getEmployeeSchemas as schemasFunction,
   } from '/@src/utils/api/employees'
-
-  const columns = {
-    user_avatar: {
-      id: "user.user_avatar.url",
-      label: 'Avatar',
-      media: true,
-    },
-    id: {
-      id: "id",
-      label: 'Id',
-      sortable: true,
-    },
-    email: {
-      id: "user.email",
-      label: 'Email',
-      grow: true,
-    },
-    username: {
-      id: "user.username",
-      label: 'Username',
-      sortable: true,
-    },
-    first_name: {
-      id: "user.first_name",
-      label: 'Firstname',
-      sortable: true,
-    },
-    last_name: {
-      id: "user.last_name",
-      label: 'Lastname',
-      sortable: true,
-    },
-    actions: {
-      id: "actions",
-      label: 'Actions',
-      align: 'end',
-    },
-
-  } as const
-
-  const { t }  = useI18n()
 
   const handleInstance = useHandleInstance()
   const queryParam     = useQueryParam()
 
-  let createSchema;
-  let updateSchema;
-  let filtersSchema;
+  const renderLoading = ref(true)
+
+  let createModelSchema;
+  let updateModelSchema;
+  let filtersModelSchema;
+  let sortingModelSchema;
   let updateMethod;
+  let columns;
+  let toShow;
+  let modelPk;
 
   onMounted(async () => {
+    const { createSchema, updateSchema, filtersSchema, sortingSchema, updateAllowedMethod, lookupField } = await useModelSchemas(schemasFunction, 'Employee')
 
-    const { createEmployeeSchema, updateEmployeeSchema, filtersEmployeeSchema, updateAllowedMethod } = await useEmployeeSchemas()
+    createModelSchema  = createSchema
+    updateModelSchema  = updateSchema
+    filtersModelSchema = filtersSchema
+    sortingModelSchema = sortingSchema
+    updateMethod       = updateAllowedMethod
+    toShow             = sortingSchema
+    modelPk            = lookupField
+    columns            = generateColumns(createSchema, sortingSchema, toShow)
     
-    createSchema  = createEmployeeSchema
-    updateSchema  = updateEmployeeSchema
-    filtersSchema = filtersEmployeeSchema
-    updateMethod  = updateAllowedMethod
+    renderLoading.value = false
   })
 
   const viewWrapper = useViewWrapper()
@@ -92,8 +65,10 @@
   <div class="page-content-inner">
     <div class="column is-12">
       <FlexListV1
+        v-if="!renderLoading"
         :columns="columns"
 
+        :model-pk="modelPk"
         :fetch-instances-function="getEmployees"
         :update-current-instance-function="updateCurrentInstance"
         :delete-current-instance-function="deleteCurrentInstance"
@@ -101,7 +76,7 @@
         <template #createInstanceSlot>
           <CreateInstanceComponent
             :request-function="createNewEmployee"
-            :formSchema="createSchema"
+            :formSchema="createModelSchema"
             modal-title="Create New Record"
             @handle-create-instance-affect="handleInstance.handleInstanceCreationAffect"
           />
@@ -115,7 +90,7 @@
         <template #updateInstanceSlot>
           <UpdateInstanceComponent
             :request-function="updateEmployeeDetailsRequest"
-            :form-schema="updateSchema"
+            :form-schema="updateModelSchema"
             :instance-details-function="getEmployeeDetails"
             :update-allowed-method="updateMethod"
             modal-title="Update Record"
@@ -131,7 +106,7 @@
         </template>
         <template #filterInstancesSlot>
           <FilterListComponent
-            :form-schema="filtersSchema"
+            :form-schema="filtersModelSchema"
             modal-title="Filter Records"
             @filter-list="(filters) => queryParam.filtersTerm = filters"
           />

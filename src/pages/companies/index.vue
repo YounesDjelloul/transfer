@@ -3,7 +3,6 @@
   import { useI18n } from 'vue-i18n'
   import { useHead } from '@vueuse/head'
   import { useViewWrapper } from '/@src/stores/viewWrapper'
-  import { useClientSchemas } from '/@src/utils/app/CRUD/clientsCache'
 
   import { useHandleInstance } from '/@src/stores/handleInstance'
   import { useQueryParam } from '/@src/stores/queryParam'
@@ -16,13 +15,13 @@
   } from '/@src/utils/app/shared/helpers'
 
   import {
-    createNewClient,
-    getClients,
-    updateClientDetailsRequest,
-    getClientDetails,
-    deleteClientRequest,
-    getClientSchemas as schemasFunction,
-  } from '/@src/utils/api/clients'
+    createNewCompany,
+    getCompanies,
+    updateCompanyDetailsRequest,
+    getCompanyDetails,
+    deleteCompanyRequest,
+    getCompanySchemas as schemasFunction,
+  } from '/@src/utils/api/companies'
 
   const renderLoading = ref(true)
 
@@ -36,22 +35,14 @@
   let modelPk;
 
   onMounted(async () => {
-    const {
-      createSchema,
-      updateSchema,
-      filtersSchema,
-      sortingSchema,
-      updateAllowedMethod,
-      lookupField,
-      listingColumns,
-    } = await useModelSchemas(schemasFunction, 'Client')
+    const { createSchema, updateSchema, filtersSchema, sortingSchema, updateAllowedMethod, lookupField } = await useModelSchemas(schemasFunction, 'Company')
 
     createModelSchema  = createSchema
     updateModelSchema  = updateSchema
     filtersModelSchema = filtersSchema
     sortingModelSchema = sortingSchema
     updateMethod       = updateAllowedMethod
-    toShow             = listingColumns
+    toShow             = sortingSchema
     modelPk            = lookupField
     columns            = generateColumns(createSchema, sortingSchema, toShow)
     
@@ -62,10 +53,10 @@
   const queryParam     = useQueryParam()
 
   const viewWrapper = useViewWrapper()
-  viewWrapper.setPageTitle('Clients')
+  viewWrapper.setPageTitle('Companies')
 
   useHead({
-    title: 'Lex Algeria - Clients',
+    title: 'Lex Algeria - Companies',
   })
 </script>
 
@@ -77,12 +68,12 @@
         :columns="columns"
 
         :model-pk="modelPk"
-        :fetch-instances-function="getClients"
+        :fetch-instances-function="getCompanies"
         :update-current-instance-function="updateCurrentInstance"
         :delete-current-instance-function="deleteCurrentInstance">
         <template #createInstanceSlot>
           <CreateInstanceComponent
-            :request-function="createNewClient"
+            :request-function="createNewCompany"
             :formSchema="createModelSchema"
             modal-title="Create New Record"
             @handle-create-instance-affect="handleInstance.handleInstanceCreationAffect"
@@ -90,15 +81,15 @@
         </template>
         <template #viewInstanceSlot>
           <ViewInstanceComponent
-            :request-function="getClientDetails"
+            :request-function="getCompanyDetails"
             modal-title="Record Details"
           />
         </template>
         <template #updateInstanceSlot>
           <UpdateInstanceComponent
-            :request-function="updateClientDetailsRequest"
+            :request-function="updateCompanyDetailsRequest"
             :form-schema="updateModelSchema"
-            :instance-details-function="getClientDetails"
+            :instance-details-function="getCompanyDetails"
             :update-allowed-method="updateMethod"
             modal-title="Update Record"
             @handle-update-instance-affect="handleInstance.handleInstanceUpdateAffect"
@@ -106,7 +97,7 @@
         </template>
         <template #deleteInstanceSlot>
           <DeleteInstanceComponent
-            :request-function="deleteClientRequest"
+            :request-function="deleteCompanyRequest"
             modal-title="Delete Record"
             @handle-delete-instance-affect="handleInstance.handleInstanceDeleteAffect"
           />

@@ -1,17 +1,21 @@
 <script setup lang="ts">
 
-  import { ref, onMounted } from 'vue'
   import { useForm } from 'vee-validate'
   import { toFormValidator } from '@vee-validate/zod'
-  import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
   import { getFieldChoices, getJobTitleDetails } from '/@src/utils/api/clients'
-  import { generateInitialValues, flattenObj, generateAndAssignDataObjectToStore, formatFieldChoices, objectToFormData, formatError, generateValidationSchema, cleanValuesIfPatch } from '/@src/utils/app/shared/helpers'
-  import { useHandleInstance } from '/@src/stores/handleInstance'
-  import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
+  import {
+    generateInitialValues,
+    flattenObj,
+    generateAndAssignDataObjectToStore,
+    formatFieldChoices,
+    objectToFormData,
+    formatError,
+    generateValidationSchema,
+    cleanValuesIfPatch
+  } from '/@src/utils/app/shared/helpers'
 
-  const notyf          = useNotyf()
-  const { t }          = useI18n()
+  import { useHandleInstance } from '/@src/stores/handleInstance'
 
   const emits = defineEmits<{
     (e: 'handleUpdateInstanceAffect', data): void
@@ -25,8 +29,8 @@
     updateAllowedMethod: string,
   }>()
 
+  const notyf          = useNotyf()
   const handleInstance = useHandleInstance()
-  const fieldSelect    = useFieldSelect()
 
   const instanceDetails  = await props.instanceDetailsFunction(handleInstance.instanceToUpdatePk)
   const validationSchema = toFormValidator(generateValidationSchema(props.formSchema))
@@ -63,15 +67,6 @@
     }
   })
 
-  const selectedFileName = ref("Select a Picture..")
-
-  function handleUpload(event, schemaField) {
-    const file = event.target.files[0]
-    selectedFileName.value = file ? file.name : "Select a Picture.."
-
-    setFieldValue(schemaField.id, file)
-  }
-
 </script>
 
 <template>
@@ -85,57 +80,11 @@
   >
     <template #content>
       <VPlaceload v-if="isLoading" />
-      <form class="form-layout is-stacked" v-else>
-        <div class="form-outer">
-          <div class="form-body">
-            <div class="form-section is-grey">
-              <div class="form-section-header">
-                <div class="left"><h3>General</h3></div>
-              </div>
-              <div class="form-section-inner is-horizontal">
-                <VField v-for="schemaField in formSchema" :id="schemaField.id" v-slot="{ field }">
-                  <VControl class="has-icons-left" icon="feather:user">
-                    <MultipleFieldSelectComponent
-                      v-if="schemaField.type === 'field' && schemaField.relationship === 'many_to_many'"
-                      :schemaField="schemaField"
-                      :setFieldValue="setFieldValue"
-                    />
-                    <OneFieldSelectComponent
-                      v-if="schemaField.type === 'field' && !schemaField.relationship"
-                      :schemaField="schemaField"
-                    />
-                    <VSelect v-else-if="schemaField.html_input_type === 'select'">
-                      <VOption value="">Select {{ schemaField.label }}</VOption>
-                      <VOption v-for="choice in schemaField.choices" :value="choice.value">{{ choice.display_name }}</VOption>
-                    </VSelect>
-                    <div class="file has-name" v-else-if="schemaField.html_input_type == 'file'">
-                      <label class="file-label">
-                        <input class="file-input" type="file" :id="schemaField.id" name="resume" @change="handleUpload($event, schemaField)" />
-                        <span class="file-cta">
-                          <span class="file-icon">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                          </span>
-                          <span class="file-label"> Choose a file… </span>
-                        </span>
-                        <span class="file-name light-text"> {{ selectedFileName }} </span>
-                      </label>
-                    </div>
-                    <VInput
-                      v-else
-                      :type="schemaField.html_input_type"
-                      :placeholder="schemaField.label"
-                    />
-                    <p v-if="field?.errors?.value?.length" class="help is-danger">
-                      {{ field.errors?.value?.join(', ') }}
-                    </p>
-                    <p class="help is-primary" v-else-if="schemaField.required">Required Field</p>
-                  </VControl>
-                </VField>
-              </div>
-            </div>
-          </div>
-        </div>
-      </form>
+      <UpdateCreateForm
+        v-else
+        :form-schema="formSchema"
+        :set-field-value="setFieldValue"
+      />
     </template>
     <template #action v-if="!isLoading">
       <VButton :loading="isLoading" type="submit" @click="onUpdate" color="primary" raised>Update</VButton>

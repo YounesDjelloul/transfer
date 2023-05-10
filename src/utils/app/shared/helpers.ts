@@ -9,6 +9,14 @@ export function deleteCurrentInstance(instance: object) {
   return instance.user.id !== this
 }
 
+export function getRowPk(row, modelPk) {
+
+  modelPk = modelPk === 'pk' ? 'id' : modelPk
+
+  const flattendRow = flattenObj(row)
+  return flattendRow[modelPk.replaceAll('__', '.')]
+}
+
 export function updateCurrentInstance(instance: object, instanceIndex: number, data: []) {
   
   const instanceId   = this[0]
@@ -57,11 +65,9 @@ export function generateInitialValues(schema: [], instance: object = {}) {
 
   for (const field of schema) {
 
-    let currentValue = flattendInstance[field.id] ?? ""
+    const rightValue = field.type == 'field' || field.type == "image upload"  ? null : ""
 
-    if (field.type == "image upload" && currentValue == "") {
-      currentValue = null
-    }
+    let currentValue = flattendInstance[field.id] ?? rightValue
 
     if (field.id.includes(".")) {
       const nesting = field.id.split(".")
@@ -186,19 +192,29 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
   const t = translateFunction
 
   const zodFunctionsRepo = {
-    "string": "string",
-    "choice": "string",
-    "email": "string",
-    "image upload": "any",
-    "field": "any",
+    "string": zod.string(),
+    "choice": zod.string(),
+    "email": zod.string().email(),
+    "image upload": zod.any(),
+    "array": zod.string().array(),
+    "boolean": zod.boolean(),
+    "nullableNumber": zod.union([zod.null(), zod.number()]),
+    "number": zod.number(),
   }
 
   function getZodField(fieldProp) {
 
-    const fieldType = fieldProp.type
-    const currentZodFunction = zodFunctionsRepo[fieldType] ?? "string"
-    
-    let zodField = zod[currentZodFunction]()
+    let fieldType = fieldProp.type
+
+    if (fieldType === 'field') {
+      if (fieldProp.drf_type === "many_to_many") {
+        fieldType = "array"
+      } else if (fieldProp.drf_type !== "many_to_many") {
+        fieldType = fieldProp.required ? "number" : 'nullableNumber'
+      }
+    }
+
+    let zodField = zodFunctionsRepo[fieldType] ?? zod.string()
 
     if (fieldProp.required) {
       zodField = zodField.min(1, {message: "Field Required"})
@@ -353,15 +369,23 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
       continue
     }
 
-    let currentObject  = {'isOpen': false}
-    const currentPk    = flattendInitialValues[fieldSchema.id]
+    let currentObject  = {'isOpen': false, 'typed': null}
+    const currentPk    = flattendInitialValues[fieldSchema.id] ?? ""
 
-    const jobDetails   = await getJobTitleDetails(fieldSchema.endpoint_url, currentPk)
-
-    currentObject['selectedItem']   = jobDetails.label ? [{"display_name": jobDetails.label, "value": jobDetails.id}] : []
-    currentObject['toSubmitValues'] = fieldSchema.relationship ? [] : null
-    currentObject['options']        = formatFieldChoices(await getFieldChoices(fieldSchema.endpoint_url, ''))
-    fieldsTypeData[fieldSchema.id]  = currentObject
+    try {
+      const jobDetails   = await getJobTitleDetails(fieldSchema.endpoint_url, currentPk)
+    
+      currentObject['selectedItem']   = jobDetails.label ? [{"display_name": jobDetails.label, "value": jobDetails.id}] : []
+      currentObject['toSubmitValues'] = fieldSchema.relationship ? [] : null
+      currentObject['options']        = formatFieldChoices(await getFieldChoices(fieldSchema.endpoint_url, ''))
+    } catch (error) {
+      console.log(error)
+      currentObject['selectedItem']   = []
+      currentObject['toSubmitValues'] = null
+      currentObject['options']        = []
+    } finally {
+      fieldsTypeData[fieldSchema.id]  = currentObject
+    }
   }
 
   fieldSelect.setData(fieldsTypeData)
@@ -380,23 +404,39 @@ export function formatSortSchema(orderingSchema) {
   return result
 }
 
+export function formatColumnListingSchema(listingSchema) {
+
+  let result = new Set()
+
+  for (let field of listingSchema) {
+    field.dotValue = field.value.replaceAll('__', '.')
+    result.add(field)
+  }
+
+  return result
+}
+
 export function generateColumns(formSchema, sortingSchema, toShow) {
 
-  let result = {}
+  let mediaFields = []
+  let result      = {}
 
-  for (const field of formSchema) {
-    if (!toShow.has(field.id)) {
-      continue
+  for (const one of formSchema) {
+    if (one.html_input_type === 'file') {
+      mediaFields.push(one.id)
     }
+  }
+
+  for (const field of toShow) {
 
     let currentObj = {
-      'id': field.id,
-      'label': field.name,
-      'sortable': sortingSchema.has(field.id),
-      'media': field.html_input_type === 'file' ? true : false
+      'id': field.dotValue,
+      'label': field.display_name,
+      'sortable': sortingSchema.has(field.dotValue),
+      'media': mediaFields.includes(field.dotValue) ? true : false
     }
 
-    result[field.name] = currentObj
+    result[field.value] = currentObj
   }
 
   result['actions'] = {
@@ -406,4 +446,8 @@ export function generateColumns(formSchema, sortingSchema, toShow) {
   }
 
   return result
+}
+
+export function saveSchematoStorage(actionKey: string, formSchema: string) {
+  localStorage.setItem(actionKey, formSchema)
 }
