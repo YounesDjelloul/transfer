@@ -8,7 +8,7 @@ import {
   formatColumnListingSchema,
 } from '/@src/utils/app/shared/helpers'
 
-export async function useModelSchemas(SchemasRequestFunction, modelName) {
+export async function useModelSchemas(endpointUrl, SchemasRequestFunction, modelName) {
 
 	let result = {
 		createSchema: undefined,
@@ -21,7 +21,7 @@ export async function useModelSchemas(SchemasRequestFunction, modelName) {
 	}
 
 	if (!result.createSchema || !result.updateSchema || !result.filtersSchema || !result.sortingSchema || !result.updateAllowedMethod || result.lookupField || result.listingColumns) {
-		const { actions, filtering_schema, ordering_schema, lookup_field, listing_columns } = await SchemasRequestFunction()
+		const { actions, filtering_schema, ordering_schema, lookup_field, listing_columns } = await SchemasRequestFunction(endpointUrl)
 
 		result.createSchema        = formatCreateSchema(actions.POST)
 		result.updateSchema        = formatUpdateSchema(getPrioritizedUpdateMethod(actions) == "put" ? actions.PUT : actions.PATCH)

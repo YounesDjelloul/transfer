@@ -1,9 +1,10 @@
 <script setup lang="ts">
 
-  import { useI18n } from 'vue-i18n'
+  import API_URLs from '/@src/utils/api/urls'
+
+  import { provide } from 'vue'
   import { useHead } from '@vueuse/head'
   import { useViewWrapper } from '/@src/stores/viewWrapper'
-  import { useClientSchemas } from '/@src/utils/app/CRUD/clientsCache'
 
   import { useHandleInstance } from '/@src/stores/handleInstance'
   import { useQueryParam } from '/@src/stores/queryParam'
@@ -16,13 +17,16 @@
   } from '/@src/utils/app/shared/helpers'
 
   import {
-    createNewClient,
-    getClients,
-    updateClientDetailsRequest,
-    getClientDetails,
-    deleteClientRequest,
-    getClientSchemas as schemasFunction,
-  } from '/@src/utils/api/clients'
+    createNewInstance,
+    getInstances,
+    updateInstanceDetailsRequest,
+    getInstanceDetails,
+    deleteInstanceRequest,
+    getInstanceSchemas as schemasFunction,
+  } from '/@src/utils/api/modelApiCallFunctions'
+
+  const endpointUrl = API_URLs.CLIENTS
+  provide("endpointUrl", endpointUrl)
 
   const renderLoading = ref(true)
 
@@ -44,7 +48,7 @@
       updateAllowedMethod,
       lookupField,
       listingColumns,
-    } = await useModelSchemas(schemasFunction, 'Client')
+    } = await useModelSchemas(endpointUrl, schemasFunction, 'Client')
 
     createModelSchema  = createSchema
     updateModelSchema  = updateSchema
@@ -77,12 +81,12 @@
         :columns="columns"
 
         :model-pk="modelPk"
-        :fetch-instances-function="getClients"
+        :fetch-instances-function="getInstances"
         :update-current-instance-function="updateCurrentInstance"
         :delete-current-instance-function="deleteCurrentInstance">
         <template #createInstanceSlot>
           <CreateInstanceComponent
-            :request-function="createNewClient"
+            :request-function="createNewInstance"
             :formSchema="createModelSchema"
             modal-title="Create New Record"
             @handle-create-instance-affect="handleInstance.handleInstanceCreationAffect"
@@ -90,15 +94,15 @@
         </template>
         <template #viewInstanceSlot>
           <ViewInstanceComponent
-            :request-function="getClientDetails"
+            :request-function="getInstanceDetails"
             modal-title="Record Details"
           />
         </template>
         <template #updateInstanceSlot>
           <UpdateInstanceComponent
-            :request-function="updateClientDetailsRequest"
+            :request-function="updateInstanceDetailsRequest"
             :form-schema="updateModelSchema"
-            :instance-details-function="getClientDetails"
+            :instance-details-function="getInstanceDetails"
             :update-allowed-method="updateMethod"
             modal-title="Update Record"
             @handle-update-instance-affect="handleInstance.handleInstanceUpdateAffect"
@@ -106,7 +110,7 @@
         </template>
         <template #deleteInstanceSlot>
           <DeleteInstanceComponent
-            :request-function="deleteClientRequest"
+            :request-function="deleteInstanceRequest"
             modal-title="Delete Record"
             @handle-delete-instance-affect="handleInstance.handleInstanceDeleteAffect"
           />

@@ -38,7 +38,7 @@
         <div v-if="fieldSelect.fieldOptionsLoading" class="dropdown-loader">
           <VPlaceload/>
         </div>
-        <!--div v-else-if="filteredItems.length === 0">No Records Match</div-->
+        <div class="no-options" v-else-if="fieldsData[schemaField.id].options.length === 0">No Records Match</div>
         <div v-else>
           <li
             v-for="item in fieldsData[schemaField.id].options"
@@ -97,8 +97,12 @@
         left: 0;
         list-style: none;
 
-        .dropdown-loader {
+        .dropdown-loader, .no-options {
           padding: 0px 10px 10px 39px;
+        }
+
+        .no-options {
+          font-weight: bold;
         }
 
         li {

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 
-  import { useI18n } from 'vue-i18n'
+  import API_URLs from '/@src/utils/api/urls'
+
+  import { provide } from 'vue'
   import { useHead } from '@vueuse/head'
   import { useViewWrapper } from '/@src/stores/viewWrapper'
   import { useEmployeeSchemas } from '/@src/utils/app/CRUD/employeesCache'
@@ -16,13 +18,16 @@
   } from '/@src/utils/app/shared/helpers'
 
   import {
-    createNewEmployee,
-    getEmployees,
-    updateEmployeeDetailsRequest,
-    getEmployeeDetails,
-    deleteEmployeeRequest,
-    getEmployeeSchemas as schemasFunction,
-  } from '/@src/utils/api/employees'
+    createNewInstance,
+    getInstances,
+    updateInstanceDetailsRequest,
+    getInstanceDetails,
+    deleteInstanceRequest,
+    getInstanceSchemas as schemasFunction,
+  } from '/@src/utils/api/modelApiCallFunctions'
+
+  const endpointUrl = API_URLs.EMPLOYEES
+  provide("endpointUrl", endpointUrl)
 
   const handleInstance = useHandleInstance()
   const queryParam     = useQueryParam()
@@ -39,7 +44,15 @@
   let modelPk;
 
   onMounted(async () => {
-    const { createSchema, updateSchema, filtersSchema, sortingSchema, updateAllowedMethod, lookupField } = await useModelSchemas(schemasFunction, 'Employee')
+    const {
+      createSchema,
+      updateSchema,
+      filtersSchema,
+      sortingSchema,
+      updateAllowedMethod,
+      lookupField,
+      listingColumns,
+    } = await useModelSchemas(endpointUrl, schemasFunction, 'Employee')
 
     createModelSchema  = createSchema
     updateModelSchema  = updateSchema
@@ -69,13 +82,13 @@
         :columns="columns"
 
         :model-pk="modelPk"
-        :fetch-instances-function="getEmployees"
+        :fetch-instances-function="getInstances"
         :update-current-instance-function="updateCurrentInstance"
         :delete-current-instance-function="deleteCurrentInstance"
       >
         <template #createInstanceSlot>
           <CreateInstanceComponent
-            :request-function="createNewEmployee"
+            :request-function="createNewInstance"
             :formSchema="createModelSchema"
             modal-title="Create New Record"
             @handle-create-instance-affect="handleInstance.handleInstanceCreationAffect"
@@ -83,15 +96,15 @@
         </template>
         <template #viewInstanceSlot>
           <ViewInstanceComponent
-            :request-function="getClientDetails"
+            :request-function="getInstanceDetails"
             modal-title="Record Details"
           />
         </template>
         <template #updateInstanceSlot>
           <UpdateInstanceComponent
-            :request-function="updateEmployeeDetailsRequest"
+            :request-function="updateInstanceDetailsRequest"
             :form-schema="updateModelSchema"
-            :instance-details-function="getEmployeeDetails"
+            :instance-details-function="getInstanceDetails"
             :update-allowed-method="updateMethod"
             modal-title="Update Record"
             @handle-update-instance-affect="handleInstance.handleInstanceUpdateAffect"
@@ -99,7 +112,7 @@
         </template>
         <template #deleteInstanceSlot>
           <DeleteInstanceComponent
-            :request-function="deleteEmployeeRequest"
+            :request-function="deleteInstanceRequest"
             modal-title="Delete Record"
             @handle-delete-instance-affect="handleInstance.handleInstanceDeleteAffect"
           />

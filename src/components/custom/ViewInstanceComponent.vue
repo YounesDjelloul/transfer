@@ -1,17 +1,19 @@
 <script setup lang='ts'>
 
+  import { inject } from 'vue'
   import { useNotyf } from '/@src/composable/useNotyf'
   import { formatView } from '/@src/utils/app/shared/helpers'
   import { useHandleInstance } from '/@src/stores/handleInstance'
-
-  const handleInstance = useHandleInstance()
 
   const props = defineProps<{
     requestFunction: void,
     modalTitle: string,
   }>()
 
-	const notyf = useNotyf()
+	const notyf          = useNotyf()
+  const handleInstance = useHandleInstance()
+
+  const endpointUrl = inject('endpointUrl')
 
 	const isLoading = ref(true)
   const instance  = ref()
@@ -22,8 +24,8 @@
       
       const toRequest = props.requestFunction
 
-      const response = await toRequest(handleInstance.instanceToViewPk)
-      instance.value = await formatView(response)
+      const response  = await toRequest(endpointUrl, handleInstance.instanceToViewPk)
+      instance.value  = await formatView(response)
 
     } catch (error) {
       notyf.error(error)

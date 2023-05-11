@@ -1,9 +1,11 @@
 <script setup lang="ts">
 
+  import { inject } from 'vue'
   import { useForm } from 'vee-validate'
   import { toFormValidator } from '@vee-validate/zod'
   import { useNotyf } from '/@src/composable/useNotyf'
   import { getFieldChoices, getJobTitleDetails } from '/@src/utils/api/clients'
+  import { useHandleInstance } from '/@src/stores/handleInstance'
   import {
     generateInitialValues,
     flattenObj,
@@ -14,8 +16,6 @@
     generateValidationSchema,
     cleanValuesIfPatch
   } from '/@src/utils/app/shared/helpers'
-
-  import { useHandleInstance } from '/@src/stores/handleInstance'
 
   const emits = defineEmits<{
     (e: 'handleUpdateInstanceAffect', data): void
@@ -32,7 +32,9 @@
   const notyf          = useNotyf()
   const handleInstance = useHandleInstance()
 
-  const instanceDetails  = await props.instanceDetailsFunction(handleInstance.instanceToUpdatePk)
+  const endpointUrl    = inject('endpointUrl')
+
+  const instanceDetails  = await props.instanceDetailsFunction(endpointUrl, handleInstance.instanceToUpdatePk)
   const validationSchema = toFormValidator(generateValidationSchema(props.formSchema))
   const initialValues    = generateInitialValues(props.formSchema, instanceDetails)
 
@@ -53,7 +55,7 @@
       const formattedValues = cleanValuesIfPatch(values, props.updateAllowedMethod, initialValues)
       const valuesInFormData = objectToFormData(formattedValues)
       const toUpdate = props.requestFunction
-      const { data } = await toUpdate(handleInstance.instanceToUpdatePk, formattedValues, props.updateAllowedMethod)
+      const { data } = await toUpdate(endpointUrl, handleInstance.instanceToUpdatePk, formattedValues, props.updateAllowedMethod)
 
       emits('handleUpdateInstanceAffect', data)
     } catch (err) {

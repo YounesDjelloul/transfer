@@ -1,21 +1,21 @@
 <script setup lang="ts">
 
-  import { useForm, ErrorMessage } from 'vee-validate'
+  import { inject } from 'vue'
+  import { useForm } from 'vee-validate'
   import { toFormValidator } from '@vee-validate/zod'
+
   import { useNotyf } from '/@src/composable/useNotyf'
+  import { useHandleInstance } from '/@src/stores/handleInstance'
+  import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
+
   import {
     formatError,
     generateInitialValues,
     generateValidationSchema,
     objectToFormData,
     generateAndAssignDataObjectToStore,
-    setPksForFieldTypeInputs
+    setPksForFieldTypeInputs,
   } from '/@src/utils/app/shared/helpers'
-
-  import { useHandleInstance } from '/@src/stores/handleInstance'
-  import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
-
-  const notyf  = useNotyf()
 
   const emits = defineEmits<{
     (e: 'handleCreateInstanceAffect', data): void
@@ -27,6 +27,9 @@
     formSchema: object,
   }>()
 
+  const endpointUrl = inject('endpointUrl')
+
+  const notyf          = useNotyf()
   const handleInstance = useHandleInstance()
   const fieldSelect    = useFieldSelect()
 
@@ -49,7 +52,7 @@
     try {
       const valuesInFormData = objectToFormData(values)
       const toRequest        = props.requestFunction
-      const response         = await toRequest(valuesInFormData)
+      const response         = await toRequest(endpointUrl, valuesInFormData)
 
       emits('handleCreateInstanceAffect', response.data)
     } catch (err) {

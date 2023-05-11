@@ -1,6 +1,6 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { formatFieldChoices } from '/@src/utils/app/shared/helpers'
-import { getFieldChoices } from '/@src/utils/api/clients'
+import { getFieldChoices } from '/@src/utils/api/modelApiCallFunctions'
 
 export const useFieldSelect = defineStore('fieldTypeSelect', () => {
 

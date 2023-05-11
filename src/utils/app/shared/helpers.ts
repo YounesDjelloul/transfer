@@ -2,7 +2,7 @@ import { z as zod } from 'zod'
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
 import { convertObjectToFilterString, convertSchemaToEmptyFilterString } from '/@src/utils/app/CRUD/filters'
-import { getFieldChoices, getJobTitleDetails } from '/@src/utils/api/clients'
+import { getFieldChoices, getEndpointInstanceDetails } from '/@src/utils/api/modelApiCallFunctions'
 import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
 
 export function deleteCurrentInstance(instance: object) {
@@ -373,7 +373,7 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
     const currentPk    = flattendInitialValues[fieldSchema.id] ?? ""
 
     try {
-      const jobDetails   = await getJobTitleDetails(fieldSchema.endpoint_url, currentPk)
+      const jobDetails   = await getEndpointInstanceDetails(fieldSchema.endpoint_url, currentPk)
     
       currentObject['selectedItem']   = jobDetails.label ? [{"display_name": jobDetails.label, "value": jobDetails.id}] : []
       currentObject['toSubmitValues'] = fieldSchema.relationship ? [] : null

@@ -1,16 +1,17 @@
 <script setup lang="ts">
 
-  import { toRaw } from 'vue';
-  import { z as zod } from 'zod'
-  import { useI18n } from 'vue-i18n'
+  import { inject } from 'vue'
   import { useNotyf } from '/@src/composable/useNotyf'
   import { useHandleInstance } from '/@src/stores/handleInstance'
   import { useQueryParam } from '/@src/stores/queryParam'
   import { storeToRefs } from 'pinia';
+  import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
+
   import {
     convertObjectToFilterString,
     convertSchemaToEmptyFilterString
   } from '/@src/utils/app/CRUD/filters'
+
   import {
     generateInitialValues,
     formatFieldChoices,
@@ -22,8 +23,6 @@
     flattenObj,
     getRowPk,
   } from '/@src/utils/app/shared/helpers'
-  
-  import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
 
   const props = defineProps<{
     columns: object,
@@ -34,7 +33,8 @@
     deleteCurrentInstanceFunction: void,
   }>()
 
-  const baseURL = import.meta.env.VITE_API_BASE_URL
+  const endpointUrl = inject('endpointUrl')
+  const baseURL     = import.meta.env.VITE_API_BASE_URL
 
   const handleInstance = useHandleInstance()
   const queryParam     = useQueryParam()
@@ -82,7 +82,7 @@
     }
 
     const endpointRoute  = `?${sortQuery}${searchFilterQuery}${pageQuery}`
-    const { results, count } = await props.fetchInstancesFunction(endpointRoute)
+    const { results, count } = await props.fetchInstancesFunction(endpointUrl, endpointRoute)
 
     handleInstance.totalInstances = count
     return results

@@ -1,11 +1,8 @@
 <script setup lang='ts'>
 	
+  import { inject } from 'vue'
   import { useNotyf } from '/@src/composable/useNotyf'
   import { useHandleInstance } from '/@src/stores/handleInstance'
-
-  const handleInstance = useHandleInstance()
-
-  const notyf = useNotyf()
 
 	const emits = defineEmits<{
     (e: 'handleDeleteInstanceAffect'): void
@@ -16,6 +13,11 @@
     modalTitle: string,
   }>()
 
+  const notyf          = useNotyf()
+  const handleInstance = useHandleInstance()
+
+  const endpointUrl = inject('endpointUrl')
+
 	const isLoading = ref(false)
 
 	async function onDelete() {
@@ -25,7 +27,7 @@
     try {
 
       const toDelete = props.requestFunction
-      const response = await toDelete(handleInstance.instanceToDeletePk)
+      const response = await toDelete(endpointUrl, handleInstance.instanceToDeletePk)
       emits('handleDeleteInstanceAffect')
 
     } catch (err) {

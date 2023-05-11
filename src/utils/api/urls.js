@@ -8,6 +8,7 @@ API_URLs.CLIENTS = '/api/clients/'
 API_URLs.EMPLOYEES = '/api/employees/'
 API_URLs.MATTERS = '/api/matters/'
 API_URLs.COMPANIES = '/api/companies/'
+API_URLs.CONTACTS = '/api/contacts/'
 API_URLs.USERS = '/api/users/'
 
 export default API_URLs

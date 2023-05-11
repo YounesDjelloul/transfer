@@ -3,6 +3,7 @@
   import API_URLs from '/@src/utils/api/urls'
 
   import { provide } from 'vue'
+  import { useI18n } from 'vue-i18n'
   import { useHead } from '@vueuse/head'
   import { useViewWrapper } from '/@src/stores/viewWrapper'
 
@@ -25,7 +26,7 @@
     getInstanceSchemas as schemasFunction,
   } from '/@src/utils/api/modelApiCallFunctions'
 
-  const endpointUrl = API_URLs.COMPANIES
+  const endpointUrl = API_URLs.CONTACTS
   provide("endpointUrl", endpointUrl)
 
   const renderLoading = ref(true)
@@ -48,14 +49,14 @@
       updateAllowedMethod,
       lookupField,
       listingColumns,
-    } = await useModelSchemas(endpointUrl, schemasFunction, 'Company')
+    } = await useModelSchemas(endpointUrl, schemasFunction, 'Contact')
 
     createModelSchema  = createSchema
     updateModelSchema  = updateSchema
     filtersModelSchema = filtersSchema
     sortingModelSchema = sortingSchema
     updateMethod       = updateAllowedMethod
-    toShow             = sortingSchema
+    toShow             = listingColumns
     modelPk            = lookupField
     columns            = generateColumns(createSchema, sortingSchema, toShow)
     
@@ -66,10 +67,10 @@
   const queryParam     = useQueryParam()
 
   const viewWrapper = useViewWrapper()
-  viewWrapper.setPageTitle('Companies')
+  viewWrapper.setPageTitle('Contacts')
 
   useHead({
-    title: 'Lex Algeria - Companies',
+    title: 'Lex Algeria - Contacts',
   })
 </script>
 

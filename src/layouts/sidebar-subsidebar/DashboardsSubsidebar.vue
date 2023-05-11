@@ -48,6 +48,12 @@
             Companies
           </RouterLink>
         </li>
+        <li>
+          <RouterLink :to="APP_URLs.CONTACTS">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Contacts
+          </RouterLink>
+        </li>
       </ul>
     </div>
   </div>
