@@ -56,7 +56,7 @@
     filtersModelSchema = filtersSchema
     sortingModelSchema = sortingSchema
     updateMethod       = updateAllowedMethod
-    toShow             = sortingSchema
+    toShow             = listingColumns
     modelPk            = lookupField
     columns            = generateColumns(createSchema, sortingSchema, toShow)
     

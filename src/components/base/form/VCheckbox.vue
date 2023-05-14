@@ -133,6 +133,10 @@ watch(
 }
 
 .checkbox {
+
+  padding: 12px 10px 5px 40px !important;
+  margin-bottom: 5px !important;
+
   @extend %controller;
 
   color: var(--light-text);

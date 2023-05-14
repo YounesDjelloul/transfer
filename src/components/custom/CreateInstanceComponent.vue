@@ -4,6 +4,7 @@
   import { useForm } from 'vee-validate'
   import { toFormValidator } from '@vee-validate/zod'
 
+  import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
   import { useHandleInstance } from '/@src/stores/handleInstance'
   import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
@@ -30,15 +31,17 @@
   const endpointUrl = inject('endpointUrl')
 
   const notyf          = useNotyf()
+  const { t } = useI18n()
+
   const handleInstance = useHandleInstance()
   const fieldSelect    = useFieldSelect()
 
   const validationSchema = toFormValidator(generateValidationSchema(props.formSchema))
   const initialValues    = generateInitialValues(props.formSchema)
-  
+
   await generateAndAssignDataObjectToStore(initialValues, props.formSchema)
 
-  const { handleSubmit, setFieldValue, errors, values } = useForm({
+  const { handleSubmit, setFieldValue } = useForm({
     validationSchema,
     initialValues,
   })
@@ -50,12 +53,14 @@
     isLoading.value = true
 
     try {
+      console.log(values)
       const valuesInFormData = objectToFormData(values)
       const toRequest        = props.requestFunction
-      const response         = await toRequest(endpointUrl, valuesInFormData)
+      const response         = await toRequest(endpointUrl, values)
 
       emits('handleCreateInstanceAffect', response.data)
     } catch (err) {
+      console.log(err)
       const formattedErrors = formatError(undefined, err.response.data)
       actions.setErrors(formattedErrors)
       notyf.error(t('form.invalid'))

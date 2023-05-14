@@ -4,7 +4,6 @@
   const props = defineProps<{
     schemaField: object,
     setFieldValue: void,
-    multiple: boolean,
   }>()
 
   const fieldSelect = useFieldSelect()
@@ -20,7 +19,7 @@
         <VControl v-for="option in fieldsData[schemaField.id].selectedItem">
           <VTags addons>
             <VTag :label="option.display_name" color="primary" />
-            <VTag remove @mousedown="fieldSelect.removeItem(option, schemaField, setFieldValue, multiple)"/>
+            <VTag remove @mousedown="fieldSelect.removeItem(option, schemaField, setFieldValue, true)"/>
           </VTags>
         </VControl>
       </VField>
@@ -43,7 +42,7 @@
           <li
             v-for="item in fieldsData[schemaField.id].options"
             :key="item.value"
-            @mousedown="fieldSelect.selectItem(item, schemaField, setFieldValue, multiple)"
+            @mousedown="fieldSelect.selectItem(item, schemaField, setFieldValue, true)"
           >
             {{ item.display_name }}
           </li>

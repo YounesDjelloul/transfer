@@ -65,9 +65,22 @@ export function generateInitialValues(schema: [], instance: object = {}) {
 
   for (const field of schema) {
 
-    const rightValue = field.type == 'field' || field.type == "image upload"  ? null : ""
+    const fieldValues = {
+      "image upload": null,
+      "boolean": false,
+      "many_to_many": [],
+      "": null,
+      "string": "",
+      "choice": "",
+    }
 
-    let currentValue = flattendInstance[field.id] ?? rightValue
+    let fieldType = field.type
+
+    if (fieldType === 'field') {
+      fieldType = field.drf_type
+    }
+
+    let currentValue = flattendInstance[field.id] ?? fieldValues[fieldType]
 
     if (field.id.includes(".")) {
       const nesting = field.id.split(".")
@@ -196,7 +209,7 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
     "choice": zod.string(),
     "email": zod.string().email(),
     "image upload": zod.any(),
-    "array": zod.string().array(),
+    "array": zod.array(zod.number()),
     "boolean": zod.boolean(),
     "nullableNumber": zod.union([zod.null(), zod.number()]),
     "number": zod.number(),
@@ -379,7 +392,6 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
       currentObject['toSubmitValues'] = fieldSchema.relationship ? [] : null
       currentObject['options']        = formatFieldChoices(await getFieldChoices(fieldSchema.endpoint_url, ''))
     } catch (error) {
-      console.log(error)
       currentObject['selectedItem']   = []
       currentObject['toSubmitValues'] = null
       currentObject['options']        = []
@@ -412,7 +424,6 @@ export function formatColumnListingSchema(listingSchema) {
     field.dotValue = field.value.replaceAll('__', '.')
     result.add(field)
   }
-
   return result
 }
 
@@ -428,7 +439,6 @@ export function generateColumns(formSchema, sortingSchema, toShow) {
   }
 
   for (const field of toShow) {
-
     let currentObj = {
       'id': field.dotValue,
       'label': field.display_name,

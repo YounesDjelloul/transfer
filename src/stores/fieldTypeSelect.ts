@@ -12,6 +12,16 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
     setFieldValue(schemaField.id, fieldsTypeData.value[schemaField.id].toSubmitValues)
   }
 
+  const checkValuesDuplication = (selection, item) => {
+    for (const one of selection) {
+      if (JSON.stringify(one) === JSON.stringify(item)) {
+        return true
+      }
+    }
+
+    return false
+  }
+
   const filteredItems = async (event, schemaField, setFieldValue) => {
     const searchTerm = event.target.value
 
@@ -28,20 +38,20 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
 
     const currentSelection = fieldsTypeData.value[schemaField.id].selectedItem
 
-    if (currentSelection.includes(item)) {
-      return;
+    const duplicationCheckResult = checkValuesDuplication(currentSelection, item)
+
+    if (!duplicationCheckResult) {
+      fieldsTypeData.value[schemaField.id].selectedItem.push(item)
+      fieldsTypeData.value[schemaField.id].typed = item.display_name
+
+      if (multiple) {
+        fieldsTypeData.value[schemaField.id].toSubmitValues.push(item.value)
+      } else {
+        fieldsTypeData.value[schemaField.id].toSubmitValues = item.value
+      }
+
+      setFieldValue(schemaField.id, fieldsTypeData.value[schemaField.id].toSubmitValues)
     }
-
-    fieldsTypeData.value[schemaField.id].selectedItem.push(item)
-    fieldsTypeData.value[schemaField.id].typed = item.display_name
-
-    if (multiple) {
-      fieldsTypeData.value[schemaField.id].toSubmitValues.push(item.value)
-    } else {
-      fieldsTypeData.value[schemaField.id].toSubmitValues = item.value
-    }
-
-    setFieldValue(schemaField.id, fieldsTypeData.value[schemaField.id].toSubmitValues)
   }
 
   const removeItem = (item, schemaField, setFieldValue, multiple) => {

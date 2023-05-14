@@ -31,7 +31,6 @@
                   v-if="schemaField.type === 'field' && schemaField.relationship === 'many_to_many'"
                   :schemaField="schemaField"
                   :setFieldValue="setFieldValue"
-                  :multiple="true"
                 />
                 <OneFieldSelectComponent
                   v-else-if="schemaField.type === 'field' && !schemaField.relationship"
@@ -54,7 +53,11 @@
                     <span class="file-name light-text"> {{ selectedFileName }} </span>
                   </label>
                 </div>
-                <VSwitchBlock v-else-if="schemaField.drf_type === 'boolean'" color="primary" checked :label="schemaField.label" />
+                <VCheckbox
+                  v-else-if="schemaField.drf_type === 'boolean'"
+                  color="primary"
+                  :label="schemaField.label"
+                />
                 <VInput
                   v-else
                   :type="schemaField.html_input_type"

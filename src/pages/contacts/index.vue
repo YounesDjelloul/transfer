@@ -3,7 +3,6 @@
   import API_URLs from '/@src/utils/api/urls'
 
   import { provide } from 'vue'
-  import { useI18n } from 'vue-i18n'
   import { useHead } from '@vueuse/head'
   import { useViewWrapper } from '/@src/stores/viewWrapper'
 
