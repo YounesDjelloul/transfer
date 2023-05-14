@@ -3,6 +3,8 @@
   import { inject } from 'vue'
   import { useForm } from 'vee-validate'
   import { toFormValidator } from '@vee-validate/zod'
+
+  import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
   import { getFieldChoices, getJobTitleDetails } from '/@src/utils/api/clients'
   import { useHandleInstance } from '/@src/stores/handleInstance'
@@ -14,7 +16,8 @@
     objectToFormData,
     formatError,
     generateValidationSchema,
-    cleanValuesIfPatch
+    cleanValuesIfPatch,
+    checkIfFileFieldExist,
   } from '/@src/utils/app/shared/helpers'
 
   const emits = defineEmits<{
@@ -29,7 +32,9 @@
     updateAllowedMethod: string,
   }>()
 
-  const notyf          = useNotyf()
+  const { t }  = useI18n()
+  const notyf  = useNotyf()
+
   const handleInstance = useHandleInstance()
 
   const endpointUrl    = inject('endpointUrl')
@@ -52,10 +57,12 @@
 
     try {
 
-      const formattedValues = cleanValuesIfPatch(values, props.updateAllowedMethod, initialValues)
-      const valuesInFormData = objectToFormData(formattedValues)
+      const formattedValues  = cleanValuesIfPatch(values, props.updateAllowedMethod, initialValues)
+
+      values = checkIfFileFieldExist(props.formSchema) ? objectToFormData(formattedValues) : formattedValues
+
       const toUpdate = props.requestFunction
-      const { data } = await toUpdate(endpointUrl, handleInstance.instanceToUpdatePk, formattedValues, props.updateAllowedMethod)
+      const { data } = await toUpdate(endpointUrl, handleInstance.instanceToUpdatePk, values, props.updateAllowedMethod)
 
       emits('handleUpdateInstanceAffect', data)
     } catch (err) {

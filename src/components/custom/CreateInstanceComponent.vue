@@ -16,6 +16,7 @@
     objectToFormData,
     generateAndAssignDataObjectToStore,
     setPksForFieldTypeInputs,
+    checkIfFileFieldExist,
   } from '/@src/utils/app/shared/helpers'
 
   const emits = defineEmits<{
@@ -30,11 +31,10 @@
 
   const endpointUrl = inject('endpointUrl')
 
-  const notyf          = useNotyf()
-  const { t } = useI18n()
+  const notyf  = useNotyf()
+  const { t }  = useI18n()
 
   const handleInstance = useHandleInstance()
-  const fieldSelect    = useFieldSelect()
 
   const validationSchema = toFormValidator(generateValidationSchema(props.formSchema))
   const initialValues    = generateInitialValues(props.formSchema)
@@ -53,14 +53,14 @@
     isLoading.value = true
 
     try {
-      console.log(values)
-      const valuesInFormData = objectToFormData(values)
-      const toRequest        = props.requestFunction
-      const response         = await toRequest(endpointUrl, values)
+      
+      values = checkIfFileFieldExist(props.formSchema) ? objectToFormData(values) : values
+
+      const toRequest       = props.requestFunction
+      const response        = await toRequest(endpointUrl, values)
 
       emits('handleCreateInstanceAffect', response.data)
     } catch (err) {
-      console.log(err)
       const formattedErrors = formatError(undefined, err.response.data)
       actions.setErrors(formattedErrors)
       notyf.error(t('form.invalid'))

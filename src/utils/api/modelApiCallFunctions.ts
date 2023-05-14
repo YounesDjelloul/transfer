@@ -25,7 +25,7 @@ export async function deleteInstanceRequest(endpointUrl: string, instancePk: str
 }
 
 export async function updateInstanceDetailsRequest(endpointUrl: string, instancePk: string, body: object, methodAllowed: string) {
-	const result = await api.patch(`${endpointUrl}${instancePk}/${body}`)
+	const result = await api[methodAllowed](`${endpointUrl}${instancePk}`, body)
 	return result
 }
 

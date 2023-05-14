@@ -213,6 +213,7 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
     "boolean": zod.boolean(),
     "nullableNumber": zod.union([zod.null(), zod.number()]),
     "number": zod.number(),
+    "url": zod.string().url(),
   }
 
   function getZodField(fieldProp) {
@@ -334,7 +335,7 @@ export function cleanValuesIfPatch(values, updateAllowedMethod, instanceValues) 
   for (const valueKey in flattendValues) {
     const value = flattendValues[valueKey]
 
-    if (value != flattendInstanceValues[valueKey]) {
+    if (value !== flattendInstanceValues[valueKey]) {
       nestedResult[valueKey] = value
     }
   }
@@ -383,13 +384,27 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
     }
 
     let currentObject  = {'isOpen': false, 'typed': null}
-    const currentPk    = flattendInitialValues[fieldSchema.id] ?? ""
+    const currentValue = flattendInitialValues[fieldSchema.id] ?? ""
 
     try {
-      const jobDetails   = await getEndpointInstanceDetails(fieldSchema.endpoint_url, currentPk)
+
+      let jobsDetails    = [];
+      let toSubmitValues = fieldSchema.relationship === 'many_to_many' ? [] : null
+
+      if (typeof currentValue == 'number') {
+        const detailsResponse = await getEndpointInstanceDetails(fieldSchema.endpoint_url, currentValue)
+        jobsDetails.push({"display_name": detailsResponse.label, "value": detailsResponse.id})
+        toSubmitValues = detailsResponse.id
+      } else if (Array.isArray(currentValue)) {
+        for (const onePk of currentValue) {
+          const detailsResponse = await getEndpointInstanceDetails(fieldSchema.endpoint_url, onePk)
+          jobsDetails.push({"display_name": detailsResponse.label, "value": detailsResponse.id})
+          toSubmitValues.push(detailsResponse.id)
+        }
+      }
     
-      currentObject['selectedItem']   = jobDetails.label ? [{"display_name": jobDetails.label, "value": jobDetails.id}] : []
-      currentObject['toSubmitValues'] = fieldSchema.relationship ? [] : null
+      currentObject['selectedItem']   = jobsDetails.length > 0 ? jobsDetails : []
+      currentObject['toSubmitValues'] = toSubmitValues
       currentObject['options']        = formatFieldChoices(await getFieldChoices(fieldSchema.endpoint_url, ''))
     } catch (error) {
       currentObject['selectedItem']   = []
@@ -460,4 +475,15 @@ export function generateColumns(formSchema, sortingSchema, toShow) {
 
 export function saveSchematoStorage(actionKey: string, formSchema: string) {
   localStorage.setItem(actionKey, formSchema)
+}
+
+export function checkIfFileFieldExist(formSchema) {
+
+  for (const field of formSchema) {
+    if (field.type === 'file') {
+      return true
+    }
+  }
+
+  return false
 }
