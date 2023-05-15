@@ -62,6 +62,8 @@
     renderLoading.value = false
   })
 
+  provide("modelPk", modelPk)
+
   const handleInstance = useHandleInstance()
   const queryParam     = useQueryParam()
 

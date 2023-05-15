@@ -214,6 +214,7 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
     "nullableNumber": zod.union([zod.null(), zod.number()]),
     "number": zod.number(),
     "url": zod.string().url(),
+    "date": zod.coerce.date(),
   }
 
   function getZodField(fieldProp) {
@@ -232,6 +233,8 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
 
     if (fieldProp.required) {
       zodField = zodField.min(1, {message: "Field Required"})
+    } else {
+      zodField = zodField.optional()
     }
 
     return zodField
@@ -335,7 +338,7 @@ export function cleanValuesIfPatch(values, updateAllowedMethod, instanceValues) 
   for (const valueKey in flattendValues) {
     const value = flattendValues[valueKey]
 
-    if (value !== flattendInstanceValues[valueKey]) {
+    if (JSON.stringify(value) !== JSON.stringify(flattendInstanceValues[valueKey])) {
       nestedResult[valueKey] = value
     }
   }
@@ -392,12 +395,12 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
       let toSubmitValues = fieldSchema.relationship === 'many_to_many' ? [] : null
 
       if (typeof currentValue == 'number') {
-        const detailsResponse = await getEndpointInstanceDetails(fieldSchema.endpoint_url, currentValue)
+        const detailsResponse = await getEndpointInstanceDetails(fieldSchema.endpoint_url, currentValue, modelPk)
         jobsDetails.push({"display_name": detailsResponse.label, "value": detailsResponse.id})
         toSubmitValues = detailsResponse.id
       } else if (Array.isArray(currentValue)) {
         for (const onePk of currentValue) {
-          const detailsResponse = await getEndpointInstanceDetails(fieldSchema.endpoint_url, onePk)
+          const detailsResponse = await getEndpointInstanceDetails(fieldSchema.endpoint_url, onePk, modelPk)
           jobsDetails.push({"display_name": detailsResponse.label, "value": detailsResponse.id})
           toSubmitValues.push(detailsResponse.id)
         }
@@ -480,7 +483,7 @@ export function saveSchematoStorage(actionKey: string, formSchema: string) {
 export function checkIfFileFieldExist(formSchema) {
 
   for (const field of formSchema) {
-    if (field.type === 'file') {
+    if (field.html_input_type === 'file') {
       return true
     }
   }

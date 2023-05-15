@@ -59,7 +59,7 @@
     toShow             = listingColumns
     modelPk            = lookupField
     columns            = generateColumns(createSchema, sortingSchema, toShow)
-    
+
     renderLoading.value = false
   })
 

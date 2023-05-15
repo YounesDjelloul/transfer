@@ -37,7 +37,7 @@
 
   const handleInstance = useHandleInstance()
 
-  const endpointUrl    = inject('endpointUrl')
+  const endpointUrl = inject('endpointUrl')
 
   const instanceDetails  = await props.instanceDetailsFunction(endpointUrl, handleInstance.instanceToUpdatePk)
   const validationSchema = toFormValidator(generateValidationSchema(props.formSchema))
@@ -57,9 +57,8 @@
 
     try {
 
-      const formattedValues  = cleanValuesIfPatch(values, props.updateAllowedMethod, initialValues)
-
-      values = checkIfFileFieldExist(props.formSchema) ? objectToFormData(formattedValues) : formattedValues
+      values  = cleanValuesIfPatch(values, props.updateAllowedMethod, initialValues)
+      //values                 = checkIfFileFieldExist(props.formSchema) ? objectToFormData(formattedValues) : formattedValues
 
       const toUpdate = props.requestFunction
       const { data } = await toUpdate(endpointUrl, handleInstance.instanceToUpdatePk, values, props.updateAllowedMethod)

@@ -36,8 +36,8 @@
 
   const handleInstance = useHandleInstance()
 
-  const validationSchema = toFormValidator(generateValidationSchema(props.formSchema))
   const initialValues    = generateInitialValues(props.formSchema)
+  const validationSchema = toFormValidator(generateValidationSchema(props.formSchema))
 
   await generateAndAssignDataObjectToStore(initialValues, props.formSchema)
 
@@ -56,14 +56,15 @@
       
       values = checkIfFileFieldExist(props.formSchema) ? objectToFormData(values) : values
 
-      const toRequest       = props.requestFunction
-      const response        = await toRequest(endpointUrl, values)
+      const toRequest = props.requestFunction
+      const response  = await toRequest(endpointUrl, values)
 
       emits('handleCreateInstanceAffect', response.data)
     } catch (err) {
       const formattedErrors = formatError(undefined, err.response.data)
       actions.setErrors(formattedErrors)
       notyf.error(t('form.invalid'))
+      handleInstance.showCreateInstancePopup=false
 
     } finally {
       isLoading.value = false
