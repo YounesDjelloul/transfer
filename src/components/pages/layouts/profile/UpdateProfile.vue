@@ -13,7 +13,7 @@
     generateInitialValues,
     formatError,
     generateValidationSchema
-  } from '/@src/utils/app/CRUD/helpers'
+  } from '/@src/utils/app/shared/helpers'
   import APP_URLs from '/@src/utils/app/urls'
   
   const notyf = useNotyf()
@@ -26,7 +26,8 @@
   const isLoading   = ref(true)
 
   const currentUser     = userSession.user
-  const currentUsername = currentUser.username
+
+  const currentUsername = currentUser.pk
 
   let formSchema        = await getFormattedUpdateUserSchema(currentUsername)
   const userAvatarProp  = arrayPop("url", formSchema)

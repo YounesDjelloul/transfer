@@ -43,6 +43,18 @@
           </RouterLink>
         </li>
         <li>
+          <RouterLink :to="APP_URLs.MATTERS__PRACTICE_AREA">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Matters Practice Area
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="APP_URLs.JOB_TITLES">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Job Titles
+          </RouterLink>
+        </li>
+        <li>
           <RouterLink :to="APP_URLs.COMPANIES">
             <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
             Companies
@@ -52,6 +64,60 @@
           <RouterLink :to="APP_URLs.CONTACTS">
             <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
             Contacts
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="APP_URLs.CUSTOM_FIELDS">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Custom Fields
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="APP_URLs.ACTIVITIES__ACTIVITY_ITEMS">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Activity Items
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="APP_URLs.ACTIVITIES__EXPENSES">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Activities Expenses
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="APP_URLs.ACTIVITIES__FLAT_FEES">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Activities Flat Fees
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="APP_URLs.ACTIVITIES__TIME_ENTRIES">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Activities Time Entries
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="APP_URLs.BILLING__INVOICES">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Billing Invoices
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="APP_URLs.BILLING__PRICES">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Billing Prices
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="APP_URLs.BILLING__CURRENCY">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Billing Currency
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink :to="APP_URLs.BILLING__SALE_TAXES">
+            <i aria-hidden="true" class="lnil lnil-home pr-2"></i>
+            Billing Sale Taxes
           </RouterLink>
         </li>
       </ul>

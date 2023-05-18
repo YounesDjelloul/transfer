@@ -11,4 +11,20 @@ API_URLs.COMPANIES = '/api/companies/'
 API_URLs.CONTACTS = '/api/contacts/'
 API_URLs.USERS = '/api/users/'
 
+API_URLs.JOB_TITLES = '/api/users/job_titles/'
+
+API_URLs.CUSTOM_FIELDS = '/api/custom_fields/'
+
+API_URLs.MATTERS__PRACTICE_AREA = '/api/matters_/practice_area/'
+
+API_URLs.BILLING__INVOICES   = '/api/billing/invoices/'
+API_URLs.BILLING__PRICES     = '/api/billing/prices/'
+API_URLs.BILLING__CURRENCY   = '/api/billing/currency/'
+API_URLs.BILLING__SALE_TAXES = '/api/billing/sale_taxes/'
+
+API_URLs.ACTIVITIES__ACTIVITY_ITEMS = '/api/activities/activity_items/'
+API_URLs.ACTIVITIES__EXPENSES       = '/api/activities/expenses/'
+API_URLs.ACTIVITIES__FLAT_FEES      = '/api/activities/flat_fees/'
+API_URLs.ACTIVITIES__TIME_ENTRIES   = '/api/activities/time_entries/'
+
 export default API_URLs

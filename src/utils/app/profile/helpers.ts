@@ -4,7 +4,7 @@ import {
 
 import {
   formatUpdateSchema,
-} from '/@src/utils/app/CRUD/helpers'
+} from '/@src/utils/app/shared/helpers'
 
 export function objectPop(propertyName: string, userDetailsObject: object) {
 

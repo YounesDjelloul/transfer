@@ -53,7 +53,6 @@
     isLoading.value = true
 
     try {
-      
       values = checkIfFileFieldExist(props.formSchema) ? objectToFormData(values) : values
 
       const toRequest = props.requestFunction

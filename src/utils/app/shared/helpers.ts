@@ -72,6 +72,8 @@ export function generateInitialValues(schema: [], instance: object = {}) {
       "": null,
       "string": "",
       "choice": "",
+      "email": "",
+      "url": "",
     }
 
     let fieldType = field.type
@@ -206,15 +208,16 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
 
   const zodFunctionsRepo = {
     "string": zod.string(),
-    "choice": zod.string(),
-    "email": zod.string().email(),
+    "choice": zod.coerce.string(),
+    "email": zod.string(),
     "image upload": zod.any(),
     "array": zod.array(zod.number()),
     "boolean": zod.boolean(),
     "nullableNumber": zod.union([zod.null(), zod.number()]),
-    "number": zod.number(),
-    "url": zod.string().url(),
-    "date": zod.coerce.date(),
+    "number": zod.coerce.number(),
+    "decimal": zod.coerce.number(),
+    "url": zod.string(),
+    "date": zod.coerce.string(),
   }
 
   function getZodField(fieldProp) {
@@ -288,7 +291,6 @@ export function generateValidationSchema(formSchema: object, translateFunction) 
 
     const nesting = fieldId.split(".")
     handleNestedFields(nesting, fieldProp)
-  
   }
 
   return result
@@ -395,13 +397,13 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
       let toSubmitValues = fieldSchema.relationship === 'many_to_many' ? [] : null
 
       if (typeof currentValue == 'number') {
-        const detailsResponse = await getEndpointInstanceDetails(fieldSchema.endpoint_url, currentValue, modelPk)
-        jobsDetails.push({"display_name": detailsResponse.label, "value": detailsResponse.id})
+        const detailsResponse = await getEndpointInstanceDetails(fieldSchema.endpoint_url, currentValue)
+        jobsDetails.push({"value": detailsResponse.id, "display_name": detailsResponse.label})
         toSubmitValues = detailsResponse.id
       } else if (Array.isArray(currentValue)) {
         for (const onePk of currentValue) {
-          const detailsResponse = await getEndpointInstanceDetails(fieldSchema.endpoint_url, onePk, modelPk)
-          jobsDetails.push({"display_name": detailsResponse.label, "value": detailsResponse.id})
+          const detailsResponse = await getEndpointInstanceDetails(fieldSchema.endpoint_url, onePk)
+          jobsDetails.push({"value": detailsResponse.id, "display_name": detailsResponse.label})
           toSubmitValues.push(detailsResponse.id)
         }
       }
@@ -427,6 +429,10 @@ export function formatSortSchema(orderingSchema) {
 
   for (const field of orderingSchema) {
 
+    if (field.value === null) {
+      continue
+    }
+
     const fieldId = field.value.replaceAll('__', '.')
     result.add(fieldId)
   }
@@ -439,6 +445,11 @@ export function formatColumnListingSchema(listingSchema) {
   let result = new Set()
 
   for (let field of listingSchema) {
+
+    if (field.value === null) {
+      continue
+    }
+
     field.dotValue = field.value.replaceAll('__', '.')
     result.add(field)
   }

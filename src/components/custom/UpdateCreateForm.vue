@@ -38,7 +38,7 @@
                   :setFieldValue="setFieldValue"
                 />
                 <VSelect v-else-if="schemaField.html_input_type === 'select'">
-                  <VOption value="">Select {{ schemaField.label }}</VOption>
+                  <VOption value="" disabled>Select {{ schemaField.label }}</VOption>
                   <VOption v-for="choice in schemaField.choices" :value="choice.value">{{ choice.display_name }}</VOption>
                 </VSelect>
                 <div class="file has-name" v-else-if="schemaField.html_input_type == 'file'">
@@ -61,7 +61,7 @@
                 <VInput
                   v-else
                   :type="schemaField.html_input_type"
-                  :placeholder="schemaField.label"
+                  :placeholder="schemaField.placeholder"
                 />
                 <p v-if="field?.errors?.value?.length" class="help is-danger">
                   {{ field.errors?.value?.join(', ') }}

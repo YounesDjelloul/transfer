@@ -13,27 +13,29 @@
   } from '/@src/utils/app/CRUD/filters'
 
   import {
-    generateInitialValues,
-    formatFieldChoices,
-    objectToFormData,
-    formatError,
-    generateValidationSchema,
-    cleanValuesIfPatch,
     formatUserAvatarUrl,
     flattenObj,
     getRowPk,
+    deleteCurrentInstance,
+    updateCurrentInstance,
   } from '/@src/utils/app/shared/helpers'
 
-  const props = defineProps<{
-    columns: object,
+  import {
+    createNewInstance,
+    getInstances,
+    updateInstanceDetailsRequest,
+    getInstanceDetails,
+    deleteInstanceRequest,
+    getInstanceSchemas as schemasFunction,
+  } from '/@src/utils/api/modelApiCallFunctions'
 
-    modelPk: any,
-    fetchInstancesFunction: void,
-    updateCurrentInstanceFunction: void,
-    deleteCurrentInstanceFunction: void,
+  const props = defineProps<{
+    componentDependencies: object,
   }>()
 
   const endpointUrl = inject('endpointUrl')
+  const modelPk     = inject('modelPk')
+
   const baseURL     = import.meta.env.VITE_API_BASE_URL
 
   const handleInstance = useHandleInstance()
@@ -51,10 +53,10 @@
       
       switch (handleInstance.status) {
         case 'delete':
-          result = result.filter(props.deleteCurrentInstanceFunction, handleInstance.instanceToDeleteId)
+          result = result.filter(deleteCurrentInstance, handleInstance.instanceToDeleteId)
           break;
         case 'update':
-          result.forEach(props.updateCurrentInstanceFunction, [handleInstance.instanceToUpdateId, handleInstance.operatedInstance])
+          result.forEach(updateCurrentInstance, [handleInstance.instanceToUpdateId, handleInstance.operatedInstance])
           break;
         case 'create':
           result.unshift(toRaw(handleInstance.operatedInstance))
@@ -77,12 +79,11 @@
 
     if (sort) {
       const formattedSort = FormatingOrderingParam(sort)
-      console.log(sort, formattedSort)
       sortQuery = `ordering=${formattedSort}&`
     }
 
     const endpointRoute  = `?${sortQuery}${searchFilterQuery}${pageQuery}`
-    const { results, count } = await props.fetchInstancesFunction(endpointUrl, endpointRoute)
+    const { results, count } = await getInstances(endpointUrl, endpointRoute)
 
     handleInstance.totalInstances = count
     return results
@@ -96,7 +97,7 @@
       v-model:page="queryParam.page"
       v-model:sort="queryParam.sort"
       :limit="defaultLimit"
-      :columns="columns"
+      :columns="componentDependencies.columns"
       :data="fetchInstances"
       :total="handleInstance.totalInstances"
     >
@@ -125,29 +126,38 @@
           </template>
         </VFlexTableToolbar>
 
-        <slot
+        <CreateInstanceComponent
           v-if="handleInstance.showCreateInstancePopup"
-          name="createInstanceSlot"
+          :request-function="createNewInstance"
+          :formSchema="componentDependencies.createModelSchema"
+          modal-title="Create New Record"
+          @handle-create-instance-affect="handleInstance.handleInstanceCreationAffect"
         />
-
-        <slot
+        <ViewInstanceComponent
           v-if="handleInstance.showViewInstanceDetailsPopup"
-          name="viewInstanceSlot"
+          :request-function="getInstanceDetails"
+          modal-title="Record Details"
         />
-
-        <slot
+        <UpdateInstanceComponent
           v-if="handleInstance.showUpdateInstancePopup"
-          name="updateInstanceSlot"
+          :request-function="updateInstanceDetailsRequest"
+          :form-schema="componentDependencies.updateModelSchema"
+          :instance-details-function="getInstanceDetails"
+          :update-allowed-method="componentDependencies.updateMethod"
+          modal-title="Update Record"
+          @handle-update-instance-affect="handleInstance.handleInstanceUpdateAffect"
         />
-
-        <slot
+        <DeleteInstanceComponent
           v-if="handleInstance.showDeleteInstancePopup"
-          name="deleteInstanceSlot"
+          :request-function="deleteInstanceRequest"
+          modal-title="Delete Record"
+          @handle-delete-instance-affect="handleInstance.handleInstanceDeleteAffect"
         />
-
-        <slot
+        <FilterListComponent
           v-if="handleInstance.showFilterInstancesPopup"
-          name="filterInstancesSlot"
+          :form-schema="componentDependencies.filtersModelSchema"
+          modal-title="Filter Records"
+          @filter-list="(filters) => queryParam.filtersTerm = filters"
         />
 
         <VFlexTable rounded>

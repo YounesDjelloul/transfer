@@ -5,66 +5,29 @@
   import { provide } from 'vue'
   import { useHead } from '@vueuse/head'
   import { useViewWrapper } from '/@src/stores/viewWrapper'
-  import { useEmployeeSchemas } from '/@src/utils/app/CRUD/employeesCache'
 
   import { useHandleInstance } from '/@src/stores/handleInstance'
   import { useQueryParam } from '/@src/stores/queryParam'
   import { useModelSchemas } from '/@src/utils/app/CRUD/modelCache'
+  import { GeneratorFunctionForLists } from '/@src/utils/app/VFlexTable/helpers'
 
-  import {
-    deleteCurrentInstance,
-    updateCurrentInstance,
-    generateColumns,
-  } from '/@src/utils/app/shared/helpers'
+  const endpointUrl    = API_URLs.EMPLOYEES
+  const renderLoading  = ref(true)
+  const errorToDisplay = ref('')
 
-  import {
-    createNewInstance,
-    getInstances,
-    updateInstanceDetailsRequest,
-    getInstanceDetails,
-    deleteInstanceRequest,
-    getInstanceSchemas as schemasFunction,
-  } from '/@src/utils/api/modelApiCallFunctions'
-
-  const endpointUrl = API_URLs.EMPLOYEES
-  provide("endpointUrl", endpointUrl)
-
-  const handleInstance = useHandleInstance()
-  const queryParam     = useQueryParam()
-
-  const renderLoading = ref(true)
-
-  let createModelSchema;
-  let updateModelSchema;
-  let filtersModelSchema;
-  let sortingModelSchema;
-  let updateMethod;
-  let columns;
-  let toShow;
-  let modelPk;
-
-  onMounted(async () => {
-    const {
-      createSchema,
-      updateSchema,
-      filtersSchema,
-      sortingSchema,
-      updateAllowedMethod,
-      lookupField,
-      listingColumns,
-    } = await useModelSchemas(endpointUrl, schemasFunction, 'Employee')
-
-    createModelSchema  = createSchema
-    updateModelSchema  = updateSchema
-    filtersModelSchema = filtersSchema
-    sortingModelSchema = sortingSchema
-    updateMethod       = updateAllowedMethod
-    toShow             = listingColumns
-    modelPk            = lookupField
-    columns            = generateColumns(createSchema, sortingSchema, toShow)
-    
-    renderLoading.value = false
+  const componentDependencies = reactive({
+    createModelSchema: undefined,
+    updateModelSchema: undefined,
+    filtersModelSchema: undefined,
+    updateMethod: undefined,
+    columns: undefined,
+    modelPk: undefined,
   })
+
+  onMounted(() => { GeneratorFunctionForLists(componentDependencies, "Employees", renderLoading, errorToDisplay, endpointUrl)})
+
+  provide("endpointUrl", endpointUrl)
+  provide("modelPk", componentDependencies.modelPk)
 
   const viewWrapper = useViewWrapper()
   viewWrapper.setPageTitle('Employees')
@@ -77,53 +40,19 @@
 <template>
   <div class="page-content-inner">
     <div class="column is-12">
+      <VCard radius="small" color="warning" v-if="!renderLoading && errorToDisplay.length > 0">
+        <h3 class="title is-5 mb-2">{{ errorToDisplay }}</h3>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quibusnam praeteritis? At
+          multis se probavit. Quoniam, si dis placet, ab Epicuro loqui discimus. Et ille
+          ridens.
+        </p>
+      </VCard>
       <FlexListV1
-        v-if="!renderLoading"
-        :columns="columns"
+        v-if="!renderLoading && errorToDisplay.length === 0"
 
-        :model-pk="modelPk"
-        :fetch-instances-function="getInstances"
-        :update-current-instance-function="updateCurrentInstance"
-        :delete-current-instance-function="deleteCurrentInstance"
+        :component-dependencies="componentDependencies"
       >
-        <template #createInstanceSlot>
-          <CreateInstanceComponent
-            :request-function="createNewInstance"
-            :formSchema="createModelSchema"
-            modal-title="Create New Record"
-            @handle-create-instance-affect="handleInstance.handleInstanceCreationAffect"
-          />
-        </template>
-        <template #viewInstanceSlot>
-          <ViewInstanceComponent
-            :request-function="getInstanceDetails"
-            modal-title="Record Details"
-          />
-        </template>
-        <template #updateInstanceSlot>
-          <UpdateInstanceComponent
-            :request-function="updateInstanceDetailsRequest"
-            :form-schema="updateModelSchema"
-            :instance-details-function="getInstanceDetails"
-            :update-allowed-method="updateMethod"
-            modal-title="Update Record"
-            @handle-update-instance-affect="handleInstance.handleInstanceUpdateAffect"
-          />
-        </template>
-        <template #deleteInstanceSlot>
-          <DeleteInstanceComponent
-            :request-function="deleteInstanceRequest"
-            modal-title="Delete Record"
-            @handle-delete-instance-affect="handleInstance.handleInstanceDeleteAffect"
-          />
-        </template>
-        <template #filterInstancesSlot>
-          <FilterListComponent
-            :form-schema="filtersModelSchema"
-            modal-title="Filter Records"
-            @filter-list="(filters) => queryParam.filtersTerm = filters"
-          />
-        </template>
       </FlexListV1>
     </div>
   </div>
