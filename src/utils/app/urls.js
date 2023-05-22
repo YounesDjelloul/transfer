@@ -15,7 +15,7 @@ APP_URLs.VIEW_PROFILE     = "/profile-details"
 APP_URLs.UPDATE_PROFILE   = "/profile/update"
 APP_URLs.PROFILE_SETTINGS = "/profile/settings"
 
-APP_URLs.JOB_TITLES = '/users/job_titles'
+APP_URLs.JOB_TITLES = '/job_titles'
 
 APP_URLs.CUSTOM_FIELDS = '/custom_fields'
 

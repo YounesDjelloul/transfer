@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { convertObjectToFilterString, convertSchemaToEmptyFilterString } from '/@src/utils/app/CRUD/filters'
 import { getFieldChoices, getEndpointInstanceDetails } from '/@src/utils/api/modelApiCallFunctions'
 import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
+import { getEndpointCreateSchema } from '/@src/utils/app/deep_invoices/helpers'
 
 export function deleteCurrentInstance(instance: object) {
   return instance.user.id !== this
@@ -388,7 +389,7 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
       continue
     }
 
-    let currentObject  = {'isOpen': false, 'typed': null}
+    let currentObject  = {'isOpen': false, 'typed': ''}
     const currentValue = flattendInitialValues[fieldSchema.id] ?? ""
 
     try {
@@ -411,10 +412,12 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
       currentObject['selectedItem']   = jobsDetails.length > 0 ? jobsDetails : []
       currentObject['toSubmitValues'] = toSubmitValues
       currentObject['options']        = formatFieldChoices(await getFieldChoices(fieldSchema.endpoint_url, ''))
+      currentObject['createSchema']   = await getEndpointCreateSchema(fieldSchema.endpoint_url, fieldSchema.label)
     } catch (error) {
       currentObject['selectedItem']   = []
       currentObject['toSubmitValues'] = null
       currentObject['options']        = []
+      currentObject['createSchema']   = []
     } finally {
       fieldsTypeData[fieldSchema.id]  = currentObject
     }
@@ -472,7 +475,7 @@ export function generateColumns(formSchema, sortingSchema, toShow) {
       'id': field.dotValue,
       'label': field.display_name,
       'sortable': sortingSchema.has(field.dotValue),
-      'media': mediaFields.includes(field.dotValue) ? true : false
+      'media': mediaFields.includes(field.dotValue)
     }
 
     result[field.value] = currentObj

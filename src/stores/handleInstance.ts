@@ -34,7 +34,7 @@ export const useHandleInstance = defineStore('handleInstance', () => {
   }
 
   function getCreateInstancePopup(stateData) {
-    currentStateData        = stateData
+    currentStateData = stateData
     showCreateInstancePopup.value = true
   }
 

@@ -60,6 +60,8 @@ declare module 'vue-router/auto/routes' {
     '/custom_fields/': RouteRecordInfo<'/custom_fields/', '/custom_fields', Record<never, never>, Record<never, never>>,
     '/dashboard': RouteRecordInfo<'/dashboard', '/dashboard', Record<never, never>, Record<never, never>>,
     '/dashboard/': RouteRecordInfo<'/dashboard/', '/dashboard', Record<never, never>, Record<never, never>>,
+    '/deep_invoice': RouteRecordInfo<'/deep_invoice', '/deep_invoice', Record<never, never>, Record<never, never>>,
+    '/deep_invoice/': RouteRecordInfo<'/deep_invoice/', '/deep_invoice', Record<never, never>, Record<never, never>>,
     '/employees': RouteRecordInfo<'/employees', '/employees', Record<never, never>, Record<never, never>>,
     '/employees/': RouteRecordInfo<'/employees/', '/employees', Record<never, never>, Record<never, never>>,
     '/job_titles': RouteRecordInfo<'/job_titles', '/job_titles', Record<never, never>, Record<never, never>>,

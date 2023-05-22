@@ -97,7 +97,7 @@
         list-style: none;
 
         .dropdown-loader, .no-options {
-          padding: 0px 10px 10px 39px;
+          padding: 10px 10px 10px 39px;
         }
 
         .no-options {

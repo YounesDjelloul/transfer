@@ -1,14 +1,19 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { formatFieldChoices } from '/@src/utils/app/shared/helpers'
 import { getFieldChoices } from '/@src/utils/api/modelApiCallFunctions'
+import { useNotyf } from '/@src/composable/useNotyf'
 
 export const useFieldSelect = defineStore('fieldTypeSelect', () => {
 
+  const notyf  = useNotyf()
+
   const fieldsTypeData      = ref()
   const fieldOptionsLoading = ref(false)
+  const showCreatePopup     = ref(false)
 
   const clearSelectedValueForOne = (schemaField, setFieldValue) => {
     fieldsTypeData.value[schemaField.id].toSubmitValues = null
+    fieldsTypeData.value[schemaField.id].selectedItem   = []
     setFieldValue(schemaField.id, fieldsTypeData.value[schemaField.id].toSubmitValues)
   }
 
@@ -25,7 +30,7 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
   const filteredItems = async (event, schemaField, setFieldValue) => {
     const searchTerm = event.target.value
 
-    if (searchTerm.length <= 0 && schemaField.relationship !== "many_to_many") {
+    if (schemaField.relationship !== "many_to_many") {
       clearSelectedValueForOne(schemaField, setFieldValue)
     }
 
@@ -57,23 +62,17 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
   const removeItem = (item, schemaField, setFieldValue, multiple) => {
 
     let currentSelection = fieldsTypeData.value[schemaField.id].selectedItem
+    let currentToSubmitValues = fieldsTypeData.value[schemaField.id].toSubmitValues
 
     currentSelection = currentSelection.filter((selectedOption) => {
       return selectedOption !== item
     })
 
+    currentToSubmitValues = currentToSubmitValues.filter((selectedOption) => {
+      return selectedOption !== item.value
+    })
+
     fieldsTypeData.value[schemaField.id].selectedItem   = currentSelection
-
-    let currentToSubmitValues = fieldsTypeData.value[schemaField.id].toSubmitValues
-
-    if (multiple) {
-      currentToSubmitValues = currentToSubmitValues.filter((selectedOption) => {
-        return selectedOption !== item.value
-      })
-    } else {
-      currentToSubmitValues = ""
-    }
-
     fieldsTypeData.value[schemaField.id].toSubmitValues = currentToSubmitValues
 
     setFieldValue(schemaField.id, fieldsTypeData.value[schemaField.id].toSubmitValues)
@@ -84,11 +83,25 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
   }
 
   const setData = (dataObj) => {
-    fieldsTypeData.value = dataObj
+    fieldsTypeData.value = {...dataObj, ...fieldsTypeData.value}
+  }
+
+  const handleNewOptionCreationAffect = (instance, id) => {
+    fieldsTypeData.value[id].options.push(...formatFieldChoices([instance]))
+    showCreatePopup.value = false
+    notyf.dismissAll()
+    notyf.success("Record Created Successfully!")
+  }
+
+  const toggleCreatePopup = () => {
+    showCreatePopup.value = !showCreatePopup.value
   }
 
   return {
     setData,
+    handleNewOptionCreationAffect,
+    showCreatePopup,
+    toggleCreatePopup,
     fieldsTypeData,
     fieldOptionsLoading,
     filteredItems,

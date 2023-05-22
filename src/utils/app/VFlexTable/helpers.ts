@@ -26,7 +26,7 @@ export const GeneratorFunctionForLists = async (componentDependencies: object, m
       updateAllowedMethod,
       lookupField,
       listingColumns,
-    } = await useModelSchemas(endpointUrl, schemasFunction, modelName)    
+    } = await useModelSchemas(endpointUrl, schemasFunction, modelName)
 
     componentDependencies.createModelSchema  = createSchema
     componentDependencies.updateModelSchema  = updateSchema
@@ -39,5 +39,35 @@ export const GeneratorFunctionForLists = async (componentDependencies: object, m
 
   } finally {
     renderLoading.value = false
+  }
+}
+
+export const InvoicesDependencyGenerator = async (componentDependencies: object, modelName: string, renderLoading, errorToDisplay, endpointUrl) => {
+  try {
+    const {
+      createSchema,
+      lookupField,
+    } = await useModelSchemas(endpointUrl, schemasFunction, modelName)    
+
+    componentDependencies.modelPk       = lookupField
+    componentDependencies.overAllSchema = createSchema
+
+    splitCreateSchemaFields(componentDependencies, createSchema)
+
+  } catch (error) {
+    errorToDisplay.value = "Request Failed! We working on it.."
+
+  } finally {
+    renderLoading.value = false
+  }
+}
+
+export const splitCreateSchemaFields = (componentDependencies, createSchema) => {
+  for (const field of createSchema) {
+    if (field.type === 'field') {
+      componentDependencies.tableFieldsSchema.push(field)
+    } else {
+      componentDependencies.normalFieldsSchema.push(field)
+    }
   }
 }

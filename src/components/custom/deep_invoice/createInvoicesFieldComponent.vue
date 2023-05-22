@@ -8,6 +8,7 @@
   import { useNotyf } from '/@src/composable/useNotyf'
   import { useHandleInstance } from '/@src/stores/handleInstance'
   import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
+  import { createNewInstance } from '/@src/utils/api/modelApiCallFunctions'
 
   import {
     formatError,
@@ -19,21 +20,16 @@
     checkIfFileFieldExist,
   } from '/@src/utils/app/shared/helpers'
 
-  const emits = defineEmits<{
-    (e: 'handleCreateInstanceAffect', data): void
-  }>()
-
   const props = defineProps<{
-    requestFunction: void,
-    modalTitle: string,
     formSchema: object,
+    fieldId: string,
+    endpointUrl: string,
   }>()
-
-  const endpointUrl = inject('endpointUrl')
-
+  
   const notyf  = useNotyf()
   const { t }  = useI18n()
 
+  const fieldSelect    = useFieldSelect()
   const handleInstance = useHandleInstance()
 
   const initialValues    = generateInitialValues(props.formSchema)
@@ -55,10 +51,9 @@
     try {
       values = checkIfFileFieldExist(props.formSchema) ? objectToFormData(values) : values
 
-      const toRequest = props.requestFunction
-      const response  = await toRequest(endpointUrl, values)
+      const response  = await createNewInstance(props.endpointUrl, values)
 
-      emits('handleCreateInstanceAffect', response.data)
+      fieldSelect.handleNewOptionCreationAffect(response.data, props.fieldId)
     } catch (err) {
       const formattedErrors = formatError(undefined, err.response.data)
       actions.setErrors(formattedErrors)
@@ -74,11 +69,11 @@
 <template>
   <VModal
     :open="true"
-    :title="modalTitle"
+    title="Create New Record"
     size="meduim"
     actions="right"
     noscroll
-    @close="handleInstance.showCreateInstancePopup=false"
+    @close="fieldSelect.toggleCreatePopup"
   >
     <template #content>
       <VPlaceload v-if="isLoading" />

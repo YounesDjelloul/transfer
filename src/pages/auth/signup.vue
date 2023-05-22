@@ -13,7 +13,7 @@
     formatCreateSchema,
     formatError,
     generateValidationSchema,
-  } from '/@src/utils/app/CRUD/helpers'
+  } from '/@src/utils/app/shared/helpers'
 
   import { useApi } from '/@src/composable/useApi'
   import { useI18n } from 'vue-i18n'
