@@ -1,7 +1,12 @@
 <script setup lang="ts">
   
+  const emits = defineEmits<{
+    (e: 'triggerUpdate', rowPk): void
+  }>()
+
   const props = defineProps<{
     records: object,
+    field: object,
   }>()
 
 </script>
@@ -24,7 +29,7 @@
         <td>{{ row.display_name }}</td>
         <td class="is-end">
           <div class="is-flex is-justify-content-flex-end">
-            <VTag class="update-create-button" color="primary" label="Update" curved outlined />
+            <VTag class="update-create-button" color="primary" @click="emits('triggerUpdate', field, row.value)" label="Update" curved outlined />
           </div>
         </td>
       </tr>

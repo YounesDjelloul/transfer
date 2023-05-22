@@ -4,7 +4,7 @@ import { computed } from 'vue'
 import { convertObjectToFilterString, convertSchemaToEmptyFilterString } from '/@src/utils/app/CRUD/filters'
 import { getFieldChoices, getEndpointInstanceDetails } from '/@src/utils/api/modelApiCallFunctions'
 import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
-import { getEndpointCreateSchema } from '/@src/utils/app/deep_invoices/helpers'
+import { getEndpointDependencies } from '/@src/utils/app/deep_invoices/helpers'
 
 export function deleteCurrentInstance(instance: object) {
   return instance.user.id !== this
@@ -378,7 +378,7 @@ export function formatUserAvatarUrl(url: string) {
   return url.replace(/^(?:\/\/|[^/]+)*\//, '')
 }
 
-export async function generateAndAssignDataObjectToStore(initialValues, formSchema) {
+export async function generateAndAssignDataObjectToStore(initialValues, formSchema, deep=false) {
 
   const fieldSelect           = useFieldSelect()
   const fieldsTypeData        = reactive({})
@@ -411,8 +411,17 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
     
       currentObject['selectedItem']   = jobsDetails.length > 0 ? jobsDetails : []
       currentObject['toSubmitValues'] = toSubmitValues
+
+      console.log(fieldSchema.endpoint_url, fieldSchema)
       currentObject['options']        = formatFieldChoices(await getFieldChoices(fieldSchema.endpoint_url, ''))
-      currentObject['createSchema']   = await getEndpointCreateSchema(fieldSchema.endpoint_url, fieldSchema.label)
+
+      if (deep) {
+        const currentEndpointDependencies = await getEndpointDependencies(fieldSchema.endpoint_url, fieldSchema.label)
+
+        currentObject['createSchema']   = currentEndpointDependencies.createSchema
+        currentObject['updateSchema']   = currentEndpointDependencies.updateSchema
+        currentObject['updateAllowedMethod'] = currentEndpointDependencies.updateAllowedMethod
+      }
     } catch (error) {
       currentObject['selectedItem']   = []
       currentObject['toSubmitValues'] = null

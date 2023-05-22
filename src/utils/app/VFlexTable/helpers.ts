@@ -42,7 +42,7 @@ export const GeneratorFunctionForLists = async (componentDependencies: object, m
   }
 }
 
-export const InvoicesDependencyGenerator = async (componentDependencies: object, modelName: string, renderLoading, errorToDisplay, endpointUrl) => {
+export const InvoicesDependencyGenerator = async (componentDependencies: object, modelName: string, errorToDisplay, endpointUrl) => {
   try {
     const {
       createSchema,
@@ -56,9 +56,6 @@ export const InvoicesDependencyGenerator = async (componentDependencies: object,
 
   } catch (error) {
     errorToDisplay.value = "Request Failed! We working on it.."
-
-  } finally {
-    renderLoading.value = false
   }
 }
 

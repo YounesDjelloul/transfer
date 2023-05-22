@@ -2,19 +2,25 @@
 
   import API_URLs from '/@src/utils/api/urls'
 
+  import { toFormValidator } from '@vee-validate/zod'
   import { provide } from 'vue'
   import { useHead } from '@vueuse/head'
   import { useViewWrapper } from '/@src/stores/viewWrapper'
 
-  import { useHandleInstance } from '/@src/stores/handleInstance'
-  import { useQueryParam } from '/@src/stores/queryParam'
+  import { useFieldSelect } from '/@src/stores/fieldTypeSelect'
   import { useModelSchemas } from '/@src/utils/app/CRUD/modelCache'
 
   import {
     GeneratorFunctionForLists,
     InvoicesDependencyGenerator,
-    splitCreateSchemaFields
+    splitCreateSchemaFields,
   } from '/@src/utils/app/VFlexTable/helpers'
+
+  import {
+    generateInitialValues,
+    generateValidationSchema,
+    generateAndAssignDataObjectToStore,
+  } from '/@src/utils/app/shared/helpers'
 
   const endpointUrl    = API_URLs.BILLING__INVOICES
   const renderLoading  = ref(true)
@@ -28,14 +34,22 @@
   })
 
   onMounted(async () => {
-    await InvoicesDependencyGenerator(componentDependencies, "deepInvoice", renderLoading, errorToDisplay, endpointUrl)
+    await InvoicesDependencyGenerator(componentDependencies, "deepInvoice", errorToDisplay, endpointUrl)
+    componentDependencies.initialValues    = generateInitialValues(componentDependencies.overAllSchema)
+    componentDependencies.validationSchema = toFormValidator(generateValidationSchema(componentDependencies.overAllSchema))
+
+    await generateAndAssignDataObjectToStore(componentDependencies.initialValues, componentDependencies.tableFieldsSchema, true)
+
+    renderLoading.value = false
+  })
+
+  const fieldSelect  = useFieldSelect()
+
+  onUnmounted(() => {
+    fieldSelect.clearStore()
   })
 
   provide("endpointUrl", endpointUrl)
-  provide("modelPk", componentDependencies.modelPk)
-
-  const handleInstance = useHandleInstance()
-  const queryParam     = useQueryParam()
 
   const viewWrapper = useViewWrapper()
   viewWrapper.setPageTitle('Invoice Form')
@@ -62,7 +76,7 @@
       ridens.
     </p>
   </VCard>
-  <FormLayout
+  <DeepInvoiceForm
     v-else
     :component-dependencies="componentDependencies"
   />

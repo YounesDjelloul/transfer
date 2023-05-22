@@ -10,6 +10,7 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
   const fieldsTypeData      = ref()
   const fieldOptionsLoading = ref(false)
   const showCreatePopup     = ref(false)
+  const showUpdatePopup     = ref(false)
 
   const clearSelectedValueForOne = (schemaField, setFieldValue) => {
     fieldsTypeData.value[schemaField.id].toSubmitValues = null
@@ -93,15 +94,43 @@ export const useFieldSelect = defineStore('fieldTypeSelect', () => {
     notyf.success("Record Created Successfully!")
   }
 
+  const handleUpdateOptionCreationAffect = (instance, instanceId, fieldId) => {
+    fieldsTypeData.value[fieldId].options.forEach((currentOption, ind, arr) => {
+      if (currentOption.value === instance.id) {
+        arr[ind] = formatFieldChoices([instance])[0]
+      }
+    })
+
+    showUpdatePopup.value = false
+    notyf.dismissAll()
+    notyf.success("Record Updated Successfully!")
+  }
+
   const toggleCreatePopup = () => {
     showCreatePopup.value = !showCreatePopup.value
   }
 
+  const toggleUpdatePopup = () => {
+    showUpdatePopup.value = !showUpdatePopup.value
+  }
+
+  const clearStore = () => {
+
+    fieldsTypeData.value       = {}
+    fieldOptionsLoading.value  = false
+    showCreatePopup.value      = false
+    showUpdatePopup.value      = false
+  } 
+
   return {
     setData,
     handleNewOptionCreationAffect,
+    handleUpdateOptionCreationAffect,
+    clearStore,
     showCreatePopup,
+    showUpdatePopup,
     toggleCreatePopup,
+    toggleUpdatePopup,
     fieldsTypeData,
     fieldOptionsLoading,
     filteredItems,
