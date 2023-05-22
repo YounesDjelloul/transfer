@@ -25,11 +25,11 @@ export async function useModelSchemas(endpointUrl, SchemasRequestFunction, model
 
 		result.createSchema        = formatCreateSchema(actions.POST)
 		result.updateSchema        = formatUpdateSchema(getPrioritizedUpdateMethod(actions) == "put" ? actions.PUT : actions.PATCH)
-		result.filtersSchema       = formatCreateSchema(filtering_schema)
-		result.sortingSchema       = formatSortSchema(ordering_schema)
-		result.updateAllowedMethod = getPrioritizedUpdateMethod(actions)
-		result.lookupField         = lookup_field
-		result.listingColumns      = formatColumnListingSchema(listing_columns)
+		result.filtersSchema       = formatCreateSchema(filtering_schema ?? [])
+		result.sortingSchema       = formatSortSchema(ordering_schema ?? [])
+		result.updateAllowedMethod = getPrioritizedUpdateMethod(actions ?? "")
+		result.lookupField         = lookup_field 
+		result.listingColumns      = formatColumnListingSchema(listing_columns ?? [])
 
 		saveSchematoStorage(`create${modelName}Schema`, JSON.stringify(result.createSchema))
 		saveSchematoStorage(`update${modelName}Schema`, JSON.stringify(result.updateSchema))

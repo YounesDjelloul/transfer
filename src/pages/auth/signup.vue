@@ -1,72 +1,44 @@
-<route lang="yaml">
-  meta:
-    guest: true
-  </route>
+<script setup lang="ts">
 
-  <script setup lang="ts">
-
-  import { registerUser } from '/@src/services/modules/auth/accounts'
   import APP_URLs from '/@src/utils/app/urls'
-  import { getSignupSchema } from '/@src/utils/api/auth'
+  import API_URLs from '/@src/utils/api/urls'
 
-  import {
-    formatCreateSchema,
-    formatError,
-    generateValidationSchema,
-  } from '/@src/utils/app/shared/helpers'
+  import { registerDependencyGenerator } from '/@src/utils/app/auth/helpers'
+  import { registerUser } from '/@src/services/modules/auth/accounts'
 
-  import { useApi } from '/@src/composable/useApi'
   import { useI18n } from 'vue-i18n'
 
   import { useHead } from '@vueuse/head'
   import { toFormValidator } from '@vee-validate/zod'
   import { useForm } from 'vee-validate'
-  import { z as zod } from 'zod'
+
+  import {
+    formatError,
+    generateValidationSchema,
+  } from '/@src/utils/app/shared/helpers'
 
   import { useDarkmode } from '/@src/stores/darkmode'
   import { useNotyf } from '/@src/composable/useNotyf'
 
   const darkmode = useDarkmode()
-  const router = useRouter()
-  const notyf = useNotyf()
-  const api = useApi()
+  const router   = useRouter()
+  const notyf    = useNotyf()
 
   const isLoading = ref(false)
   const { t } = useI18n()
 
+  const endpointUrl = API_URLs.REGISTRATION
+  const renderLoading  = ref(true)
+  const errorToDisplay = ref('')
+
+  const componentDependencies = reactive({
+    createSchema: undefined,
+  })
+
+  await registerDependencyGenerator(componentDependencies, "Registeration", errorToDisplay, endpointUrl)
+
   const validationSchema = toFormValidator(
-    zod.object({
-      first_name: zod
-      .string({
-        required_error: t('auth.errors.first_name.required'),
-      }),
-      last_name: zod
-      .string({
-        required_error: t('auth.errors.last_name.required'),
-      }),
-      username: zod
-      .string({
-        required_error: t('auth.errors.username.required'),
-      }),
-      phone_number: zod
-      .string({
-        required_error: t('auth.errors.phone_number.required'),
-      }),
-      password1: zod
-      .string({
-        required_error: t('auth.errors.password1.required'),
-      })
-      .min(8, t('auth.errors.password1.length')),
-      password2: zod
-      .string({
-        required_error: t('auth.errors.password2.required'),
-      })
-      .min(8, t('auth.errors.password2.length')),
-      owner_company: zod.object({
-        prefix: zod.string({ required_error: t('auth.errors.prefix.required') }),
-        name: zod.string({ required_error: t('auth.errors.name.required') }),
-      })
-    })
+    generateValidationSchema(componentDependencies.createSchema)
     .refine((data) => data.password1 === data.password2, {
       message: t('auth.errors.passwordCheck.match'),
       path: ['password2'],
@@ -83,6 +55,8 @@
 
       try {
 
+        console.log(values)
+
         await registerUser(values)
 
         notyf.dismissAll()
@@ -90,13 +64,13 @@
 
         router.push(APP_URLs.LOGIN)
       } catch (err: any) {
+        console.log(err)
         const formattedErrors = formatError(undefined, err.response.data)
         actions.setErrors(formattedErrors)
         notyf.error(t('form.invalid'))
 
       } finally {
         isLoading.value = false
-    
       }
     }
   })
@@ -142,100 +116,22 @@
                   </RouterLink>
                 </div>
                 <div class="auth-form-wrapper">
-                  <!-- Signup Form -->
                   <form @submit="onSignup">
                     <div id="signin-form" class="login-form">
                       <!-- Input -->
 
-                      <VField id="first_name" v-slot="{ field }">
+                      <VField v-for="fieldSchema in componentDependencies.createSchema" :id="fieldSchema.id" v-slot="{ field }">
                         <VControl class="has-icons-left" icon="feather:user">
                           <VInput
-                            type="text"
-                            placeholder="Firstname"
+                            :type="fieldSchema.type"
+                            :placeholder="fieldSchema.label"
                           />
                           <p v-if="field?.errors?.value?.length" class="help is-danger">
                             {{ field.errors?.value?.join(', ') }}
                           </p>
+                          <p class="help is-primary" v-else-if="fieldSchema.required">Required Field</p>
                         </VControl>
                       </VField>
-                      <VField id="last_name" v-slot="{ field }">
-                        <VControl class="has-icons-left" icon="feather:user">
-                          <VInput
-                            type="text"
-                            placeholder="Lastname"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-                      <VField id="username" v-slot="{ field }">
-                        <VControl class="has-icons-left" icon="feather:user">
-                          <VInput
-                            type="text"
-                            placeholder="Username"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-                      <VField id="phone_number" v-slot="{ field }">
-                        <VControl class="has-icons-left" icon="feather:user">
-                          <VInput
-                            type="text"
-                            placeholder="¨Phone Number"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-                      <VField id="owner_company.prefix" v-slot="{ field }">
-                        <VControl class="has-icons-left" icon="feather:user">
-                          <VInput
-                            type="text"
-                            placeholder="Company Prefix"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-                      <VField id="owner_company.name" v-slot="{ field }">
-                        <VControl class="has-icons-left" icon="feather:user">
-                          <VInput
-                            type="text"
-                            placeholder="Company Name"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-                      <VField id="password1" v-slot="{ field }">
-                        <VControl class="has-icons-left" icon="feather:user">
-                          <VInput
-                            type="password"
-                            placeholder="Password"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-                      <VField id="password2" v-slot="{ field }">
-                        <VControl class="has-icons-left" icon="feather:user">
-                          <VInput
-                            type="password"
-                            placeholder="Password Confirmation"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-
 
                       <div class="login">
                         <VButton :loading="isLoading" type="submit" color="primary" bold fullwidth raised>

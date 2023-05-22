@@ -411,8 +411,6 @@ export async function generateAndAssignDataObjectToStore(initialValues, formSche
     
       currentObject['selectedItem']   = jobsDetails.length > 0 ? jobsDetails : []
       currentObject['toSubmitValues'] = toSubmitValues
-
-      console.log(fieldSchema.endpoint_url, fieldSchema)
       currentObject['options']        = formatFieldChoices(await getFieldChoices(fieldSchema.endpoint_url, ''))
 
       if (deep) {
