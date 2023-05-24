@@ -162,6 +162,9 @@ watch(
             <div class="title-wrap">
               <h1 class="title is-4">{{ viewWrapper.pageTitle }}</h1>
             </div>
+
+            <Toolbar class="mobile-toolbar">
+            </Toolbar>
           </div>
 
           <slot></slot>

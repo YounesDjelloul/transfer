@@ -68,6 +68,7 @@ declare module '@vue/runtime-core' {
     FormLayoutSplit: typeof import('./src/components/pages/forms/form-layout/FormLayoutSplit.vue')['default']
     FormLayoutStacked: typeof import('./src/components/pages/forms/form-layout/FormLayoutStacked.vue')['default']
     FormLayoutStepper: typeof import('./src/components/pages/forms/form-layout/FormLayoutStepper.vue')['default']
+    GeneratedComponentContent: typeof import('./src/components/custom/GeneratedComponentContent.vue')['default']
     GraphDropdown: typeof import('./src/components/partials/dropdowns/GraphDropdown.vue')['default']
     GroupedStatWidget: typeof import('./src/components/partials/widgets/stat/GroupedStatWidget.vue')['default']
     Heatmap: typeof import('./src/components/partials/lifestyle/Heatmap.vue')['default']

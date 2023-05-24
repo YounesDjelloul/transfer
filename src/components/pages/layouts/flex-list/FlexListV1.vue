@@ -34,7 +34,6 @@
   }>()
 
   const endpointUrl = inject('endpointUrl')
-  const modelPk     = inject('modelPk')
 
   const baseURL     = import.meta.env.VITE_API_BASE_URL
 
@@ -195,9 +194,9 @@
           <template #body-cell="{ row, column }">
             <template v-if="column.key == 'actions'">
               <FlexTableDropdown
-                @view-detail="handleInstance.getViewInstanceDetailsPopup(getRowPk(row, modelPk))"
-                @update-details="handleInstance.getUpdateInstanceDetailsPopup(getRowPk(row, modelPk), wrapperState.data)"
-                @delete-instance="handleInstance.getDeleteInstancePopup(getRowPk(row, modelPk), wrapperState.data)"
+                @view-detail="handleInstance.getViewInstanceDetailsPopup(getRowPk(row, componentDependencies.modelPk))"
+                @update-details="handleInstance.getUpdateInstanceDetailsPopup(getRowPk(row, componentDependencies.modelPk), wrapperState.data)"
+                @delete-instance="handleInstance.getDeleteInstancePopup(getRowPk(row, componentDependencies.modelPk), wrapperState.data)"
               />
             </template>
 

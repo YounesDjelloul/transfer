@@ -11,7 +11,7 @@
   import { useModelSchemas } from '/@src/utils/app/CRUD/modelCache'
   import { GeneratorFunctionForLists } from '/@src/utils/app/VFlexTable/helpers'
 
-  const endpointUrl = API_URLs.CLIENTS
+  const endpointUrl    = API_URLs.CLIENTS
   const renderLoading  = ref(true)
   const errorToDisplay = ref('')
 
@@ -24,10 +24,11 @@
     modelPk: undefined,
   })
 
-  onMounted(() => { GeneratorFunctionForLists(componentDependencies, "Clients", renderLoading, errorToDisplay, endpointUrl)})
+  onMounted(() => {
+    GeneratorFunctionForLists(componentDependencies, "Clients", renderLoading, errorToDisplay, endpointUrl)
+  })
 
   provide("endpointUrl", endpointUrl)
-  provide("modelPk", componentDependencies.modelPk)
 
   const handleInstance = useHandleInstance()
   const queryParam     = useQueryParam()
@@ -41,22 +42,9 @@
 </script>
 
 <template>
-  <div class="page-content-inner">
-    <div class="column is-12">
-      <VCard radius="small" color="warning" v-if="!renderLoading && errorToDisplay.length > 0">
-        <h3 class="title is-5 mb-2">{{ errorToDisplay }}</h3>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quibusnam praeteritis? At
-          multis se probavit. Quoniam, si dis placet, ab Epicuro loqui discimus. Et ille
-          ridens.
-        </p>
-      </VCard>
-      <FlexListV1
-        v-if="!renderLoading && errorToDisplay.length === 0"
-
-        :component-dependencies="componentDependencies"
-      >
-      </FlexListV1>
-    </div>
-  </div>
+  <GeneratedComponentContent
+    :component-dependencies="componentDependencies"
+    :render-loading="renderLoading"
+    :error-to-display="errorToDisplay"
+  />
 </template>
