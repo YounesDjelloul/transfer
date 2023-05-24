@@ -47,7 +47,7 @@
       try {
 
         await changeUserPassword(values)
-
+        actions.resetForm()
         notyf.dismissAll()
         notyf.success("Password changed successfully!")
       } catch (err: any) {
@@ -110,6 +110,9 @@
                   placeholder="New Password"
                   autocomplete="new-password"
                 />
+                <p v-if="field?.errors?.value?.length" class="help is-danger">
+                  {{ field.errors?.value?.join(', ') }}
+                </p>
               </VControl>
             </VField>
           </div>
@@ -122,6 +125,9 @@
                   placeholder="Repeat New Password"
                   autocomplete="new-password"
                 />
+                <p v-if="field?.errors?.value?.length" class="help is-danger">
+                  {{ field.errors?.value?.join(', ') }}
+                </p>
               </VControl>
             </VField>
           </div>
