@@ -32,8 +32,8 @@ export function arrayPop(propertyName: string, formSchema: object) {
 	return targetProp
 }
 
-export async function getFormattedUpdateUserSchema(userUsername: string) {
+export async function getFormattedUpdateUserSchema() {
 
-	const { actions: actions } = await getUpdateUserSchema(userUsername)
+	const { actions: actions } = await getUpdateUserSchema()
 	return formatUpdateSchema(actions.PUT)
 }

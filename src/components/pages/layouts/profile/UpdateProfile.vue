@@ -29,11 +29,11 @@
 
   const currentUsername = currentUser.pk
 
-  let formSchema        = await getFormattedUpdateUserSchema(currentUsername)
+  let formSchema        = await getFormattedUpdateUserSchema()
   const userAvatarProp  = arrayPop("url", formSchema)
   let validationSchema  = toFormValidator(generateValidationSchema(formSchema, t))
-  let userDetails       = await getUserDetails(currentUsername)
-  let initialValues     = generateInitialValues(userDetails, formSchema)
+  let userDetails       = await getUserDetails()
+  let initialValues     = generateInitialValues(formSchema, userDetails)
 
   isLoading.value = false
 
@@ -67,7 +67,7 @@
     isLoading.value = true
 
     try {
-      const result = await updateUserDetails(currentUsername, values)
+      const result = await updateUserDetails(values)
       notyf.success(t('profile.form.update.success'))
 
     } catch (err) {

@@ -1,21 +1,64 @@
 <script setup lang="ts">
+  import { changeUserPassword } from '/@src/services/modules/auth/accounts'
+
+  import { useForm } from 'vee-validate'
+  import { toFormValidator } from '@vee-validate/zod'
+  import { z as zod } from 'zod'
+  import { useI18n } from 'vue-i18n'
   import { useNotyf } from '/@src/composable/useNotyf'
-  import sleep from '/@src/utils/sleep'
 
   const notyf = useNotyf()
   const { y } = useWindowScroll()
+  const { t } = useI18n()
 
   const isLoading = ref(false)
 
   const isScrolling = computed(() => {
     return y.value > 30
   })
-  const onSave = async () => {
-    isLoading.value = true
-    await sleep()
-    notyf.success('Your changes have been successfully saved!')
-    isLoading.value = false
-  }
+
+  const validationSchema = toFormValidator(
+    zod.object({
+      new_password1: zod
+        .string({
+          required_error: t('auth.errors.password.required'),
+        })
+        .min(8, t('auth.errors.password.length')),
+      new_password2: zod
+        .string({
+          required_error: t('auth.errors.password.required'),
+        })
+        .min(8, t('auth.errors.password.length')),
+    })
+    .refine((data) => data.new_password1 === data.new_password2, {
+      message: t('auth.errors.passwordCheck.match'),
+      path: ['new_password2'],
+    })
+  )
+
+  const { handleSubmit } = useForm({
+    validationSchema,
+  })
+
+  const onChange = handleSubmit(async (values, actions) => {
+    if (!isLoading.value) {
+      isLoading.value = true
+
+      try {
+
+        await changeUserPassword(values)
+
+        notyf.dismissAll()
+        notyf.success("Password changed successfully!")
+      } catch (err: any) {
+        const formattedErrors = formatError(undefined, err.response.data)
+        actions.setErrors(formattedErrors)
+        notyf.error(t('form.invalid'))
+      } finally {
+        isLoading.value = false
+      }
+    }
+  })
 </script>
 
 <template>
@@ -41,8 +84,8 @@
               raised
               :loading="isLoading"
               tabindex="0"
-              @keydown.space.prevent="onSave"
-              @click="onSave"
+              @keydown.space.prevent="onChange"
+              @click="onChange"
             >
               Save Changes
             </VButton>
@@ -57,23 +100,10 @@
           <h4>Change Password</h4>
           <p>For an improved account security</p>
         </div>
-
         <div class="columns is-multiline">
           <!--Field-->
           <div class="column is-12">
-            <VField>
-              <VControl icon="feather:unlock">
-                <VInput
-                  type="password"
-                  placeholder="Old Password"
-                  autocomplete="current-password"
-                />
-              </VControl>
-            </VField>
-          </div>
-          <!--Field-->
-          <div class="column is-12">
-            <VField>
+            <VField v-slot="{ field }" id="new_password1">
               <VControl icon="feather:lock">
                 <VInput
                   type="password"
@@ -85,7 +115,7 @@
           </div>
           <!--Field-->
           <div class="column is-12">
-            <VField>
+            <VField v-slot="{ field }" id="new_password2">
               <VControl icon="feather:lock">
                 <VInput
                   type="password"

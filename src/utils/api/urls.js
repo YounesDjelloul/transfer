@@ -1,6 +1,7 @@
 const API_URLs = {}
 
 API_URLs.REGISTRATION = '/api/auth/register/'
+API_URLs.PASSWORD__CHANGE = '/api/auth/password/change/'
 API_URLs.LOGIN = '/api/auth/login/'
 API_URLs.CURRENT_USER_PROFILE = '/api/auth/user/'
 API_URLs.NEW_ACCESS_TOKEN = '/api/auth/token/refresh/'
