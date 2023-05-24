@@ -32,9 +32,10 @@ export default definePlugin(async ({ router, api, pinia }) => {
 
   router.beforeEach(async (to) => {
 
-    const isLoggedIn = userSession.cookies.get('isLoggedIn')
+    const cookies       = userSession.cookies
+    const authenticated = cookies.get('isLoggedIn') && cookies.get('access_token') !== "" && cookies.get('access_token') ? true : false
 
-    if (to.meta.requiresAuth && isLoggedIn !== true) {
+    if (to.meta.requiresAuth && authenticated !== true) {
       // If the page requires auth, check if user is logged in
       // if not, redirect to login page.
       return {
@@ -44,7 +45,7 @@ export default definePlugin(async ({ router, api, pinia }) => {
       }
     }
 
-    if (isLoggedIn === true) {
+    if (authenticated) {
       
       // If the page needs to be seen just by guests, check if use is logged in
       // if yes, redirect to home page
@@ -58,10 +59,30 @@ export default definePlugin(async ({ router, api, pinia }) => {
       try {
         // Do api request call to retreive user profile.
         await getUserProfile(userSession)
-        
       } catch (error) {
-        if (error.status==401) {
-          await newAccessToken(userSession) // request another access token if it fails
+
+        const refreshTokenCheck = cookies.get('refresh_token') !== '' && cookies.get('refresh_token') ? true : false
+
+        if (error.response.status === 401 && refreshTokenCheck) {
+          
+          try {
+            await newAccessToken(userSession)
+          } catch (err) {
+            if (err.status === 400) {
+              userSession.logoutUser()
+              return {
+                name: APP_URLs.LOGIN,
+                query: { redirect: to.fullPath },
+              }
+            }
+          }
+        
+        } else if (error.response.status === 401 && !refreshTokenCheck) {
+          userSession.logoutUser()
+          return {
+            name: APP_URLs.LOGIN,
+            query: { redirect: to.fullPath },
+          }
         }
       }
     }
