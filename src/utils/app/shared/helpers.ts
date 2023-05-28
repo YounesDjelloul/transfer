@@ -482,7 +482,7 @@ export function generateColumns(formSchema, sortingSchema, toShow) {
       'id': field.dotValue,
       'label': field.display_name,
       'sortable': sortingSchema.has(field.dotValue),
-      'media': mediaFields.includes(field.dotValue)
+      'media': mediaFields.includes(field.dotValue),
     }
 
     result[field.value] = currentObj

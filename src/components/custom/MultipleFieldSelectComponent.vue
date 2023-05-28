@@ -54,6 +54,16 @@
 
 <style lang="scss">
 
+  .is-dark {
+    .dropdown-result, .dropdown-container, .dropdown-list {
+      background: var(--dark-sidebar-light-8) !important;
+    }
+
+    .dropdown-list li {
+      color: var(--primary--color-invert) !important;
+    }
+  }
+
   .custom-dropdown {
     position: relative;
     display: block;
@@ -68,7 +78,7 @@
 
       width: 100%;
       min-height: 2.7rem;
-      background: var(--dark-sidebar-light-8);
+      background: var(--white);
       font-size: inherit;
       font-family: inherit;
       padding: calc(0.6em - 1px) 38px 9px;
@@ -78,7 +88,7 @@
       display: none;
       position: relative;
       z-index: 5;
-      background: var(--dark-sidebar-light-8);
+      background: var(--white);
       width: 100%;
       max-height: 120px;
       border-radius: 0px 0px 6px 6px;
@@ -95,6 +105,7 @@
         top: 100%;
         left: 0;
         list-style: none;
+        background: var(--white);
 
         .dropdown-loader, .no-options {
           padding: 10px 10px 10px 39px;
@@ -107,7 +118,7 @@
         li {
           padding: 10px 10px 10px 20px;
           cursor: pointer;
-          color: var(--primary--color-invert);
+          color: hsl(0deg, 0%, 21%);
 
           &:hover {
             background-color: var(--primary);

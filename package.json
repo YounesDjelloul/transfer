@@ -81,6 +81,7 @@
     "axios": "1.2.2",
     "billboard.js": "3.6.3",
     "bulma": "0.9.4",
+    "datatables.net-vue3": "^2.1.0",
     "dayjs": "1.11.7",
     "defu": "6.1.1",
     "dragula": "3.7.3",
