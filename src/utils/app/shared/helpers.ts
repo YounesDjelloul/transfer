@@ -1,3 +1,4 @@
+import { h } from 'vue'
 import { z as zod } from 'zod'
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
@@ -452,7 +453,7 @@ export function formatSortSchema(orderingSchema) {
 
 export function formatColumnListingSchema(listingSchema) {
 
-  let result = new Set()
+  let result = []
 
   for (let field of listingSchema) {
 
@@ -461,7 +462,7 @@ export function formatColumnListingSchema(listingSchema) {
     }
 
     field.dotValue = field.value.replaceAll('__', '.')
-    result.add(field)
+    result.push(field)
   }
   return result
 }
@@ -469,7 +470,8 @@ export function formatColumnListingSchema(listingSchema) {
 export function generateColumns(formSchema, sortingSchema, toShow) {
 
   let mediaFields = []
-  let result      = {}
+  let result      = []
+  let headings    = []
 
   for (const one of formSchema) {
     if (one.html_input_type === 'file') {
@@ -478,23 +480,31 @@ export function generateColumns(formSchema, sortingSchema, toShow) {
   }
 
   for (const field of toShow) {
+    let orderable = sortingSchema.has(field.dotValue)
+
     let currentObj = {
-      'id': field.dotValue,
-      'label': field.display_name,
-      'sortable': sortingSchema.has(field.dotValue),
-      'media': mediaFields.includes(field.dotValue),
+      orderable: sortingSchema.has(field.dotValue),
+      data: field.dotValue,
+      display_name: field.display_name,
     }
 
-    result[field.value] = currentObj
+    headings.push(currentObj)
+    result.push(currentObj)
   }
 
-  result['actions'] = {
-    id: "actions",
-    label: 'Actions',
-    align: 'end',
+  let currentObj = {
+    orderable: false,
+    data: "Actions",
+    display_name: "Actions",
+    render: (data, type, row) => {
+      return h('div', { id: 'foo' }, 'hello')
+    },
   }
 
-  return result
+  headings.push(currentObj)
+  result.push(currentObj)
+
+  return {result, headings}
 }
 
 export function saveSchematoStorage(actionKey: string, formSchema: string) {

@@ -387,7 +387,7 @@ if (isReactive(props.options)) {
       td {
         font-family: var(--font);
         vertical-align: middle;
-        padding: 12px 20px;
+        padding: 20px;
         border-bottom: 1px solid var(--fade-grey);
 
         &:last-child {
@@ -484,53 +484,6 @@ if (isReactive(props.options)) {
           * {
             stroke-width: 4px;
           }
-        }
-      }
-
-      .price {
-        color: var(--dark-text);
-        font-weight: 500;
-
-        &::before {
-          content: '$';
-        }
-
-        &.price-free {
-          color: var(--light-text);
-        }
-      }
-
-      .status {
-        display: flex;
-        align-items: center;
-
-        &.is-available {
-          i {
-            color: var(--success);
-          }
-        }
-
-        &.is-busy {
-          i {
-            color: var(--danger);
-          }
-        }
-
-        &.is-offline {
-          i {
-            color: var(--light-text);
-          }
-        }
-
-        i {
-          margin-right: 8px;
-          font-size: 8px;
-        }
-
-        span {
-          font-family: var(--font);
-          font-size: 0.9rem;
-          color: var(--light-text);
         }
       }
     }

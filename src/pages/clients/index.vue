@@ -28,6 +28,7 @@
     GeneratorFunctionForLists(componentDependencies, "Clients", renderLoading, errorToDisplay, endpointUrl)
   })
 
+
   provide("endpointUrl", endpointUrl)
 
   const handleInstance = useHandleInstance()

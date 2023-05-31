@@ -26,11 +26,18 @@
           ridens.
         </p>
       </VCard>
-      <FlexListV1
+      <DatatableV1
         v-else
-        :component-dependencies="componentDependencies"
+        :componentDependencies="componentDependencies"
       >
-      </FlexListV1>
+      </DatatableV1>
     </div>
   </div>
 </template>
+
+<style lang="scss">
+
+  .dataTable-table > thead > tr > th {
+    vertical-align: middle;
+  }
+</style>

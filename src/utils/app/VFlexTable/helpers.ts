@@ -28,12 +28,15 @@ export const GeneratorFunctionForLists = async (componentDependencies: object, m
       listingColumns,
     } = await useModelSchemas(endpointUrl, schemasFunction, modelName)
 
+    const { result, headings } = generateColumns(createSchema, sortingSchema, listingColumns)
+
     componentDependencies.createModelSchema  = createSchema
     componentDependencies.updateModelSchema  = updateSchema
     componentDependencies.filtersModelSchema = filtersSchema
     componentDependencies.updateMethod       = updateAllowedMethod
     componentDependencies.modelPk            = lookupField
-    componentDependencies.columns            = generateColumns(createSchema, sortingSchema, listingColumns)
+    componentDependencies.columns            = result
+    componentDependencies.headings           = headings
   } catch (error) {
     errorToDisplay.value = "Request Failed! We working on it.."
 
