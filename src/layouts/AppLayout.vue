@@ -77,7 +77,7 @@ watch(
     >
       <template #links>
         <li>
-          <RouterLink to="app">
+          <RouterLink to="dashboard">
             <i aria-hidden="true" class="iconify" data-icon="feather:home"></i>
           </RouterLink>
         </li>
@@ -105,7 +105,7 @@ watch(
         <li>
           <a
             :class="[activeMobileSubsidebar === 'dashboard' && 'is-active']"
-            data-content="Dashboards"
+            data-content="Dashboard"
             tabindex="0"
             @keydown.space.prevent="switchSidebar('dashboard')"
             @click="switchSidebar('dashboard')"
@@ -116,6 +116,11 @@ watch(
               data-icon="feather:home"
             ></i>
           </a>
+        </li>
+      </template>
+      <template #bottom-links>
+        <li>
+          <UserProfileDropdown class="is-up"/>
         </li>
       </template>
     </Sidebar>
@@ -158,7 +163,8 @@ watch(
               <h1 class="title is-4">{{ viewWrapper.pageTitle }}</h1>
             </div>
 
-            <Toolbar class="desktop-toolbar" />
+            <Toolbar class="mobile-toolbar">
+            </Toolbar>
           </div>
 
           <slot></slot>

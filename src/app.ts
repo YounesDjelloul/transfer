@@ -1,4 +1,4 @@
-import { createApp as createClientApp } from 'vue'
+import { createApp as createClientApp, markRaw } from 'vue'
 
 import { createHead } from '@vueuse/head'
 import { createPinia } from 'pinia'

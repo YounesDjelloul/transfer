@@ -1,3 +1,8 @@
+<route lang="yaml">
+  meta:
+    guest: true
+</route>
+
 <template>
   <AuthLayout>
     <RouterView />

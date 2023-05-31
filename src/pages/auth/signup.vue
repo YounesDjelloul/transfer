@@ -1,97 +1,83 @@
-<route lang="yaml">
-meta:
-  guest: true
-</route>
-
 <script setup lang="ts">
 
-import { registerUser } from '/@src/services/modules/auth/accounts'
-import APP_URLs from '/@src/utils/app/urls'
+  import APP_URLs from '/@src/utils/app/urls'
+  import API_URLs from '/@src/utils/api/urls'
 
-import { useApi } from '/@src/composable/useApi'
-import { useI18n } from 'vue-i18n'
+  import { registerDependencyGenerator } from '/@src/utils/app/auth/helpers'
+  import { registerUser } from '/@src/services/modules/auth/accounts'
 
-import { useHead } from '@vueuse/head'
-import { toFormValidator } from '@vee-validate/zod'
-import { useForm } from 'vee-validate'
-import { z as zod } from 'zod'
+  import { useI18n } from 'vue-i18n'
 
-import { useDarkmode } from '/@src/stores/darkmode'
-import { useNotyf } from '/@src/composable/useNotyf'
+  import { useHead } from '@vueuse/head'
+  import { toFormValidator } from '@vee-validate/zod'
+  import { useForm } from 'vee-validate'
 
-const darkmode = useDarkmode()
-const router = useRouter()
-const notyf = useNotyf()
-const api = useApi()
+  import {
+    formatError,
+    generateValidationSchema,
+  } from '/@src/utils/app/shared/helpers'
 
-const isLoading = ref(false)
-const { t } = useI18n()
+  import { useDarkmode } from '/@src/stores/darkmode'
+  import { useNotyf } from '/@src/composable/useNotyf'
 
-// Define a validation schema
-const validationSchema = toFormValidator(
-  zod.object({
+  const darkmode = useDarkmode()
+  const router   = useRouter()
+  const notyf    = useNotyf()
 
-    username: zod
-      .string({
-        required_error: t('auth.errors.username.required'),
-      })
-      .min(8, t('auth.errors.username.length')),
-    email: zod
-      .string({
-        required_error: t('auth.errors.email.required'),
-      })
-      .email(t('auth.errors.email.format')),
-    password1: zod
-      .string({
-        required_error: t('auth.errors.password.required'),
-      })
-      .min(8, t('auth.errors.password.length')),
-    password2: zod.string({
-      required_error: t('auth.errors.passwordCheck.required'),
-    }),
+  const isLoading = ref(false)
+  const { t } = useI18n()
+
+  const endpointUrl = API_URLs.REGISTRATION
+  const renderLoading  = ref(true)
+  const errorToDisplay = ref('')
+
+  const componentDependencies = reactive({
+    createSchema: undefined,
   })
-  .refine((data) => data.password1 === data.password2, {
-    message: t('auth.errors.passwordCheck.match'),
-    path: ['password2'],
+
+  await registerDependencyGenerator(componentDependencies, "Registeration", errorToDisplay, endpointUrl)
+
+  const validationSchema = toFormValidator(
+    generateValidationSchema(componentDependencies.createSchema)
+    .refine((data) => data.password1 === data.password2, {
+      message: t('auth.errors.passwordCheck.match'),
+      path: ['password2'],
+    })
+  )
+
+  const { handleSubmit } = useForm({
+    validationSchema,
   })
-)
 
-const { handleSubmit } = useForm({
-  validationSchema,
-  initialValues: {
-    username: '',
-    email: '',
-    password1: '',
-    password2: '',
-  },
-})
+  const onSignup = handleSubmit(async (values, actions) => {
+    if (!isLoading.value) {
+      isLoading.value = true
 
-const onSignup = handleSubmit(async (values) => {
-  if (!isLoading.value) {
-    isLoading.value = true
+      try {
 
-    try {
+        console.log(values)
 
-      await registerUser(values)
+        await registerUser(values)
 
-      notyf.dismissAll()
-      notyf.success('Welcome, ' + values.username)
+        notyf.dismissAll()
+        notyf.success('Welcome, ' + values.username)
 
-      router.push(APP_URLs.LOGIN)
-    } catch (error: any) {
-      notyf.dismissAll()
-      notyf.error(error)
+        router.push(APP_URLs.LOGIN)
+      } catch (err: any) {
+        console.log(err)
+        const formattedErrors = formatError(undefined, err.response.data)
+        actions.setErrors(formattedErrors)
+        notyf.error(t('form.invalid'))
 
-    } finally {
-      isLoading.value = false
-  
+      } finally {
+        isLoading.value = false
+      }
     }
-  }
-})
+  })
 
-useHead({
-  title: 'LexAlgeria - Signup',
-})
+  useHead({
+    title: 'LexAlgeria - Signup',
+  })
 </script>
 
 <template>
@@ -130,65 +116,22 @@ useHead({
                   </RouterLink>
                 </div>
                 <div class="auth-form-wrapper">
-                  <!-- Signup Form -->
                   <form @submit="onSignup">
                     <div id="signin-form" class="login-form">
                       <!-- Input -->
-                      <VField id="username" v-slot="{ field }">
-                        <VControl icon="feather:user">
+
+                      <VField v-for="fieldSchema in componentDependencies.createSchema" :id="fieldSchema.id" v-slot="{ field }">
+                        <VControl class="has-icons-left" icon="feather:user">
                           <VInput
-                            type="text"
-                            :placeholder="t('auth.placeholder.username')"
-                            autocomplete="name"
+                            :type="fieldSchema.type"
+                            :placeholder="fieldSchema.label"
                           />
                           <p v-if="field?.errors?.value?.length" class="help is-danger">
                             {{ field.errors?.value?.join(', ') }}
                           </p>
+                          <p class="help is-primary" v-else-if="fieldSchema.required">Required Field</p>
                         </VControl>
                       </VField>
-
-                      <!-- Input -->
-                      <VField id="email" v-slot="{ field }">
-                        <VControl icon="feather:mail">
-                          <VInput
-                            type="text"
-                            :placeholder="t('auth.placeholder.email')"
-                            autocomplete="email"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-
-                      <!-- Input -->
-                      <VField id="password1" v-slot="{ field }">
-                        <VControl icon="feather:lock">
-                          <VInput
-                            type="password"
-                            :placeholder="t('auth.placeholder.password')"
-                            autocomplete="new-password"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-
-                      <!-- Input -->
-                      <VField id="password2" v-slot="{ field }">
-                        <VControl icon="feather:lock">
-                          <VInput
-                            type="password"
-                            :placeholder="t('auth.placeholder.passwordCheck')"
-                          />
-                          <p v-if="field?.errors?.value?.length" class="help is-danger">
-                            {{ field.errors?.value?.join(', ') }}
-                          </p>
-                        </VControl>
-                      </VField>
-
-                      <!-- Submit -->
 
                       <div class="login">
                         <VButton :loading="isLoading" type="submit" color="primary" bold fullwidth raised>

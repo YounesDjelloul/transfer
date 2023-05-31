@@ -1,3 +1,22 @@
+<script setup>
+  import { useUserSession } from '/@src/stores/userSession'
+  import { useNotyf } from '/@src/composable/useNotyf'
+  import { useI18n } from 'vue-i18n'
+  
+  import APP_URLs from '/@src/utils/app/urls'
+  
+  const { t } = useI18n()
+  const router = useRouter()
+  const notyf = useNotyf()
+  const userSession = useUserSession()
+
+  function logout() {
+    userSession.logoutUser()
+    notyf.success(t('auth.logout.success'))
+    router.push(APP_URLs.LOGIN)
+  }
+</script>
+
 <template>
   <VDropdown right spaced class="user-dropdown profile-dropdown">
     <template #button="{ toggle }">
@@ -22,7 +41,7 @@
         </div>
       </div>
 
-      <a href="#" role="menuitem" class="dropdown-item is-media">
+      <RouterLink :to="APP_URLs.VIEW_PROFILE" role="menuitem" class="dropdown-item is-media">
         <div class="icon">
           <i aria-hidden="true" class="lnil lnil-user-alt"></i>
         </div>
@@ -30,7 +49,7 @@
           <span>Profile</span>
           <span>View your profile</span>
         </div>
-      </a>
+      </RouterLink>
 
       <hr class="dropdown-divider" />
 
@@ -56,7 +75,7 @@
 
       <hr class="dropdown-divider" />
 
-      <a href="#" role="menuitem" class="dropdown-item is-media">
+      <RouterLink :to="APP_URLs.UPDATE_PROFILE" role="menuitem" class="dropdown-item is-media">
         <div class="icon">
           <i aria-hidden="true" class="lnil lnil-cog"></i>
         </div>
@@ -64,7 +83,7 @@
           <span>Settings</span>
           <span>Account settings</span>
         </div>
-      </a>
+      </RouterLink>
 
       <hr class="dropdown-divider" />
 
@@ -76,6 +95,7 @@
           role="menuitem"
           raised
           fullwidth
+          @click="logout"
         >
           Logout
         </VButton>

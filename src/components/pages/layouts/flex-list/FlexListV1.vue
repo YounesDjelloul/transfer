@@ -1,180 +1,72 @@
 <script setup lang="ts">
 
-  import { getClients } from '/@src/utils/api/clients'
-  import { convertObjectToFilterString } from '/@src/utils/app/dashboard/filters'
-  import { FormatingOrderingParam } from '/@src/utils/app/dashboard/sorts'
+  import { inject } from 'vue'
+  import { useNotyf } from '/@src/composable/useNotyf'
+  import { useHandleInstance } from '/@src/stores/handleInstance'
+  import { useQueryParam } from '/@src/stores/queryParam'
+  import { storeToRefs } from 'pinia';
+  import { FormatingOrderingParam } from '/@src/utils/app/CRUD/sorts'
 
-  const router = useRouter()
-  const route  = useRoute()
+  import {
+    convertObjectToFilterString,
+    convertSchemaToEmptyFilterString
+  } from '/@src/utils/app/CRUD/filters'
+
+  import {
+    formatUserAvatarUrl,
+    flattenObj,
+    getRowPk,
+    deleteCurrentInstance,
+    updateCurrentInstance,
+  } from '/@src/utils/app/shared/helpers'
+
+  import {
+    createNewInstance,
+    getInstances,
+    updateInstanceDetailsRequest,
+    getInstanceDetails,
+    deleteInstanceRequest,
+    getInstanceSchemas as schemasFunction,
+  } from '/@src/utils/api/modelApiCallFunctions'
+
+  const props = defineProps<{
+    componentDependencies: object,
+  }>()
+
+  const endpointUrl = inject('endpointUrl')
+
+  const baseURL     = import.meta.env.VITE_API_BASE_URL
+
+  const handleInstance = useHandleInstance()
+  const queryParam     = useQueryParam()
 
   const defaultLimit = ref(20)
-  const totalClients = ref(0)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  const load         = ref(false)
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-  const load         = ref(false)
->>>>>>> refs/remotes/origin/main
 
-  const columns = {
-    created_by_id: {
-      label: 'Created By Id',
-      sortable: true,
-    },
-    username: 'Username',
-    user_id: {
-      label: 'User Id',
-      sortable: true,
-    },
-    person_type: 'Person Type',
-    user_ip: 'Ip',
-    actions: {
-      label: 'Actions',
-      align: 'end',
-    },
-  } as const
+  const fetchInstances = async() => {
 
-  function useQueryParam() {
+    const { page, searchTerm, filtersTerm, sort, reload } = queryParam
 
-    const defaultPage    = 1
-    const defaultSearch  = ''
-    const defaultFilters = "user__username=&user__firstname=&user__lastname=&person_type="
-    const defaultSort    = ''
+    if (handleInstance.status) {
 
-    const searchTerm = computed({
-
-      get() {
-        return route.query.search ? route.query.search : defaultSearch
-      },
-
-      set(value) {
-        router.push({
-          query: {
-            search: value === defaultSearch ? undefined : value,
-            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
-            page: page.value === defaultPage ? undefined : page.value,
-            sort: sort.value === defaultSort ? undefined : sort.value,
-          },
-        })
-      },
-    })
-
-    const filtersTerm = computed({
-
-      get() {
-
-        return route.query.filter
-      },
-
-      set(value) {
-
-        const result = convertObjectToFilterString(value)
-
-        router.push({
-          query: {
-            filter: result === defaultFilters ? undefined : result,
-            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
-            page: page.value === defaultPage ? undefined : page.value,
-            sort: sort.value === defaultSort ? undefined : sort.value,
-          },
-        })
-      },
-    })
-
-    const sort = computed({
-
-      get() {
-        return route.query.sort ? route.query.sort : defaultSort
-      },
-
-      set(value) {
-        router.push({
-          query: {
-            sort: value === defaultSort ? undefined : value,
-            page: page.value === defaultPage ? undefined : page.value,
-            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
-            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
-          },
-        })
-      }
-    })
-
-    const page = computed({
-
-      get() {
-        return route.query.page ? parseInt(route.query.page) : defaultPage
-      },
-
-      set(value) {
-        router.push({
-          query: {
-            page: value === defaultPage ? undefined : value,
-            filter: filtersTerm.value === defaultFilters ? undefined : filtersTerm.value,
-            search: searchTerm.value === defaultSearch ? undefined : searchTerm.value,
-            sort: sort.value === defaultSort ? undefined : sort.value,
-          },
-        })
-      },
-    })
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> refs/remotes/origin/main
-    const total = computed({
+      let result = toRaw(handleInstance.currentStateData)
       
-      get() {
-        return totalClients.value
-      },
+      switch (handleInstance.status) {
+        case 'delete':
+          result = result.filter(deleteCurrentInstance, handleInstance.instanceToDeleteId)
+          break;
+        case 'update':
+          result.forEach(updateCurrentInstance, [handleInstance.instanceToUpdateId, handleInstance.operatedInstance])
+          break;
+        case 'create':
+          result.unshift(toRaw(handleInstance.operatedInstance))
+          break;
+      }
 
-      set(value) {
-        totalClients.value = value
-      },
-    })
-
-<<<<<<< HEAD
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
->>>>>>> refs/remotes/origin/main
-    return reactive({
-      page,
-      searchTerm,
-      filtersTerm,
-      sort,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-      total,
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-      total,
->>>>>>> refs/remotes/origin/main
-    })
-  }
-
-  const queryParam = useQueryParam()
-
-  const fetchClients = async() => {
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-    const { page, searchTerm, filtersTerm, sort } = queryParam
+      handleInstance.status = undefined
+      return result
+    }
 
     const pageQuery = `page=${page}`
-=======
-=======
->>>>>>> refs/remotes/origin/main
-    const { page, searchTerm, filtersTerm, sort, total } = queryParam
-
-    const pageQuery = `page=${page}`
-
-<<<<<<< HEAD
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
->>>>>>> refs/remotes/origin/main
     let sortQuery   = ''
     let searchFilterQuery = ''
 
@@ -190,61 +82,12 @@
     }
 
     const endpointRoute  = `?${sortQuery}${searchFilterQuery}${pageQuery}`
+    const { results, count } = await getInstances(endpointUrl, endpointRoute)
 
-    const { results, count } = await getClients(endpointRoute)
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-    totalClients.value = count
-=======
-    queryParam.total = count
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-    queryParam.total = count
->>>>>>> refs/remotes/origin/main
+    handleInstance.totalInstances = count
     return results
   }
 
-  const showCreateClientPopup       = ref(false)
-  const showDeleteClientPopup       = ref(false)
-  const showViewClientDetailsPopup  = ref(false)
-  const showUpdateClientPopup       = ref(false)
-  const showFilterClientsPopup      = ref(false)
-
-  const clientToUpdateId = ref()
-  const clientToDeleteId = ref()
-  const clientToViewId   = ref()
-
-  async function getUpdateClientDetailsPopup(clientId) {
-
-    clientToUpdateId.value      = clientId
-    showUpdateClientPopup.value = true
-  }
-
-  async function getDeleteClientPopup(clientId) {
-
-    clientToDeleteId.value      = clientId
-    showDeleteClientPopup.value = true
-  }
-
-  async function getViewClientDetailsPopup(clientId) {
-
-    clientToViewId.value             = clientId
-    showViewClientDetailsPopup.value = true
-  }
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> refs/remotes/origin/main
-  function handleOperationAffect(operation) {
-
-    const currentTotal = queryParam.total
-    queryParam.total = operation === "+" ? currentTotal + 1 : currentTotal - 1
-  }
-
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
 </script>
 
 <template>
@@ -253,17 +96,9 @@
       v-model:page="queryParam.page"
       v-model:sort="queryParam.sort"
       :limit="defaultLimit"
-      :columns="columns"
-      :data="fetchClients"
-<<<<<<< HEAD
-<<<<<<< HEAD
-      :total="totalClients"
-=======
-      :total="queryParam.total"
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-      :total="queryParam.total"
->>>>>>> refs/remotes/origin/main
+      :columns="componentDependencies.columns"
+      :data="fetchInstances"
+      :total="handleInstance.totalInstances"
     >
       <template #default="wrapperState">
         <VFlexTableToolbar>
@@ -278,90 +113,50 @@
                 />
               </VControl>
             </VField>
-<<<<<<< HEAD
-<<<<<<< HEAD
-          </template>
-          
-=======
-          </template>
-
->>>>>>> refs/remotes/origin/main
-          <template #right>
-            <VButtons>
-              <VButton @click="showFilterClientsPopup=true" color="primary" icon="feather:settings" outlined> Filters
-              </VButton>
-              <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus"> Add User
-              </VButton>
-            </VButtons>
-          </template>
-<<<<<<< HEAD
-=======
           </template>
 
           <template #right>
             <VButtons>
-              <VButton @click="showFilterClientsPopup=true" color="primary" icon="feather:settings" outlined> Filters
+              <VButton @click="handleInstance.showFilterInstancesPopup=true" color="primary" icon="feather:settings" outlined> Filters
               </VButton>
-              <VButton @click="showCreateClientPopup=true" color="primary" icon="feather:plus"> Add User
+              <VButton @click="handleInstance.getCreateInstancePopup(wrapperState.data)" color="primary" icon="feather:plus"> Create Record
               </VButton>
             </VButtons>
           </template>
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
->>>>>>> refs/remotes/origin/main
         </VFlexTableToolbar>
 
-        <CreateClientComponent
-          v-if="showCreateClientPopup"
-          @hide-create-client-popup="showCreateClientPopup=false"
-<<<<<<< HEAD
-<<<<<<< HEAD
-          @load-clients=""
-=======
-          @load-clients="handleOperationAffect('+')"
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-          @load-clients="handleOperationAffect('+')"
->>>>>>> refs/remotes/origin/main
+        <CreateInstanceComponent
+          v-if="handleInstance.showCreateInstancePopup"
+          :request-function="createNewInstance"
+          :formSchema="componentDependencies.createModelSchema"
+          modal-title="Create New Record"
+          @handle-create-instance-affect="handleInstance.handleInstanceCreationAffect"
         />
-
-        <UpdateClientComponent
-          v-if="showUpdateClientPopup" :clientId="clientToUpdateId" 
-          @hide-update-client-details-popup="showUpdateClientPopup=false"
-<<<<<<< HEAD
-<<<<<<< HEAD
-          @load-clients=""
-=======
-          @load-clients="handleOperationAffect('+')"
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-          @load-clients="handleOperationAffect('+')"
->>>>>>> refs/remotes/origin/main
+        <ViewInstanceComponent
+          v-if="handleInstance.showViewInstanceDetailsPopup"
+          :request-function="getInstanceDetails"
+          modal-title="Record Details"
         />
-
-        <DeleteClientComponent
-          v-if="showDeleteClientPopup" :clientId="clientToDeleteId"
-          @hide-delete-client-popup="showDeleteClientPopup=false"
-<<<<<<< HEAD
-<<<<<<< HEAD
-          @load-clients=""
-=======
-          @load-clients="handleOperationAffect('-')"
->>>>>>> 43a392c5ed08d7e077cebac7106f11a0925a20de
-=======
-          @load-clients="handleOperationAffect('-')"
->>>>>>> refs/remotes/origin/main
+        <UpdateInstanceComponent
+          v-if="handleInstance.showUpdateInstancePopup"
+          :request-function="updateInstanceDetailsRequest"
+          :form-schema="componentDependencies.updateModelSchema"
+          :instance-details-function="getInstanceDetails"
+          :update-allowed-method="componentDependencies.updateMethod"
+          modal-title="Update Record"
+          @handle-update-instance-affect="handleInstance.handleInstanceUpdateAffect"
         />
-
-        <ViewClientComponent
-          v-if="showViewClientDetailsPopup" :clientId="clientToViewId"
-          @hide-view-client-popup="showViewClientDetailsPopup=false"
+        <DeleteInstanceComponent
+          v-if="handleInstance.showDeleteInstancePopup"
+          :request-function="deleteInstanceRequest"
+          modal-title="Delete Record"
+          @handle-delete-instance-affect="handleInstance.handleInstanceDeleteAffect"
         />
-
-        <FilterClientsComponent
-          v-if="showFilterClientsPopup"
-          @hide-filter-clients-popup="showFilterClientsPopup=false"
-          @filter-clients="(filters) => queryParam.filtersTerm = filters"
+        <FilterListComponent
+          v-if="handleInstance.showFilterInstancesPopup"
+          :form-schema="componentDependencies.filtersModelSchema"
+          modal-title="Filter Records"
+          @filter-list="(filters) => queryParam.filtersTerm = filters"
         />
 
         <VFlexTable rounded>
@@ -377,7 +172,7 @@
             <div v-else-if="wrapperState.total === 0" class="flex-list-inner">
               <VPlaceholderSection
                 title="No matches"
-                subtitle="There is no clients founds."
+                subtitle="No instances found."
                 class="my-6"
               >
                 <template #image>
@@ -397,37 +192,16 @@
           </template>
 
           <template #body-cell="{ row, column }">
-            <template v-if="column.key == 'created_by_id'">
-              <VFlexTableCell>
-                <span>{{ row.created_by.id }}</span>
-              </VFlexTableCell>
-            </template>
-            <template v-if="column.key == 'username'">
-              <VFlexTableCell>
-                <span>{{ row.user.username }}</span>
-              </VFlexTableCell>
-            </template>
-            <template v-if="column.key == 'user_id'">
-              <VFlexTableCell>
-                <span>{{ row.user.id }}</span>
-              </VFlexTableCell>
-            </template>
-            <template v-if="column.key == 'person_type'">
-              <VFlexTableCell>
-                <span>{{ row.person_type }}</span>
-              </VFlexTableCell>
-            </template>
-            <template v-if="column.key == 'user_ip'">
-              <VFlexTableCell>
-                <span>{{ row.user.ip }}</span>
-              </VFlexTableCell>
-            </template>
             <template v-if="column.key == 'actions'">
               <FlexTableDropdown
-                @view-detail="getViewClientDetailsPopup(row.user.id)"
-                @update-details="getUpdateClientDetailsPopup(row.user.id)"
-                @delete-client="getDeleteClientPopup(row.user.id)"
+                @view-detail="handleInstance.getViewInstanceDetailsPopup(getRowPk(row, componentDependencies.modelPk))"
+                @update-details="handleInstance.getUpdateInstanceDetailsPopup(getRowPk(row, componentDependencies.modelPk), wrapperState.data)"
+                @delete-instance="handleInstance.getDeleteInstancePopup(getRowPk(row, componentDependencies.modelPk), wrapperState.data)"
               />
+            </template>
+
+            <template v-if="column.media">
+              <VAvatar size="medium" :picture="baseURL + formatUserAvatarUrl(flattenObj(row)[column.id])" />
             </template>
           </template>
         </VFlexTable>
@@ -445,31 +219,23 @@
 </template>
 
 <style lang="scss">
-
   @import '/@src/scss/abstracts/all';
   @import '/@src/scss/components/forms-outer';
 
   .view-container {
-
     margin: 20px;
-
     .view-section {
-
       .delete-header {
-
         display: flex;
         align-items: center;
         justify-content: space-between;
-
         .content {
           font-family: var(--font-alt);
           font-weight: 600;
           color: var(--dark-text);
         }
       }
-
       .view-section-header {
-
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -477,34 +243,27 @@
         padding-bottom: 20px;
         margin-bottom: 30px;
         border-color: var(--dark-sidebar-light-12);
-
         .content {
           font-family: var(--font-alt);
           font-weight: 600;
           color: var(--dark-text);
         }
       }
-
       .view-section-info {
-
         font-family: var(--font);
         font-size: .9rem;
         color: var(--light-text)!important;
         font-weight: 400;
         margin-bottom: 15px;
-
         span:last-child {
           float: right;
         }
       }
-
       .view-section-info:last-child {
-
         margin-bottom: 0px;
       }
     }
   }
-
   .has-top-nav {
     .flex-list-wrapper,
     .list-flex-toolbar {

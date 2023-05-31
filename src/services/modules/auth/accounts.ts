@@ -27,3 +27,9 @@ export async function registerUser(registrationObject: object) {
 	const registerRoute: string  = API_URLs.REGISTRATION
 	const data                   = await api.post(registerRoute, registrationObject)
 }
+
+export async function changeUserPassword(passwordsData: object) {
+
+	const registerRoute: string  = API_URLs.PASSWORD__CHANGE
+	return await api.post(API_URLs.PASSWORD__CHANGE, passwordsData)
+}
